@@ -197,24 +197,24 @@
     <div id="auction-screen" class="hidden flex-col h-screen max-h-screen overflow-hidden">
         
         <!-- Header -->
-        <header class="glass-panel border-b border-slate-700/50 p-4 flex justify-between items-center z-10 relative">
-            <div class="flex items-center gap-3">
-                <div class="bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 font-display">
-                    Room: <span id="ui-room-code" class="text-cric-green font-bold tracking-wider">---</span>
+        <header class="glass-panel border-b border-slate-700/50 p-3 sm:p-4 flex justify-between items-center z-10 relative">
+            <div class="flex items-center gap-2 sm:gap-3">
+                <div class="bg-slate-800 px-2 sm:px-3 py-1.5 rounded-lg border border-slate-700 font-display text-xs sm:text-base whitespace-nowrap">
+                    <span class="hidden sm:inline">Room: </span><span id="ui-room-code" class="text-cric-green font-bold tracking-wider">---</span>
                 </div>
-                <div class="text-xs text-gray-400 hidden sm:block">
+                <div class="text-xs text-gray-400 hidden sm:block whitespace-nowrap">
                     <span id="ui-online-count" class="text-white font-bold">1</span> Online
                 </div>
             </div>
             
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2 sm:gap-4">
                 <div class="text-right hidden sm:block">
                     <p class="text-xs text-gray-400 uppercase tracking-wider">My Budget</p>
                     <p id="ui-my-budget" class="font-display font-bold text-xl text-cric-gold">₹ 120.00 Cr</p>
                 </div>
                 
                 <!-- Voice Chat Toggle -->
-                <button id="btn-mic" class="bg-red-500/20 text-red-400 hover:bg-slate-600/50 p-2.5 rounded-lg transition-colors border border-slate-700/50 shadow-lg" title="Toggle Microphone">
+                <button id="btn-mic" class="bg-red-500/20 text-red-400 hover:bg-slate-600/50 p-2 sm:p-2.5 rounded-lg transition-colors border border-slate-700/50 shadow-lg" title="Toggle Microphone">
                     <!-- Mic Off Icon (Default) -->
                     <svg id="icon-mic-off" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11v1a7 7 0 01-14 0v-1m14 0c0 1.93-.784 3.682-2.05 4.95l-1.414-1.414A5.002 5.002 0 0017 12v-1m-4 8v4m-4-4v4m4-4H8m4-11a3 3 0 00-3 3v2.586L4.293 4.293A1 1 0 002.88 5.707l16.414 16.414a1 1 0 001.414-1.414l-9.121-9.121A3 3 0 0012 8z"></path></svg>
                     <!-- Mic On Icon -->
@@ -222,7 +222,7 @@
                 </button>
 
                 <!-- Video Chat Toggle -->
-                <button id="btn-video" class="bg-red-500/20 text-red-400 hover:bg-slate-600/50 p-2.5 rounded-lg transition-colors border border-slate-700/50 shadow-lg" title="Toggle Camera">
+                <button id="btn-video" class="bg-red-500/20 text-red-400 hover:bg-slate-600/50 p-2 sm:p-2.5 rounded-lg transition-colors border border-slate-700/50 shadow-lg" title="Toggle Camera">
                     <!-- Video Off Icon (Default) -->
                     <svg id="icon-video-off" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path><line x1="3" y1="3" x2="21" y2="21" stroke-width="2" stroke-linecap="round"></line></svg>
                     <!-- Video On Icon -->
@@ -1492,9 +1492,12 @@
 
         async function initVoiceChat() {
             try {
-                // Try requesting both camera and mic first
+                // Try requesting both camera and mic first (forces front-camera mapping on iOS/Android)
                 try {
-                    localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+                    localStream = await navigator.mediaDevices.getUserMedia({ 
+                        audio: true, 
+                        video: { facingMode: "user" } 
+                    });
                 } catch (camErr) {
                     console.warn("Camera failed/denied, falling back to audio only.", camErr);
                     localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
@@ -1603,10 +1606,24 @@
             }
         });
 
-        document.getElementById('btn-video').addEventListener('click', () => {
-            if (!localStream || localStream.getVideoTracks().length === 0) {
-                showToast("Camera is not connected or permission denied!");
-                return;
+        document.getElementById('btn-video').addEventListener('click', async () => {
+            if (!localStream) return;
+
+            // Dynamically request video if it was initially dropped or denied
+            if (localStream.getVideoTracks().length === 0) {
+                try {
+                    const vidStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+                    const vidTrack = vidStream.getVideoTracks()[0];
+                    localStream.addTrack(vidTrack);
+                    
+                    const localVid = document.getElementById('local-video');
+                    if (localVid) localVid.srcObject = localStream;
+                    
+                    showToast("Camera granted! New users joining will see your video.");
+                } catch (e) {
+                    showToast("Camera is not connected or permission denied!");
+                    return;
+                }
             }
             
             isVideoMuted = !isVideoMuted;
