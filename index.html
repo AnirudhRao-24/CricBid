@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CricBid - Live Cricket Auction</title>
+    
+    <!-- PWA & Mobile Meta Tags -->
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CricBid">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                    },
+                    colors: {
+                        cric: {
+                            dark: '#0f172a',
+                            card: '#1e293b',
+                            green: '#10b981',
+                            glow: '#34d399',
+                            gold: '#fbbf24'
+                        }
+                    },
+                    animation: {
+                        'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'stamp': 'stamp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+                        'fade-in-bg': 'fadeInBg 0.3s ease forwards'
+                    },
+                    keyframes: {
+                        stamp: {
+                            '0%': { opacity: '0', transform: 'scale(3) rotate(-20deg)' },
+                            '100%': { opacity: '1', transform: 'scale(1) rotate(-12deg)' }
+                        },
+                        fadeInBg: {
+                            '0%': { backgroundColor: 'rgba(0, 0, 0, 0)' },
+                            '100%': { backgroundColor: 'rgba(0, 0, 0, 0.8)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body { background-color: #0f172a; color: white; overflow-x: hidden; }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glowing-bid {
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+            border-color: #10b981 !important;
+            transition: all 0.3s ease;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        
+        .toast {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+            opacity: 0; transition: all 0.3s ease; z-index: 1000;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans">
+
+    <!-- Dynamic PWA Installation Script -->
+    <script>
+        // 1. Generate Manifest for App Installation
+        const manifestJSON = {
+            "name": "CricBid Live Auction",
+            "short_name": "CricBid",
+            "start_url": ".",
+            "display": "standalone",
+            "background_color": "#0f172a",
+            "theme_color": "#10b981",
+            "icons": [
+                {
+                    "src": "data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2310b981'%3E%3Cpath d='M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z'/%3E%3C/svg%3E",
+                    "sizes": "192x192",
+                    "type": "image/svg+xml"
+                },
+                {
+                    "src": "data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2310b981'%3E%3Cpath d='M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z'/%3E%3C/svg%3E",
+                    "sizes": "512x512",
+                    "type": "image/svg+xml"
+                }
+            ]
+        };
+        const manifestData = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifestJSON));
+        const manifestLink = document.createElement('link');
+        manifestLink.rel = 'manifest';
+        manifestLink.href = manifestData;
+        document.head.appendChild(manifestLink);
+
+        // 2. Register Minimal Service Worker (Required for Android/Desktop installation prompts)
+        if ('serviceWorker' in navigator) {
+            const swCode = `
+                self.addEventListener('install', (e) => self.skipWaiting());
+                self.addEventListener('activate', (e) => self.clients.claim());
+                self.addEventListener('fetch', (e) => { /* Network first, fallback to cache not needed for this real-time app */ });
+            `;
+            const blob = new Blob([swCode], {type: 'application/javascript'});
+            const blobUrl = URL.createObjectURL(blob);
+            navigator.serviceWorker.register(blobUrl).catch(() => {});
+        }
+    </script>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast bg-cric-card border border-cric-green text-white px-6 py-3 rounded-full shadow-lg font-medium">
+        Notification message
+    </div>
+
+    <!-- Exit Confirmation Modal -->
+    <div id="exit-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex-col items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="glass-panel p-6 rounded-2xl max-w-sm w-full text-center border border-slate-600 shadow-2xl transform scale-95 transition-transform duration-300" id="exit-modal-content">
+            <div class="w-16 h-16 bg-red-500/20 rounded-full mx-auto mb-4 flex items-center justify-center text-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)]">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+            </div>
+            <h2 class="text-2xl font-display font-bold text-white mb-2">Want to Exit!?</h2>
+            <p class="text-gray-400 mb-6">Are you sure you want to leave the auction room?</p>
+            <div class="flex gap-3">
+                <button id="btn-cancel-exit" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-xl transition-colors">Cancel</button>
+                <button id="btn-confirm-exit" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-red-500/30">Exit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen 1: Lobby -->
+    <div id="lobby-screen" class="flex-1 flex flex-col items-center justify-center p-4">
+        <div class="glass-panel p-8 rounded-2xl w-full max-w-md text-center">
+            <div class="w-20 h-20 bg-cric-green rounded-full mx-auto mb-6 flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.3)]">
+                <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+            <h1 class="text-4xl font-display font-bold text-white mb-2">CricBid Live</h1>
+            <p class="text-gray-400 mb-8">Multiplayer Cricket Auction</p>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-left text-sm text-gray-400 mb-1 ml-1">Player Name</label>
+                    <input type="text" id="username-input" placeholder="Enter your name" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cric-green transition-colors">
+                </div>
+                
+                <div class="pt-4 border-t border-slate-700 flex flex-col gap-3">
+                    <button id="btn-create-room" class="w-full bg-cric-green hover:bg-emerald-400 text-slate-900 font-bold py-3 rounded-xl transition-all shadow-lg hover:shadow-cric-green/30">
+                        Create New Room
+                    </button>
+                    
+                    <div class="relative flex items-center py-2">
+                        <div class="flex-grow border-t border-slate-700"></div>
+                        <span class="flex-shrink-0 mx-4 text-gray-500 text-sm">OR</span>
+                        <div class="flex-grow border-t border-slate-700"></div>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <input type="text" id="room-code-input" placeholder="Room Code" class="w-2/3 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cric-green uppercase text-center font-display tracking-widest">
+                        <button id="btn-join-room" class="w-1/3 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-xl transition-colors">
+                            Join
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen 2: Auction Room -->
+    <div id="auction-screen" class="hidden flex-col h-screen max-h-screen overflow-hidden">
+        
+        <!-- Header -->
+        <header class="glass-panel border-b border-slate-700/50 p-4 flex justify-between items-center z-10 relative">
+            <div class="flex items-center gap-3">
+                <div class="bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 font-display">
+                    Room: <span id="ui-room-code" class="text-cric-green font-bold tracking-wider">---</span>
+                </div>
+                <div class="text-xs text-gray-400 hidden sm:block">
+                    <span id="ui-online-count" class="text-white font-bold">1</span> Online
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div class="text-right">
+                    <p class="text-xs text-gray-400 uppercase tracking-wider">My Budget</p>
+                    <p id="ui-my-budget" class="font-display font-bold text-xl text-cric-gold">₹ 120.00 Cr</p>
+                </div>
+                <button id="btn-leave" class="bg-red-500/20 text-red-400 hover:bg-red-500/30 p-2 rounded-lg transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+            
+            <!-- Left Sidebar: Team & Leaderboard -->
+            <aside class="w-full lg:w-1/4 glass-panel border-r border-slate-700/50 overflow-y-auto hidden lg:flex flex-col p-4 z-10">
+                <h2 class="text-lg font-display font-bold mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-cric-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    Room Standings
+                </h2>
+                <div id="standings-list" class="space-y-3">
+                    <!-- Standings injected here -->
+                </div>
+            </aside>
+
+            <!-- Center: Auction Area -->
+            <section class="flex-1 flex flex-col justify-between p-4 sm:p-8 overflow-y-auto relative z-10">
+                
+                <!-- Status/Timer -->
+                <div class="flex justify-center mb-6">
+                    <div id="timer-container" class="bg-slate-800/80 border border-slate-700 rounded-full px-6 py-2 flex items-center gap-3 shadow-lg">
+                        <div id="status-indicator" class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <span id="ui-room-status" class="font-bold text-gray-300">Waiting for Host</span>
+                        <span id="ui-timer" class="font-display font-bold text-2xl text-white ml-2 hidden">00</span>
+                    </div>
+                </div>
+
+                <!-- Current Player Card -->
+                <div class="flex-1 flex items-center justify-center min-h-[300px]">
+                    <div id="player-card" class="glass-panel border-2 border-slate-700 rounded-3xl w-full max-w-lg overflow-hidden transition-all duration-500 relative">
+                        
+                        <!-- Sold/Unsold Overlay -->
+                        <div id="sold-overlay" class="absolute inset-0 bg-black/80 backdrop-blur-sm z-20 hidden flex-col items-center justify-center p-6 text-center">
+                            <!-- Dynamic Content Injected Here via JS -->
+                        </div>
+
+                        <!-- Card Header -->
+                        <div class="bg-gradient-to-r from-slate-800 to-slate-900 p-6 flex justify-between items-start">
+                            <div>
+                                <span id="ui-player-role" class="bg-cric-green/20 text-cric-green text-xs font-bold px-2 py-1 rounded uppercase tracking-wider mb-2 inline-block">Batsman</span>
+                                <h2 id="ui-player-name" class="text-3xl font-display font-bold text-white leading-tight">Waiting...</h2>
+                                <p id="ui-player-country" class="text-gray-400 mt-1 flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path></svg>
+                                    ---
+                                </p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xs text-gray-400 uppercase">Base Price</p>
+                                <p id="ui-player-base" class="font-display font-bold text-lg text-white">₹ -- Cr</p>
+                            </div>
+                        </div>
+
+                        <!-- Bid Status Area -->
+                        <div class="p-8 text-center bg-slate-900/50">
+                            <p class="text-gray-400 text-sm uppercase tracking-wider mb-2">Current Bid</p>
+                            <h3 id="ui-current-bid" class="text-5xl md:text-6xl font-display font-bold text-white mb-4">₹ 0.00 <span class="text-2xl text-gray-400">Cr</span></h3>
+                            
+                            <div class="flex items-center justify-center gap-2">
+                                <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                </div>
+                                <p class="text-lg text-gray-300">Highest Bidder: <span id="ui-highest-bidder" class="font-bold text-cric-gold">None</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bidding Controls -->
+                <div id="bidding-controls" class="mt-6 glass-panel p-4 rounded-2xl opacity-50 pointer-events-none transition-opacity">
+                    <div class="grid grid-cols-3 gap-3">
+                        <button onclick="placeBid(0.20)" class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-4 rounded-xl transition-colors shadow-lg flex flex-col items-center">
+                            <span class="text-lg">+ 20 L</span>
+                        </button>
+                        <button onclick="placeBid(0.50)" class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-4 rounded-xl transition-colors shadow-lg flex flex-col items-center">
+                            <span class="text-lg">+ 50 L</span>
+                        </button>
+                        <button onclick="placeBid(1.00)" class="bg-cric-green hover:bg-emerald-400 text-slate-900 font-bold py-4 rounded-xl transition-all shadow-[0_0_15px_rgba(16,185,129,0.4)] flex flex-col items-center">
+                            <span class="text-lg">+ 1 Cr</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Host Controls (Only visible to admin) -->
+                <div id="host-controls" class="mt-4 p-4 border border-red-500/30 bg-red-500/10 rounded-xl hidden flex-wrap gap-2 justify-center transition-all">
+                    <p class="w-full text-center text-xs text-red-400 uppercase tracking-widest mb-2">Host Controls (Auto-Advances)</p>
+                    <button id="btn-host-start" class="bg-cric-green text-slate-900 font-bold px-4 py-2 rounded shadow flex-1 min-w-[100px] transition-colors">Start/Next</button>
+                    <button id="btn-host-pause" class="bg-yellow-500 text-slate-900 font-bold px-4 py-2 rounded shadow flex-1 min-w-[100px] transition-colors">Pause</button>
+                    <button id="btn-host-unsold" class="bg-slate-600 text-white font-bold px-4 py-2 rounded shadow flex-1 min-w-[100px] transition-colors disabled:opacity-30 disabled:cursor-not-allowed">Mark Unsold</button>
+                </div>
+
+            </section>
+
+            <!-- Right Sidebar: Upcoming Players -->
+            <aside class="w-full lg:w-1/4 glass-panel border-l border-slate-700/50 overflow-y-auto hidden lg:flex flex-col p-4 z-10">
+                <h2 class="text-lg font-display font-bold mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-cric-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                    Auction Pool
+                </h2>
+                <div id="upcoming-list" class="space-y-2">
+                    <!-- Pool injected here -->
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <!-- Firebase SDK Imports -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js';
+        import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js';
+        import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, onSnapshot, writeBatch, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js';
+
+        // Configuration matching user's specific Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCAd5OJKmVW2aSWgDogBg3lSpj1uzPxGrk",
+            authDomain: "cricbid-839eb.firebaseapp.com",
+            projectId: "cricbid-839eb",
+            storageBucket: "cricbid-839eb.firebasestorage.app",
+            messagingSenderId: "521652177425",
+            appId: "1:521652177425:web:c33adfb7ea97360d6affb0",
+            measurementId: "G-7WHCC3VSTW"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // State
+        let currentUser = null;
+        let currentRoomId = null;
+        let myUserDocId = null; // userId
+        let roomData = null;
+        let usersData = [];
+        let playersData = [];
+        let timerInterval = null;
+
+        // Constants
+        const BUDGET_DEFAULT = 120.0; // Changed to 120 Cr
+        const TIMER_SECONDS = 10; // Changed to 10 seconds
+
+        // Base Data Seed
+        const DUMMY_PLAYERS = [
+            { name: "Virat K.", role: "Batsman", country: "IND", base: 2.0 },
+            { name: "Pat C.", role: "Bowler", country: "AUS", base: 2.0 },
+            { name: "Ben S.", role: "All-Rounder", country: "ENG", base: 2.0 },
+            { name: "Rashid K.", role: "Bowler", country: "AFG", base: 1.5 },
+            { name: "MS D.", role: "Wicketkeeper", country: "IND", base: 1.5 },
+            { name: "Glenn M.", role: "All-Rounder", country: "AUS", base: 1.5 },
+            { name: "Trent B.", role: "Bowler", country: "NZ", base: 1.0 },
+            { name: "Suryakumar Y.", role: "Batsman", country: "IND", base: 1.5 },
+            { name: "Quinton de K.", role: "Wicketkeeper", country: "RSA", base: 1.0 },
+            { name: "Jasprit B.", role: "Bowler", country: "IND", base: 2.0 }
+        ];
+
+        // UI Elements
+        const screens = { lobby: document.getElementById('lobby-screen'), auction: document.getElementById('auction-screen') };
+        const inputs = { username: document.getElementById('username-input'), roomCode: document.getElementById('room-code-input') };
+        const buttons = { create: document.getElementById('btn-create-room'), join: document.getElementById('btn-join-room'), leave: document.getElementById('btn-leave') };
+        const ui = {
+            roomCode: document.getElementById('ui-room-code'),
+            onlineCount: document.getElementById('ui-online-count'),
+            myBudget: document.getElementById('ui-my-budget'),
+            roomStatus: document.getElementById('ui-room-status'),
+            timer: document.getElementById('ui-timer'),
+            statusIndicator: document.getElementById('status-indicator'),
+            playerCard: document.getElementById('player-card'),
+            playerName: document.getElementById('ui-player-name'),
+            playerRole: document.getElementById('ui-player-role'),
+            playerCountry: document.getElementById('ui-player-country'),
+            playerBase: document.getElementById('ui-player-base'),
+            currentBid: document.getElementById('ui-current-bid'),
+            highestBidder: document.getElementById('ui-highest-bidder'),
+            biddingControls: document.getElementById('bidding-controls'),
+            hostControls: document.getElementById('host-controls'),
+            btnHostUnsold: document.getElementById('btn-host-unsold'),
+            upcomingList: document.getElementById('upcoming-list'),
+            standingsList: document.getElementById('standings-list'),
+            soldOverlay: document.getElementById('sold-overlay')
+        };
+        const modalElements = {
+            modal: document.getElementById('exit-modal'),
+            content: document.getElementById('exit-modal-content'),
+            cancel: document.getElementById('btn-cancel-exit'),
+            confirm: document.getElementById('btn-confirm-exit')
+        };
+
+        // Utility: Show Toast
+        window.showToast = (msg) => {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        };
+
+        // Utility: Format Currency
+        const formatMoney = (val) => val.toFixed(2);
+
+        // Utility: Generate Room Code
+        const generateRoomCode = () => Math.random().toString(36).substring(2, 8).toUpperCase();
+
+        // Initialize App & Auth
+        async function init() {
+            try {
+                await signInAnonymously(auth);
+            } catch (e) {
+                console.error("Auth error:", e);
+                showToast("Connection failed. Try refreshing.");
+            }
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) {
+                console.log("Authenticated:", user.uid);
+            }
+        });
+
+        // Event Listeners for Login
+        buttons.create.addEventListener('click', async () => {
+            const name = inputs.username.value.trim();
+            if(!name) return showToast("Enter your name first!");
+            if(!currentUser) return showToast("Authenticating... wait a moment.");
+            
+            const newRoomId = generateRoomCode();
+            await createRoom(newRoomId, name);
+        });
+
+        buttons.join.addEventListener('click', async () => {
+            const name = inputs.username.value.trim();
+            const code = inputs.roomCode.value.trim().toUpperCase();
+            if(!name) return showToast("Enter your name!");
+            if(!code) return showToast("Enter a room code!");
+            if(!currentUser) return showToast("Authenticating... wait a moment.");
+
+            await joinRoom(code, name);
+        });
+
+        // Exit Modal Listeners
+        buttons.leave.addEventListener('click', () => {
+            modalElements.modal.classList.remove('hidden');
+            // Slight delay to allow CSS transitions to trigger
+            setTimeout(() => {
+                modalElements.modal.classList.remove('opacity-0');
+                modalElements.content.classList.remove('scale-95');
+                modalElements.content.classList.add('scale-100');
+            }, 10);
+        });
+
+        modalElements.cancel.addEventListener('click', () => {
+            modalElements.modal.classList.add('opacity-0');
+            modalElements.content.classList.remove('scale-100');
+            modalElements.content.classList.add('scale-95');
+            setTimeout(() => {
+                modalElements.modal.classList.add('hidden');
+            }, 300);
+        });
+
+        modalElements.confirm.addEventListener('click', () => {
+            window.location.reload();
+        });
+
+        // ---------------- FIREBASE OPERATIONS ----------------
+        
+        // Strict Path Builders (Clean root paths for GitHub deployment)
+        const getRoomsRef = () => collection(db, 'rooms');
+        const getUsersRef = () => collection(db, 'users');
+        const getPlayersRef = () => collection(db, 'players');
+
+        async function createRoom(roomId, username) {
+            try {
+                buttons.create.disabled = true;
+                buttons.create.innerText = "Creating...";
+
+                const roomRef = doc(getRoomsRef(), roomId);
+                await setDoc(roomRef, {
+                    roomId: roomId,
+                    hostId: currentUser.uid,
+                    status: 'waiting', 
+                    currentAuctionIndex: 0,
+                    timerEndTime: 0,
+                    currentBid: 0,
+                    currentBidder: null,
+                    createdAt: serverTimestamp()
+                });
+
+                myUserDocId = currentUser.uid + "_" + roomId; 
+                await setDoc(doc(getUsersRef(), myUserDocId), {
+                    userId: myUserDocId,
+                    authId: currentUser.uid,
+                    roomId: roomId,
+                    username: username,
+                    budget: BUDGET_DEFAULT,
+                    role: 'admin'
+                });
+
+                const batch = writeBatch(db);
+                DUMMY_PLAYERS.forEach((p, idx) => {
+                    const pRef = doc(getPlayersRef());
+                    batch.set(pRef, {
+                        playerId: pRef.id,
+                        roomId: roomId,
+                        name: p.name,
+                        role: p.role,
+                        country: p.country,
+                        basePrice: p.base,
+                        soldPrice: null,
+                        ownerId: null,
+                        status: 'upcoming',
+                        order: idx
+                    });
+                });
+                await batch.commit();
+
+                enterRoom(roomId);
+            } catch(e) {
+                console.error(e);
+                showToast("Error creating room.");
+                buttons.create.disabled = false;
+                buttons.create.innerText = "Create New Room";
+            }
+        }
+
+        async function joinRoom(roomId, username) {
+            try {
+                buttons.join.disabled = true;
+                
+                const roomSnap = await getDoc(doc(getRoomsRef(), roomId));
+                if (!roomSnap.exists()) {
+                    showToast("Room not found!");
+                    buttons.join.disabled = false;
+                    return;
+                }
+
+                myUserDocId = currentUser.uid + "_" + roomId;
+                await setDoc(doc(getUsersRef(), myUserDocId), {
+                    userId: myUserDocId,
+                    authId: currentUser.uid,
+                    roomId: roomId,
+                    username: username,
+                    budget: BUDGET_DEFAULT,
+                    role: 'player'
+                });
+
+                enterRoom(roomId);
+            } catch(e) {
+                console.error(e);
+                showToast("Error joining room.");
+                buttons.join.disabled = false;
+            }
+        }
+
+        function enterRoom(roomId) {
+            currentRoomId = roomId;
+            screens.lobby.classList.add('hidden');
+            screens.auction.classList.remove('hidden');
+            ui.roomCode.innerText = roomId;
+            
+            setupListeners();
+        }
+
+        // ---------------- LISTENERS ----------------
+
+        let unsubscribeRooms, unsubscribeUsers, unsubscribePlayers;
+
+        function setupListeners() {
+            if(!currentUser) return;
+
+            unsubscribeRooms = onSnapshot(getRoomsRef(), (snapshot) => {
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    if(data.roomId === currentRoomId) {
+                        roomData = data;
+                        updateRoomUI();
+                    }
+                });
+            }, (error) => console.error("Rooms listener error:", error));
+
+            unsubscribeUsers = onSnapshot(getUsersRef(), (snapshot) => {
+                const tempUsers = [];
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    if(data.roomId === currentRoomId) {
+                        tempUsers.push(data);
+                    }
+                });
+                usersData = tempUsers;
+                updateUsersUI();
+            }, (error) => console.error("Users listener error:", error));
+
+            unsubscribePlayers = onSnapshot(getPlayersRef(), (snapshot) => {
+                const tempPlayers = [];
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    if(data.roomId === currentRoomId) {
+                        tempPlayers.push(data);
+                    }
+                });
+                playersData = tempPlayers.sort((a, b) => a.order - b.order);
+                updatePlayersUI();
+            }, (error) => console.error("Players listener error:", error));
+        }
+
+        // ---------------- UI UPDATES ----------------
+
+        function updateUsersUI() {
+            ui.onlineCount.innerText = usersData.length;
+            
+            const me = usersData.find(u => u.userId === myUserDocId);
+            if(me) {
+                ui.myBudget.innerText = `₹ ${formatMoney(me.budget)} Cr`;
+                
+                if(me.role === 'admin') {
+                    ui.hostControls.classList.remove('hidden');
+                    ui.hostControls.classList.add('flex');
+                }
+            }
+
+            ui.standingsList.innerHTML = '';
+            const sortedUsers = [...usersData].sort((a,b) => b.budget - a.budget);
+            
+            sortedUsers.forEach(u => {
+                const isMe = u.userId === myUserDocId;
+                const boughtPlayers = playersData.filter(p => p.ownerId === u.userId);
+
+                let badgesHtml = '';
+                if (boughtPlayers.length > 0) {
+                    badgesHtml = '<div class="mt-2 flex flex-wrap gap-1">';
+                    boughtPlayers.forEach(bp => {
+                        badgesHtml += `<span class="bg-cric-card border border-cric-green/30 text-[10px] px-1.5 py-0.5 rounded text-gray-300 shadow-sm">${bp.name} <span class="text-cric-gold">₹${formatMoney(bp.soldPrice)}</span></span>`;
+                    });
+                    badgesHtml += '</div>';
+                }
+
+                const div = document.createElement('div');
+                div.className = `p-3 rounded-lg border ${isMe ? 'border-cric-green bg-cric-green/10' : 'border-slate-700 bg-slate-800'} flex flex-col justify-center`;
+                div.innerHTML = `
+                    <div class="flex justify-between items-center w-full">
+                        <div>
+                            <p class="font-bold text-white text-sm flex items-center gap-1">
+                                ${u.username} ${u.role === 'admin' ? '<span class="text-[10px] bg-red-500/20 text-red-400 px-1 rounded">HOST</span>' : ''}
+                            </p>
+                            <p class="text-xs text-gray-400">${boughtPlayers.length} Players</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-display font-bold text-cric-gold">₹ ${formatMoney(u.budget)}</p>
+                        </div>
+                    </div>
+                    ${badgesHtml}
+                `;
+                ui.standingsList.appendChild(div);
+            });
+        }
+
+        function updatePlayersUI() {
+            ui.upcomingList.innerHTML = '';
+            
+            const upcoming = playersData.filter(p => p.status === 'upcoming');
+            const sold = playersData.filter(p => p.status === 'sold');
+            const unsold = playersData.filter(p => p.status === 'unsold');
+            
+            // Upcoming Block
+            ui.upcomingList.innerHTML += `<div class="text-xs text-gray-400 uppercase tracking-widest mt-2 mb-1">Upcoming (${upcoming.length})</div>`;
+            upcoming.slice(0, 3).forEach(p => {
+                ui.upcomingList.innerHTML += `
+                    <div class="p-2 border border-slate-700/50 bg-slate-800/50 rounded flex justify-between items-center mb-1">
+                        <div>
+                            <p class="text-sm font-bold text-gray-200">${p.name}</p>
+                            <p class="text-[10px] text-gray-500 uppercase">${p.role}</p>
+                        </div>
+                        <span class="text-xs font-display text-gray-400">₹${p.base}</span>
+                    </div>
+                `;
+            });
+
+            // Sold Block
+            if (sold.length > 0) {
+                ui.upcomingList.innerHTML += `<div class="text-xs text-cric-green uppercase tracking-widest mt-4 mb-1 border-t border-slate-700 pt-2">Sold (${sold.length})</div>`;
+                [...sold].reverse().slice(0, 3).forEach(p => {
+                    const owner = usersData.find(u => u.userId === p.ownerId);
+                    const ownerName = owner ? owner.username : 'Unknown';
+                    ui.upcomingList.innerHTML += `
+                        <div class="p-2 border border-cric-green/20 bg-cric-green/10 rounded flex flex-col mb-1">
+                            <div class="flex justify-between items-center">
+                                <p class="text-sm font-bold text-white">${p.name}</p>
+                                <span class="text-xs font-display font-bold text-cric-gold">₹${formatMoney(p.soldPrice)}</span>
+                            </div>
+                            <p class="text-[10px] text-gray-400 mt-1">To: <span class="text-gray-200 font-bold">${ownerName}</span></p>
+                        </div>
+                    `;
+                });
+            }
+
+            // Unsold Block
+            if (unsold.length > 0) {
+                ui.upcomingList.innerHTML += `<div class="text-xs text-gray-500 uppercase tracking-widest mt-4 mb-1 border-t border-slate-700 pt-2">Unsold (${unsold.length})</div>`;
+                [...unsold].reverse().slice(0, 3).forEach(p => {
+                    ui.upcomingList.innerHTML += `
+                        <div class="p-2 border border-slate-600/50 bg-slate-800/80 rounded flex justify-between items-center mb-1 opacity-70">
+                            <p class="text-sm font-bold text-gray-400 line-through">${p.name}</p>
+                            <span class="text-[10px] text-gray-500">Unsold</span>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        let lastBidderState = null;
+
+        function updateRoomUI() {
+            if(!roomData) return;
+
+            const isHost = usersData.find(u => u.userId === myUserDocId)?.role === 'admin';
+            const currentPlayer = playersData.find(p => p.order === roomData.currentAuctionIndex);
+
+            // Handle Unsold Button State for Host
+            if (isHost && ui.btnHostUnsold) {
+                if (roomData.currentBidder) {
+                    ui.btnHostUnsold.disabled = true;
+                } else {
+                    ui.btnHostUnsold.disabled = false;
+                }
+            }
+
+            // Handle timer visually
+            if(roomData.status === 'active' && roomData.timerEndTime > 0) {
+                startTimer(roomData.timerEndTime);
+                ui.roomStatus.innerText = "Auction Live";
+                ui.statusIndicator.className = "w-3 h-3 rounded-full bg-red-500 animate-pulse";
+                ui.timer.classList.remove('hidden');
+                
+                // Enable bidding if I am not the current highest bidder
+                if(roomData.currentBidder !== myUserDocId) {
+                    ui.biddingControls.classList.remove('opacity-50', 'pointer-events-none');
+                } else {
+                    ui.biddingControls.classList.add('opacity-50', 'pointer-events-none');
+                }
+            } else {
+                stopTimer();
+                ui.timer.classList.add('hidden');
+                ui.biddingControls.classList.add('opacity-50', 'pointer-events-none');
+                
+                if(roomData.status === 'waiting') {
+                    ui.roomStatus.innerText = "Waiting...";
+                    ui.statusIndicator.className = "w-3 h-3 rounded-full bg-yellow-500";
+                } else if(roomData.status === 'paused') {
+                    ui.roomStatus.innerText = "Finalizing...";
+                    ui.statusIndicator.className = "w-3 h-3 rounded-full bg-orange-500";
+                } else if(roomData.status === 'finished') {
+                    ui.roomStatus.innerText = "Auction Completed";
+                    ui.statusIndicator.className = "w-3 h-3 rounded-full bg-green-500";
+                }
+            }
+
+            // Update Current Player Card
+            if(currentPlayer) {
+                ui.playerName.innerText = currentPlayer.name;
+                ui.playerRole.innerText = currentPlayer.role;
+                ui.playerCountry.innerHTML = getFlagEmoji(currentPlayer.country) + " " + currentPlayer.country;
+                ui.playerBase.innerText = `₹ ${formatMoney(currentPlayer.basePrice)} Cr`;
+                
+                const displayBid = roomData.currentBid > 0 ? roomData.currentBid : currentPlayer.basePrice;
+                ui.currentBid.innerHTML = `₹ ${formatMoney(displayBid)} <span class="text-2xl text-gray-400">Cr</span>`;
+
+                if(roomData.currentBidder) {
+                    const bidder = usersData.find(u => u.userId === roomData.currentBidder);
+                    ui.highestBidder.innerText = bidder ? bidder.username : "Unknown";
+                    
+                    // Add glowing effect if bid changed
+                    if (lastBidderState !== roomData.currentBidder) {
+                        ui.playerCard.classList.add('glowing-bid');
+                        setTimeout(() => ui.playerCard.classList.remove('glowing-bid'), 1000);
+                        lastBidderState = roomData.currentBidder;
+                    }
+                } else {
+                    ui.highestBidder.innerText = "None";
+                    lastBidderState = null;
+                }
+
+                // Handle Sold Overlay efficiently
+                if(currentPlayer.status === 'sold') {
+                    ui.soldOverlay.classList.remove('hidden');
+                    ui.soldOverlay.classList.add('flex', 'animate-fade-in-bg');
+                    
+                    const owner = usersData.find(u => u.userId === currentPlayer.ownerId);
+                    const ownerName = owner ? owner.username : "Unknown";
+                    
+                    if (!ui.soldOverlay.innerHTML.includes(currentPlayer.name)) {
+                        ui.soldOverlay.innerHTML = `
+                            <span class="hidden">${currentPlayer.name}</span>
+                            <div class="animate-stamp flex flex-col items-center justify-center">
+                                <h3 class="text-5xl md:text-6xl font-display font-black text-cric-green mb-4 transform -rotate-12 uppercase tracking-widest border-8 border-cric-green px-6 py-2 shadow-[0_0_30px_rgba(16,185,129,0.5)] bg-cric-card/80">SOLD!</h3>
+                                <div class="bg-slate-900/90 border border-cric-green rounded-xl p-4 mt-4 shadow-xl">
+                                    <p class="text-lg text-gray-300">To <span class="font-bold text-cric-gold text-2xl ml-2">${ownerName}</span></p>
+                                    <p class="text-4xl font-display font-bold text-white mt-2">₹ ${formatMoney(currentPlayer.soldPrice)} <span class="text-xl text-gray-400">Cr</span></p>
+                                </div>
+                            </div>
+                        `;
+                    }
+                } else if(currentPlayer.status === 'unsold') {
+                    ui.soldOverlay.classList.remove('hidden');
+                    ui.soldOverlay.classList.add('flex', 'animate-fade-in-bg');
+                    
+                    if (!ui.soldOverlay.innerHTML.includes(currentPlayer.name)) {
+                        ui.soldOverlay.innerHTML = `
+                            <span class="hidden">${currentPlayer.name}</span>
+                            <div class="animate-stamp flex flex-col items-center justify-center">
+                                <h3 class="text-5xl md:text-6xl font-display font-black text-gray-400 mb-2 transform -rotate-12 uppercase tracking-widest border-8 border-gray-400 px-6 py-2 bg-slate-900/80 shadow-2xl">UNSOLD</h3>
+                            </div>
+                        `;
+                    }
+                } else {
+                    ui.soldOverlay.classList.add('hidden');
+                    ui.soldOverlay.classList.remove('flex', 'animate-fade-in-bg');
+                    ui.soldOverlay.innerHTML = ''; 
+                }
+
+            } else {
+                ui.playerName.innerText = "No More Players";
+                ui.playerRole.innerText = "---";
+                ui.playerCountry.innerText = "---";
+                ui.playerBase.innerText = "---";
+                ui.currentBid.innerHTML = "₹ 0.00";
+                ui.highestBidder.innerText = "---";
+            }
+        }
+
+        function getFlagEmoji(countryCode) {
+            const flags = { 'IND': '🇮🇳', 'AUS': '🇦🇺', 'ENG': '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'AFG': '🇦🇫', 'RSA': '🇿🇦', 'NZ': '🇳🇿', 'PAK': '🇵🇰' };
+            return flags[countryCode] || '🏳️';
+        }
+
+        // ---------------- TIMER LOGIC ----------------
+
+        function startTimer(endTime) {
+            stopTimer();
+            timerInterval = setInterval(() => {
+                const now = Date.now();
+                const diff = Math.max(0, endTime - now);
+                const seconds = Math.ceil(diff / 1000);
+                
+                ui.timer.innerText = seconds.toString().padStart(2, '0');
+                
+                if(seconds <= 5) {
+                    ui.timer.classList.add('text-red-500');
+                    ui.timer.classList.remove('text-white');
+                } else {
+                    ui.timer.classList.remove('text-red-500');
+                    ui.timer.classList.add('text-white');
+                }
+
+                if(diff <= 0) {
+                    stopTimer();
+                    handleTimerEnd();
+                }
+            }, 100);
+        }
+
+        function stopTimer() {
+            if(timerInterval) clearInterval(timerInterval);
+        }
+
+        async function handleTimerEnd() {
+            const me = usersData.find(u => u.userId === myUserDocId);
+            if(me && me.role === 'admin') {
+                if(roomData.status !== 'active') return; 
+                
+                const currentPlayer = playersData.find(p => p.order === roomData.currentAuctionIndex);
+                if(!currentPlayer || currentPlayer.status !== 'auctioning') return;
+
+                if(roomData.currentBidder) {
+                    await markPlayerSold(currentPlayer.playerId, roomData.currentBid, roomData.currentBidder);
+                } else {
+                    await markPlayerUnsold(currentPlayer.playerId);
+                }
+            }
+        }
+
+        // ---------------- ACTIONS (BIDDING, ADMIN) ----------------
+
+        window.placeBid = async (amount) => {
+            if(!currentUser || !roomData) return;
+            const me = usersData.find(u => u.userId === myUserDocId);
+            if(!me) return;
+
+            const currentPlayer = playersData.find(p => p.order === roomData.currentAuctionIndex);
+            if(!currentPlayer || currentPlayer.status !== 'auctioning' || roomData.status !== 'active') return;
+
+            let newBid = 0;
+            if(roomData.currentBid === 0) {
+                newBid = currentPlayer.basePrice;
+            } else {
+                newBid = parseFloat((roomData.currentBid + amount).toFixed(2));
+            }
+
+            if(newBid > me.budget) {
+                showToast("Insufficient Budget!");
+                return;
+            }
+
+            const now = Date.now();
+            let newEndTime = roomData.timerEndTime;
+            const remaining = newEndTime - now;
+            if(remaining < 5000) {
+                newEndTime = now + 10000; 
+            }
+
+            try {
+                await updateDoc(doc(getRoomsRef(), currentRoomId), {
+                    currentBid: newBid,
+                    currentBidder: myUserDocId,
+                    timerEndTime: newEndTime
+                });
+                
+                const btnPanel = document.getElementById('bidding-controls');
+                btnPanel.classList.add('opacity-50', 'pointer-events-none');
+            } catch(e) {
+                console.error("Bid error", e);
+            }
+        };
+
+        // Admin Actions
+        document.getElementById('btn-host-start').addEventListener('click', async () => {
+            if(!roomData) return;
+            
+            const currentPlayer = playersData.find(p => p.order === roomData.currentAuctionIndex);
+            
+            if(currentPlayer && (currentPlayer.status === 'sold' || currentPlayer.status === 'unsold')) {
+                const nextIndex = roomData.currentAuctionIndex + 1;
+                const nextPlayer = playersData.find(p => p.order === nextIndex);
+                
+                if(nextPlayer) {
+                    await updateDoc(doc(getRoomsRef(), currentRoomId), {
+                        currentAuctionIndex: nextIndex,
+                        status: 'active',
+                        currentBid: 0,
+                        currentBidder: null,
+                        timerEndTime: Date.now() + (TIMER_SECONDS * 1000)
+                    });
+                    await updateDoc(doc(getPlayersRef(), nextPlayer.playerId), {
+                        status: 'auctioning'
+                    });
+                } else {
+                    await updateDoc(doc(getRoomsRef(), currentRoomId), { status: 'finished' });
+                    showToast("Auction Finished!");
+                }
+            } else if (currentPlayer && currentPlayer.status === 'upcoming') {
+                await updateDoc(doc(getRoomsRef(), currentRoomId), {
+                    status: 'active',
+                    currentBid: 0,
+                    currentBidder: null,
+                    timerEndTime: Date.now() + (TIMER_SECONDS * 1000)
+                });
+                await updateDoc(doc(getPlayersRef(), currentPlayer.playerId), {
+                    status: 'auctioning'
+                });
+            } else if (roomData.status === 'paused') {
+                await updateDoc(doc(getRoomsRef(), currentRoomId), {
+                    status: 'active',
+                    timerEndTime: Date.now() + (TIMER_SECONDS * 1000) 
+                });
+            }
+        });
+
+        document.getElementById('btn-host-pause').addEventListener('click', async () => {
+            if(!roomData) return;
+            await updateDoc(doc(getRoomsRef(), currentRoomId), {
+                status: 'paused',
+                timerEndTime: 0
+            });
+        });
+
+        document.getElementById('btn-host-unsold').addEventListener('click', async () => {
+            if(!roomData) return;
+            
+            if(roomData.currentBidder) {
+                showToast("Cannot mark unsold: Bids exist!");
+                return;
+            }
+
+            const currentPlayer = playersData.find(p => p.order === roomData.currentAuctionIndex);
+            if(currentPlayer) {
+                await markPlayerUnsold(currentPlayer.playerId);
+            }
+        });
+
+        async function markPlayerSold(playerId, price, ownerDocId) {
+            try {
+                await updateDoc(doc(getRoomsRef(), currentRoomId), {
+                    status: 'paused',
+                    timerEndTime: 0
+                });
+
+                await updateDoc(doc(getPlayersRef(), playerId), {
+                    status: 'sold',
+                    soldPrice: price,
+                    ownerId: ownerDocId
+                });
+
+                const ownerData = usersData.find(u => u.userId === ownerDocId);
+                if(ownerData) {
+                    const newBudget = ownerData.budget - price;
+                    await updateDoc(doc(getUsersRef(), ownerDocId), {
+                        budget: newBudget
+                    });
+                }
+
+                triggerConfetti();
+
+                setTimeout(() => {
+                    const me = usersData.find(u => u.userId === myUserDocId);
+                    if(me && me.role === 'admin') {
+                        const startBtn = document.getElementById('btn-host-start');
+                        if(startBtn) startBtn.click();
+                    }
+                }, 5000);
+
+            } catch(e) { console.error("Error selling:", e); }
+        }
+
+        async function markPlayerUnsold(playerId) {
+            try {
+                await updateDoc(doc(getRoomsRef(), currentRoomId), {
+                    status: 'paused',
+                    timerEndTime: 0
+                });
+                await updateDoc(doc(getPlayersRef(), playerId), {
+                    status: 'unsold'
+                });
+
+                setTimeout(() => {
+                    const me = usersData.find(u => u.userId === myUserDocId);
+                    if(me && me.role === 'admin') {
+                        const startBtn = document.getElementById('btn-host-start');
+                        if(startBtn) startBtn.click();
+                    }
+                }, 3500);
+            } catch(e) { console.error("Error marking unsold:", e); }
+        }
+
+        function triggerConfetti() {
+            var duration = 3 * 1000;
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100 };
+
+            function randomInRange(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            var interval = setInterval(function() {
+                var timeLeft = animationEnd - Date.now();
+
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+
+                var particleCount = 50 * (timeLeft / duration);
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
+        }
+
+        // Kickoff
+        init();
+
+    </script>
+</body>
+</html>
