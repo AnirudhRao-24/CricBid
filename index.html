@@ -81,7 +81,6 @@
 
     <!-- Dynamic PWA Installation Script -->
     <script>
-        // 1. Generate Manifest for App Installation
         const manifestJSON = {
             "name": "CricBid Live Auction",
             "short_name": "CricBid",
@@ -108,12 +107,11 @@
         manifestLink.href = manifestData;
         document.head.appendChild(manifestLink);
 
-        // 2. Register Minimal Service Worker
         if ('serviceWorker' in navigator) {
             const swCode = `
                 self.addEventListener('install', (e) => self.skipWaiting());
                 self.addEventListener('activate', (e) => self.clients.claim());
-                self.addEventListener('fetch', (e) => { /* Network first, fallback to cache not needed for this real-time app */ });
+                self.addEventListener('fetch', (e) => { });
             `;
             const blob = new Blob([swCode], {type: 'application/javascript'});
             const blobUrl = URL.createObjectURL(blob);
@@ -530,6 +528,7 @@
         modalElements.confirm.addEventListener('click', async () => {
             if (myUserDocId) {
                 try {
+                    await transferHostRole(); // Transfer host privileges if applicable
                     // Remove user from the room's active user list before reloading
                     await deleteDoc(doc(getUsersRef(), myUserDocId));
                 } catch (e) {
@@ -542,6 +541,7 @@
         // Clean up user on tab close/page refresh
         window.addEventListener('beforeunload', () => {
             if (myUserDocId) {
+                transferHostRole();
                 // Best effort removal on unexpected exits
                 deleteDoc(doc(getUsersRef(), myUserDocId)).catch(() => {});
             }
@@ -549,6 +549,27 @@
 
         // ---------------- FIREBASE OPERATIONS ----------------
         
+        // Host migration logic
+        async function transferHostRole() {
+            if (!usersData || !myUserDocId) return;
+            const me = usersData.find(u => u.userId === myUserDocId);
+            
+            if (me && me.role === 'admin') {
+                const others = usersData.filter(u => u.userId !== myUserDocId);
+                if (others.length > 0) {
+                    // Sort ascending by joinedAt to find the least recently joined (oldest) player
+                    others.sort((a, b) => (a.joinedAt || 0) - (b.joinedAt || 0));
+                    const nextHost = others[0];
+                    try {
+                        await updateDoc(doc(getUsersRef(), nextHost.userId), { role: 'admin' });
+                        await updateDoc(doc(getRoomsRef(), currentRoomId), { hostId: nextHost.authId });
+                    } catch (e) {
+                        console.error("Failed to transfer host role:", e);
+                    }
+                }
+            }
+        }
+
         async function createRoom(roomId, username) {
             if(!currentUser) return; // Guard
             try {
@@ -574,7 +595,8 @@
                     roomId: roomId,
                     username: username,
                     budget: BUDGET_DEFAULT,
-                    role: 'admin'
+                    role: 'admin',
+                    joinedAt: Date.now()
                 });
 
                 const batch = writeBatch(db);
@@ -635,7 +657,8 @@
                     roomId: roomId,
                     username: username,
                     budget: BUDGET_DEFAULT,
-                    role: 'player'
+                    role: 'player',
+                    joinedAt: Date.now()
                 });
 
                 enterRoom(roomId);
@@ -682,6 +705,22 @@
                     }
                 });
                 usersData = tempUsers;
+                
+                // Fallback Auto-Failover: If host drops unexpectedly, oldest player auto-promotes
+                if (usersData.length > 0) {
+                    const hasAdmin = usersData.some(u => u.role === 'admin');
+                    if (!hasAdmin) {
+                        const sortedUsers = [...usersData].sort((a, b) => (a.joinedAt || 0) - (b.joinedAt || 0));
+                        if (sortedUsers[0].userId === myUserDocId) {
+                            const myIndex = usersData.findIndex(u => u.userId === myUserDocId);
+                            if (myIndex > -1) usersData[myIndex].role = 'admin'; // Assume role instantly locally
+                            
+                            updateDoc(doc(getUsersRef(), myUserDocId), { role: 'admin' }).catch(console.error);
+                            updateDoc(doc(getRoomsRef(), currentRoomId), { hostId: currentUser.uid }).catch(console.error);
+                        }
+                    }
+                }
+
                 updateUsersUI();
             }, (error) => console.error("Users listener error:", error));
 
@@ -710,6 +749,9 @@
                 if(me.role === 'admin') {
                     ui.hostControls.classList.remove('hidden');
                     ui.hostControls.classList.add('flex');
+                } else {
+                    ui.hostControls.classList.add('hidden');
+                    ui.hostControls.classList.remove('flex');
                 }
             }
 
