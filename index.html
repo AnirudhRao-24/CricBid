@@ -156,6 +156,21 @@
         </div>
     </div>
 
+    <!-- Ban Confirmation Modal -->
+    <div id="ban-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex-col items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="glass-panel p-6 rounded-2xl max-w-sm w-full text-center border border-slate-600 shadow-2xl transform scale-95 transition-transform duration-300" id="ban-modal-content">
+            <div class="w-16 h-16 bg-red-500/20 rounded-full mx-auto mb-4 flex items-center justify-center text-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)]">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
+            </div>
+            <h2 class="text-2xl font-display font-bold text-white mb-2">Ban Player?</h2>
+            <p class="text-gray-400 mb-6">Are you sure you want to permanently ban <span id="ban-player-name" class="font-bold text-white"></span>? They will not be able to rejoin.</p>
+            <div class="flex gap-3">
+                <button onclick="closeBanModal()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-xl transition-colors">Cancel</button>
+                <button id="btn-confirm-ban" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-red-500/30">Ban</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Screen 1: Lobby -->
     <div id="lobby-screen" class="flex-1 flex flex-col items-center justify-center p-4">
         <div class="glass-panel p-8 rounded-2xl w-full max-w-md text-center">
@@ -449,6 +464,7 @@
         let timerInterval = null;
         let failoverTimer = null; // Timer to prevent local-cache race condition for host assignment
         let playerToKick = null; // Stores target id for the kick modal
+        let playerToBan = null; // Stores target id for the ban modal
         let heartbeatInterval = null; // Timer for connection pinging
 
         // Media Chat State
@@ -713,6 +729,43 @@
             closeKickModal();
         });
 
+        window.openBanModal = (userId, username) => {
+            playerToBan = userId;
+            document.getElementById('ban-player-name').innerText = username;
+            
+            const modal = document.getElementById('ban-modal');
+            const content = document.getElementById('ban-modal-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 10);
+        };
+
+        window.closeBanModal = () => {
+            const modal = document.getElementById('ban-modal');
+            const content = document.getElementById('ban-modal-content');
+            modal.classList.add('opacity-0');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                playerToBan = null;
+            }, 300);
+        };
+
+        document.getElementById('btn-confirm-ban').addEventListener('click', async () => {
+            if(playerToBan) {
+                try {
+                    await updateDoc(doc(getUsersRef(), playerToBan), { isOnline: false, banned: true });
+                    showToast("Player has been permanently banned.");
+                } catch(e) {
+                    console.error("Error banning player:", e);
+                }
+            }
+            closeBanModal();
+        });
 
         // Clean up user on tab close/page refresh
         window.addEventListener('beforeunload', () => {
@@ -834,6 +887,7 @@
                     joinedAt: Date.now(),
                     isOnline: true,
                     kicked: false,
+                    banned: false,
                     peerId: null,
                     lastActive: Date.now()
                 });
@@ -889,6 +943,22 @@
 
                 roomId = foundRoomId; // Normalize to exact room ID
 
+                // Security check to prevent banned players from re-entering using new tabs/sessions
+                const usersSnap = await getDocs(getUsersRef());
+                let isBanned = false;
+                usersSnap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    if (data.roomId === roomId && data.authId === currentUser.uid && data.banned) {
+                        isBanned = true;
+                    }
+                });
+
+                if (isBanned) {
+                    showToast("You have been banned from this room!");
+                    buttons.join.disabled = false;
+                    return;
+                }
+
                 // Use session storage so different tabs can act as different players
                 let localSessionId = sessionStorage.getItem('cricbid_session');
                 if (!localSessionId) {
@@ -920,6 +990,7 @@
                         joinedAt: Date.now(),
                         isOnline: true,
                         kicked: false,
+                        banned: false,
                         peerId: null,
                         lastActive: Date.now()
                     });
@@ -990,6 +1061,14 @@
                 // Enforce Kick Action if I am targeted
                 if (me && me.kicked) {
                     showToast("You have been kicked by the host.");
+                    sessionStorage.removeItem('cricbid_session'); // Clear session
+                    setTimeout(() => window.location.reload(), 2000);
+                    return; // Stop processing further UI updates
+                }
+
+                // Enforce Ban Action if I am targeted
+                if (me && me.banned) {
+                    showToast("You have been permanently banned.");
                     sessionStorage.removeItem('cricbid_session'); // Clear session
                     setTimeout(() => window.location.reload(), 2000);
                     return; // Stop processing further UI updates
@@ -1129,14 +1208,18 @@
                 if (amIHost && !isMe && !isOffline) {
                     const safeName = u.username.replace(/'/g, "\\'");
                     adminControlsHtml = `
-                        <div class="flex gap-2 mt-3 pt-2 border-t border-slate-700/50">
+                        <div class="flex gap-1 mt-3 pt-2 border-t border-slate-700/50">
                             <button onclick="transferHostTo('${u.userId}')" class="flex-1 text-[10px] font-bold bg-blue-500/20 text-blue-400 hover:bg-blue-500/40 py-1.5 rounded transition-colors flex items-center justify-center gap-1" title="Make Host">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg> 
-                                Make Host
+                                <svg class="w-3 h-3 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg> 
+                                Host
                             </button>
                             <button onclick="openKickModal('${u.userId}', '${safeName}')" class="flex-1 text-[10px] font-bold bg-orange-500/20 text-orange-400 hover:bg-orange-500/40 py-1.5 rounded transition-colors flex items-center justify-center gap-1" title="Kick Player">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg> 
+                                <svg class="w-3 h-3 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6"></path></svg> 
                                 Kick
+                            </button>
+                            <button onclick="openBanModal('${u.userId}', '${safeName}')" class="flex-1 text-[10px] font-bold bg-red-500/20 text-red-400 hover:bg-red-500/40 py-1.5 rounded transition-colors flex items-center justify-center gap-1" title="Ban Player">
+                                <svg class="w-3 h-3 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg> 
+                                Ban
                             </button>
                         </div>
                     `;
