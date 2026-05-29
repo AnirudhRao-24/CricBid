@@ -327,27 +327,62 @@
                     <!-- Pool injected here -->
                 </div>
             </aside>
+
+            <!-- Chat Panel (Mobile Tab / Desktop Floating) -->
+            <aside id="chat-panel" class="w-full flex-1 lg:flex-none lg:fixed lg:bottom-24 lg:right-6 lg:w-[340px] lg:h-[500px] glass-panel border-t lg:border border-slate-700/50 hidden flex-col z-40 lg:rounded-2xl shadow-2xl">
+                <div class="p-3 border-b border-slate-700/50 bg-slate-800 flex justify-between items-center lg:rounded-t-2xl">
+                    <h3 class="font-display font-bold text-white flex items-center gap-2">
+                        <svg class="w-4 h-4 text-cric-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                        Room Chat
+                    </h3>
+                    <button class="text-gray-400 hover:text-white hidden lg:block transition-colors" onclick="toggleDesktopChat()">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <div id="chat-messages" class="flex-1 overflow-y-auto p-3 space-y-3 bg-slate-900/40 relative">
+                    <!-- Messages injected here -->
+                </div>
+                <div class="p-3 border-t border-slate-700/50 bg-slate-800 lg:rounded-b-2xl">
+                    <select id="chat-recipient" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 mb-2 text-xs text-gray-300 focus:outline-none focus:border-cric-green">
+                        <option value="all">Everyone</option>
+                    </select>
+                    <div class="flex gap-2">
+                        <input type="text" id="chat-input" placeholder="Type a message..." class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cric-green">
+                        <button id="btn-send-chat" class="bg-cric-green hover:bg-emerald-400 text-slate-900 px-4 rounded-lg font-bold transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            </aside>
         </main>
 
+        <!-- Desktop Floating Chat Button -->
+        <button onclick="toggleDesktopChat()" id="btn-desktop-chat" class="fixed bottom-6 right-6 w-14 h-14 bg-cric-green hover:bg-emerald-400 text-slate-900 rounded-full shadow-[0_0_20px_rgba(16,185,129,0.4)] items-center justify-center z-50 hidden lg:flex transition-transform hover:scale-105">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+            <span id="chat-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full items-center justify-center hidden border-2 border-slate-900">0</span>
+        </button>
+
         <!-- Mobile Bottom Navigation -->
-        <nav class="lg:hidden glass-panel border-t border-slate-700/50 flex justify-around items-center p-2 pb-6 z-20">
-            <button onclick="switchTab('standings')" id="tab-standings" class="flex-1 flex flex-col items-center p-2 text-gray-400 transition-colors">
+        <nav class="lg:hidden glass-panel border-t border-slate-700/50 grid grid-cols-4 items-center p-2 pb-6 z-20">
+            <button onclick="switchTab('standings')" id="tab-standings" class="flex flex-col items-center p-2 text-gray-400 transition-colors">
                 <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                 <span class="text-[10px] font-bold uppercase tracking-wider">Standings</span>
             </button>
-            <button onclick="switchTab('auction')" id="tab-auction" class="flex-1 flex flex-col items-center p-2 text-cric-green transition-colors">
+            <button onclick="switchTab('auction')" id="tab-auction" class="flex flex-col items-center p-2 text-cric-green transition-colors">
                 <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
                 <span class="text-[10px] font-bold uppercase tracking-wider">Auction</span>
             </button>
-            <button onclick="switchTab('pool')" id="tab-pool" class="flex-1 flex flex-col items-center p-2 text-gray-400 transition-colors">
+            <button onclick="switchTab('pool')" id="tab-pool" class="flex flex-col items-center p-2 text-gray-400 transition-colors">
                 <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                 <span class="text-[10px] font-bold uppercase tracking-wider">Pool</span>
             </button>
+            <button onclick="switchTab('chat')" id="tab-chat" class="flex flex-col items-center p-2 text-gray-400 transition-colors relative">
+                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                <span class="text-[10px] font-bold uppercase tracking-wider">Chat</span>
+                <span id="mobile-chat-badge" class="absolute top-1 right-2 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full items-center justify-center hidden border border-slate-900">0</span>
+            </button>
         </nav>
     </div>
-
-    <!-- Audio Elements Container for PeerJS -->
-    <div id="audio-container" class="hidden"></div>
 
     <!-- Firebase SDK Imports (Version 11.6.1 as strictly required) -->
     <script type="module">
@@ -382,6 +417,7 @@
         const getRoomsRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'rooms');
         const getUsersRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'users');
         const getPlayersRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'players');
+        const getChatRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'messages');
 
         // State
         let currentUser = null;
@@ -390,6 +426,8 @@
         let roomData = null;
         let usersData = [];
         let playersData = [];
+        let chatMessages = [];
+        let lastViewedMessageCount = 0;
         let timerInterval = null;
         let failoverTimer = null; // Timer to prevent local-cache race condition for host assignment
         let playerToKick = null; // Stores target id for the kick modal
@@ -451,34 +489,74 @@
             confirm: document.getElementById('btn-confirm-exit')
         };
 
+        // UI toggles
+        window.toggleDesktopChat = () => {
+            const panel = document.getElementById('chat-panel');
+            if(panel.classList.contains('hidden')) {
+                panel.classList.remove('hidden');
+                panel.classList.add('flex');
+                
+                const badge = document.getElementById('chat-badge');
+                if(badge) {
+                    badge.classList.add('hidden');
+                    badge.classList.remove('flex');
+                }
+                lastViewedMessageCount = chatMessages.length;
+                setTimeout(scrollToBottomChat, 100);
+            } else {
+                panel.classList.add('hidden');
+                panel.classList.remove('flex');
+            }
+        };
+
         // Mobile Tab Navigation Logic
         window.switchTab = (activeTab) => {
             const panels = {
                 standings: document.getElementById('standings-panel'),
                 auction: document.getElementById('auction-panel'),
-                pool: document.getElementById('pool-panel')
+                pool: document.getElementById('pool-panel'),
+                chat: document.getElementById('chat-panel')
             };
             const tabs = {
                 standings: document.getElementById('tab-standings'),
                 auction: document.getElementById('tab-auction'),
-                pool: document.getElementById('tab-pool')
+                pool: document.getElementById('tab-pool'),
+                chat: document.getElementById('tab-chat')
             };
 
             if(!panels.standings || !tabs.standings) return;
 
             Object.values(panels).forEach(panel => {
-                panel.classList.remove('flex');
-                panel.classList.add('hidden');
+                if(panel) {
+                    panel.classList.remove('flex');
+                    panel.classList.add('hidden');
+                }
             });
             Object.values(tabs).forEach(tab => {
-                tab.classList.remove('text-cric-green');
-                tab.classList.add('text-gray-400');
+                if(tab) {
+                    tab.classList.remove('text-cric-green');
+                    tab.classList.add('text-gray-400');
+                }
             });
 
-            panels[activeTab].classList.remove('hidden');
-            panels[activeTab].classList.add('flex');
-            tabs[activeTab].classList.remove('text-gray-400');
-            tabs[activeTab].classList.add('text-cric-green');
+            if(panels[activeTab]) {
+                panels[activeTab].classList.remove('hidden');
+                panels[activeTab].classList.add('flex');
+            }
+            if(tabs[activeTab]) {
+                tabs[activeTab].classList.remove('text-gray-400');
+                tabs[activeTab].classList.add('text-cric-green');
+            }
+
+            if(activeTab === 'chat') {
+                const mBadge = document.getElementById('mobile-chat-badge');
+                if(mBadge) {
+                    mBadge.classList.add('hidden');
+                    mBadge.classList.remove('flex');
+                }
+                lastViewedMessageCount = chatMessages.length;
+                setTimeout(scrollToBottomChat, 100);
+            }
         };
 
         // Utility: Show Toast
@@ -824,7 +902,7 @@
 
         // ---------------- LISTENERS ----------------
 
-        let unsubscribeRooms, unsubscribeUsers, unsubscribePlayers;
+        let unsubscribeRooms, unsubscribeUsers, unsubscribePlayers, unsubscribeChat;
 
         function setupListeners() {
             if(!currentUser) return;
@@ -933,6 +1011,21 @@
                 playersData = tempPlayers.sort((a, b) => a.order - b.order);
                 updatePlayersUI();
             }, (error) => console.error("Players listener error:", error));
+
+            unsubscribeChat = onSnapshot(getChatRef(), (snapshot) => {
+                const msgs = [];
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    if(data.roomId === currentRoomId) {
+                        // In memory filter: public message OR I am sender OR I am receiver
+                        if (data.receiverId === 'all' || data.senderId === myUserDocId || data.receiverId === myUserDocId) {
+                            msgs.push(data);
+                        }
+                    }
+                });
+                chatMessages = msgs.sort((a,b) => a.timestamp - b.timestamp);
+                updateChatUI();
+            }, (error) => console.error("Chat listener error:", error));
         }
 
         // ---------------- UI UPDATES ----------------
@@ -1007,10 +1100,11 @@
                         </div>
                     </div>
                     ${badgesHtml}
-                    ${adminControlsHtml}
                 `;
                 ui.standingsList.appendChild(div);
             });
+
+            updateChatRecipients();
         }
 
         function updatePlayersUI() {
@@ -1185,6 +1279,149 @@
                 ui.highestBidder.innerText = "---";
             }
         }
+
+        // ---------------- CHAT LOGIC ----------------
+        
+        function updateChatRecipients() {
+            const select = document.getElementById('chat-recipient');
+            if(!select) return;
+            const currentVal = select.value;
+            select.innerHTML = '<option value="all">Everyone</option>';
+            
+            usersData.forEach(u => {
+                if(u.userId !== myUserDocId && u.isOnline) {
+                    const opt = document.createElement('option');
+                    opt.value = u.userId;
+                    opt.innerText = `Whisper: ${u.username}`;
+                    select.appendChild(opt);
+                }
+            });
+            
+            // Restore selection if player still exists
+            if([...select.options].some(o => o.value === currentVal)) {
+                select.value = currentVal;
+            }
+        }
+
+        function updateChatUI() {
+            const container = document.getElementById('chat-messages');
+            if (!container) return;
+            
+            const chatPanel = document.getElementById('chat-panel');
+            const isHidden = chatPanel.classList.contains('hidden');
+            
+            // Notification Badge Logic
+            if (chatMessages.length > lastViewedMessageCount) {
+                if (isHidden) {
+                    const unread = chatMessages.length - lastViewedMessageCount;
+                    const badge = document.getElementById('chat-badge');
+                    const mobileBadge = document.getElementById('mobile-chat-badge'); 
+                    
+                    if(badge) {
+                        badge.innerText = unread > 9 ? '9+' : unread;
+                        badge.classList.remove('hidden');
+                        badge.classList.add('flex');
+                    }
+                    if(mobileBadge) {
+                        mobileBadge.innerText = unread > 9 ? '9+' : unread;
+                        mobileBadge.classList.remove('hidden');
+                        mobileBadge.classList.add('flex');
+                    }
+                } else {
+                    lastViewedMessageCount = chatMessages.length;
+                }
+            }
+            
+            container.innerHTML = '';
+            
+            chatMessages.forEach(msg => {
+                const isMe = msg.senderId === myUserDocId;
+                const isWhisper = msg.receiverId !== 'all';
+                const isWhisperToMe = isWhisper && msg.receiverId === myUserDocId;
+                
+                const div = document.createElement('div');
+                div.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} w-full mb-3`;
+                
+                let labelText = isMe ? 'Me' : msg.senderName;
+                if (isWhisper) {
+                    if (isWhisperToMe) {
+                        labelText = `Whisper from ${msg.senderName}`;
+                    } else {
+                        labelText = `Whisper to ${msg.receiverName}`;
+                    }
+                }
+                
+                let bubbleClasses = isMe 
+                    ? 'bg-cric-green text-slate-900 rounded-lg rounded-tr-none' 
+                    : 'bg-slate-700 text-white rounded-lg rounded-tl-none';
+                    
+                if (isWhisper) {
+                    bubbleClasses = isMe
+                        ? 'bg-purple-500 text-white rounded-lg rounded-tr-none border border-purple-400 shadow-[0_0_10px_rgba(168,85,247,0.3)]'
+                        : 'bg-purple-900/80 text-purple-100 rounded-lg rounded-tl-none border border-purple-500/50 shadow-[0_0_10px_rgba(168,85,247,0.3)]';
+                }
+                
+                div.innerHTML = `
+                    <span class="text-[10px] ${isWhisper ? 'text-purple-400 font-bold' : 'text-gray-400'} mb-0.5 ml-1 mr-1">${labelText}</span>
+                    <div class="px-3 py-2 text-sm shadow-sm inline-block max-w-[85%] break-words ${bubbleClasses}">
+                        ${msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+            
+            scrollToBottomChat();
+        }
+
+        function scrollToBottomChat() {
+            const container = document.getElementById('chat-messages');
+            if(container) {
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+
+        window.sendChatMessage = async () => {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if(!text || !currentUser || !currentRoomId) return;
+            
+            const select = document.getElementById('chat-recipient');
+            const receiverId = select.value;
+            const receiverName = receiverId === 'all' ? 'Everyone' : select.options[select.selectedIndex].text.replace('Whisper: ', '');
+            
+            const me = usersData.find(u => u.userId === myUserDocId);
+            if(!me) return;
+            
+            try {
+                input.value = ''; // clear early for responsive feel
+                const msgRef = doc(getChatRef());
+                await setDoc(msgRef, {
+                    id: msgRef.id,
+                    roomId: currentRoomId,
+                    senderId: myUserDocId,
+                    senderName: me.username,
+                    receiverId: receiverId,
+                    receiverName: receiverName,
+                    text: text,
+                    timestamp: Date.now()
+                });
+            } catch(e) {
+                console.error("Chat send error:", e);
+                showToast("Failed to send message");
+            }
+        };
+
+        // Init Chat Inputs
+        setTimeout(() => {
+            const chatInput = document.getElementById('chat-input');
+            const sendBtn = document.getElementById('btn-send-chat');
+            if(chatInput && sendBtn) {
+                chatInput.addEventListener('keypress', (e) => {
+                    if(e.key === 'Enter') sendChatMessage();
+                });
+                sendBtn.addEventListener('click', sendChatMessage);
+            }
+        }, 1000);
 
         function getFlagEmoji(countryCode) {
             const flags = { 'IND': '🇮🇳', 'AUS': '🇦🇺', 'ENG': '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'AFG': '🇦🇫', 'RSA': '🇿🇦', 'NZ': '🇳🇿', 'PAK': '🇵🇰' };
