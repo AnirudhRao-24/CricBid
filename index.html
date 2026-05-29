@@ -14,6 +14,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- PeerJS for Voice Chat -->
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     
     <script>
@@ -79,6 +80,9 @@
     </style>
 </head>
 <body class="min-h-screen flex flex-col font-sans">
+
+    <!-- Container for incoming Voice Chat streams -->
+    <div id="audio-container" class="hidden"></div>
 
     <!-- Dynamic PWA Installation Script -->
     <script>
@@ -357,9 +361,9 @@
         </main>
 
         <!-- Desktop Floating Chat Button -->
-        <button onclick="toggleDesktopChat()" id="btn-desktop-chat" class="fixed bottom-6 right-6 w-14 h-14 bg-cric-green hover:bg-emerald-400 text-slate-900 rounded-full shadow-[0_0_20px_rgba(16,185,129,0.4)] items-center justify-center z-50 hidden lg:flex transition-transform hover:scale-105">
+        <button onclick="toggleDesktopChat()" id="btn-desktop-chat" class="fixed bottom-6 right-6 w-14 h-14 bg-cric-green hover:bg-emerald-400 text-slate-900 rounded-full shadow-[0_0_20px_rgba(16,185,129,0.4)] items-center justify-center z-[100] hidden lg:flex transition-transform hover:scale-105">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
-            <span id="chat-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full items-center justify-center hidden border-2 border-slate-900">0</span>
+            <span id="chat-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center hidden border-2 border-slate-900">0</span>
         </button>
 
         <!-- Mobile Bottom Navigation -->
@@ -379,7 +383,7 @@
             <button onclick="switchTab('chat')" id="tab-chat" class="flex flex-col items-center p-2 text-gray-400 transition-colors relative">
                 <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
                 <span class="text-[10px] font-bold uppercase tracking-wider">Chat</span>
-                <span id="mobile-chat-badge" class="absolute top-1 right-2 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full items-center justify-center hidden border border-slate-900">0</span>
+                <span id="mobile-chat-badge" class="absolute top-1 right-2 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center hidden border border-slate-900">0</span>
             </button>
         </nav>
     </div>
@@ -1012,6 +1016,7 @@
                 updatePlayersUI();
             }, (error) => console.error("Players listener error:", error));
 
+            // Setup Chat Listener
             unsubscribeChat = onSnapshot(getChatRef(), (snapshot) => {
                 const msgs = [];
                 snapshot.forEach(docSnap => {
@@ -1100,6 +1105,7 @@
                         </div>
                     </div>
                     ${badgesHtml}
+                    ${adminControlsHtml}
                 `;
                 ui.standingsList.appendChild(div);
             });
@@ -1475,7 +1481,6 @@
                     audio.id = 'audio-' + call.peer;
                     audio.srcObject = remoteStream;
                     audio.autoplay = true;
-                    // Don't append muted attribute, we want to hear them!
                     document.getElementById('audio-container').appendChild(audio);
                 }
             });
