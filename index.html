@@ -311,7 +311,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
-        import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, onSnapshot, writeBatch, serverTimestamp, deleteDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, onSnapshot, writeBatch, serverTimestamp, deleteDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
         // Fetch Environment variables for robust multi-tenant operation
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -556,8 +556,16 @@
             try {
                 buttons.join.disabled = true;
                 
-                const roomSnap = await getDoc(doc(getRoomsRef(), roomId));
-                if (!roomSnap.exists()) {
+                // Workaround for specific sandbox constraints: Fetch collection to find the room
+                const roomsSnap = await getDocs(getRoomsRef());
+                let roomExists = false;
+                roomsSnap.forEach(docSnap => {
+                    if (docSnap.id === roomId) {
+                        roomExists = true;
+                    }
+                });
+
+                if (!roomExists) {
                     showToast("Room not found!");
                     buttons.join.disabled = false;
                     return;
