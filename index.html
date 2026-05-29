@@ -14,6 +14,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     
     <script>
         tailwind.config = {
@@ -206,10 +207,19 @@
             </div>
             
             <div class="flex items-center gap-4">
-                <div class="text-right">
+                <div class="text-right hidden sm:block">
                     <p class="text-xs text-gray-400 uppercase tracking-wider">My Budget</p>
                     <p id="ui-my-budget" class="font-display font-bold text-xl text-cric-gold">₹ 120.00 Cr</p>
                 </div>
+                
+                <!-- Voice Chat Toggle -->
+                <button id="btn-mic" class="bg-red-500/20 text-red-400 hover:bg-slate-600/50 p-2.5 rounded-lg transition-colors border border-slate-700/50 shadow-lg" title="Toggle Microphone">
+                    <!-- Mic Off Icon (Default) -->
+                    <svg id="icon-mic-off" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11v1a7 7 0 01-14 0v-1m14 0c0 1.93-.784 3.682-2.05 4.95l-1.414-1.414A5.002 5.002 0 0017 12v-1m-4 8v4m-4-4v4m4-4H8m4-11a3 3 0 00-3 3v2.586L4.293 4.293A1 1 0 002.88 5.707l16.414 16.414a1 1 0 001.414-1.414l-9.121-9.121A3 3 0 0012 8z"></path></svg>
+                    <!-- Mic On Icon -->
+                    <svg id="icon-mic-on" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+                </button>
+
                 <button id="btn-leave" class="bg-red-500/20 text-red-400 hover:bg-red-500/30 p-2 rounded-lg transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                 </button>
@@ -336,6 +346,9 @@
         </nav>
     </div>
 
+    <!-- Audio Elements Container for PeerJS -->
+    <div id="audio-container" class="hidden"></div>
+
     <!-- Firebase SDK Imports (Version 11.6.1 as strictly required) -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
@@ -380,6 +393,13 @@
         let timerInterval = null;
         let failoverTimer = null; // Timer to prevent local-cache race condition for host assignment
         let playerToKick = null; // Stores target id for the kick modal
+
+        // Voice Chat State
+        let peer = null;
+        let myPeerId = null;
+        let localStream = null;
+        let connectedPeers = new Set();
+        let isMicMuted = true;
 
         // Constants
         const BUDGET_DEFAULT = 120.0;
@@ -694,7 +714,8 @@
                     role: 'admin',
                     joinedAt: Date.now(),
                     isOnline: true,
-                    kicked: false
+                    kicked: false,
+                    peerId: null
                 });
 
                 const batch = writeBatch(db);
@@ -764,7 +785,8 @@
                     await updateDoc(userRef, {
                         username: username,
                         isOnline: true,
-                        kicked: false
+                        kicked: false,
+                        peerId: null
                     });
                 } else {
                     // Brand new user
@@ -777,7 +799,8 @@
                         role: 'player',
                         joinedAt: Date.now(),
                         isOnline: true,
-                        kicked: false
+                        kicked: false,
+                        peerId: null
                     });
                 }
 
@@ -796,6 +819,7 @@
             ui.roomCode.innerText = roomId;
             
             setupListeners();
+            initVoiceChat();
         }
 
         // ---------------- LISTENERS ----------------
@@ -872,6 +896,28 @@
                         }
                     }
                 }
+
+                // --- Voice Chat Mesh Network Logic ---
+                if (peer && myPeerId) {
+                    usersData.forEach(u => {
+                        // Connect to new users
+                        if (u.userId !== myUserDocId && u.isOnline && u.peerId && !connectedPeers.has(u.peerId)) {
+                            const me = usersData.find(m => m.userId === myUserDocId);
+                            // To prevent duplicate connections, only the newer user calls the older users
+                            if (me && (me.joinedAt > u.joinedAt || (me.joinedAt === u.joinedAt && myUserDocId > u.userId))) {
+                                makeCall(u.peerId);
+                            }
+                        }
+                        
+                        // Disconnect offline users
+                        if (!u.isOnline && u.peerId && connectedPeers.has(u.peerId)) {
+                            const audio = document.getElementById('audio-' + u.peerId);
+                            if (audio) audio.remove();
+                            connectedPeers.delete(u.peerId);
+                        }
+                    });
+                }
+                // --- End Voice Chat Logic ---
 
                 updateUsersUI();
             }, (error) => console.error("Users listener error:", error));
@@ -1144,6 +1190,91 @@
             const flags = { 'IND': '🇮🇳', 'AUS': '🇦🇺', 'ENG': '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'AFG': '🇦🇫', 'RSA': '🇿🇦', 'NZ': '🇳🇿', 'PAK': '🇵🇰' };
             return flags[countryCode] || '🏳️';
         }
+
+        // ---------------- VOICE CHAT LOGIC ----------------
+
+        async function initVoiceChat() {
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                
+                // Start muted
+                localStream.getAudioTracks().forEach(track => track.enabled = false);
+                
+                peer = new Peer(); // Creates a connection to the public PeerJS server
+                
+                peer.on('open', (id) => {
+                    myPeerId = id;
+                    // Save my Peer ID to Firestore so others can call me
+                    updateDoc(doc(getUsersRef(), myUserDocId), { peerId: myPeerId }).catch(console.error);
+                });
+
+                peer.on('call', (call) => {
+                    // Answer incoming calls automatically
+                    call.answer(localStream);
+                    handleCallStream(call);
+                });
+                
+                peer.on('error', (err) => {
+                    console.error("PeerJS Error:", err);
+                });
+                
+            } catch (err) {
+                console.error("Microphone access denied or error:", err);
+                showToast("Mic access denied. Voice chat disabled.");
+            }
+        }
+
+        function makeCall(remotePeerId) {
+            if (!localStream || !peer) return;
+            const call = peer.call(remotePeerId, localStream);
+            handleCallStream(call);
+        }
+
+        function handleCallStream(call) {
+            connectedPeers.add(call.peer);
+            call.on('stream', (remoteStream) => {
+                if (!document.getElementById('audio-' + call.peer)) {
+                    const audio = document.createElement('audio');
+                    audio.id = 'audio-' + call.peer;
+                    audio.srcObject = remoteStream;
+                    audio.autoplay = true;
+                    // Don't append muted attribute, we want to hear them!
+                    document.getElementById('audio-container').appendChild(audio);
+                }
+            });
+
+            call.on('close', () => {
+                const audio = document.getElementById('audio-' + call.peer);
+                if (audio) audio.remove();
+                connectedPeers.delete(call.peer);
+            });
+        }
+
+        document.getElementById('btn-mic').addEventListener('click', () => {
+            if (!localStream) {
+                showToast("Microphone is not connected!");
+                return;
+            }
+            
+            isMicMuted = !isMicMuted;
+            localStream.getAudioTracks().forEach(track => track.enabled = !isMicMuted);
+            
+            const btn = document.getElementById('btn-mic');
+            const iconOn = document.getElementById('icon-mic-on');
+            const iconOff = document.getElementById('icon-mic-off');
+            
+            if (isMicMuted) {
+                iconOn.classList.add('hidden');
+                iconOff.classList.remove('hidden');
+                btn.classList.add('bg-red-500/20', 'text-red-400');
+                btn.classList.remove('bg-cric-green/20', 'text-cric-green');
+            } else {
+                iconOn.classList.remove('hidden');
+                iconOff.classList.add('hidden');
+                btn.classList.remove('bg-red-500/20', 'text-red-400');
+                btn.classList.add('bg-cric-green/20', 'text-cric-green');
+            }
+        });
 
         // ---------------- TIMER LOGIC ----------------
 
