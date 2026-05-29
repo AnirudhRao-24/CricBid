@@ -207,7 +207,7 @@
         <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
             
             <!-- Left Sidebar: Team & Leaderboard -->
-            <aside class="w-full lg:w-1/4 glass-panel border-r border-slate-700/50 overflow-y-auto hidden lg:flex flex-col p-4 z-10">
+            <aside id="standings-panel" class="w-full lg:w-1/4 glass-panel border-r border-slate-700/50 overflow-y-auto hidden lg:flex flex-col p-4 z-10">
                 <h2 class="text-lg font-display font-bold mb-4 flex items-center gap-2">
                     <svg class="w-5 h-5 text-cric-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                     Room Standings
@@ -218,7 +218,7 @@
             </aside>
 
             <!-- Center: Auction Area -->
-            <section class="flex-1 flex flex-col justify-between p-4 sm:p-8 overflow-y-auto relative z-10">
+            <section id="auction-panel" class="flex-1 flex flex-col justify-between p-4 sm:p-8 overflow-y-auto relative z-10 lg:flex">
                 
                 <!-- Status/Timer -->
                 <div class="flex justify-center mb-6">
@@ -295,7 +295,7 @@
             </section>
 
             <!-- Right Sidebar: Upcoming Players -->
-            <aside class="w-full lg:w-1/4 glass-panel border-l border-slate-700/50 overflow-y-auto hidden lg:flex flex-col p-4 z-10">
+            <aside id="pool-panel" class="w-full lg:w-1/4 glass-panel border-l border-slate-700/50 overflow-y-auto hidden lg:flex flex-col p-4 z-10">
                 <h2 class="text-lg font-display font-bold mb-4 flex items-center gap-2">
                     <svg class="w-5 h-5 text-cric-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                     Auction Pool
@@ -305,6 +305,22 @@
                 </div>
             </aside>
         </main>
+
+        <!-- Mobile Bottom Navigation -->
+        <nav class="lg:hidden glass-panel border-t border-slate-700/50 flex justify-around items-center p-2 pb-6 z-20">
+            <button onclick="switchTab('standings')" id="tab-standings" class="flex-1 flex flex-col items-center p-2 text-gray-400 transition-colors">
+                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                <span class="text-[10px] font-bold uppercase tracking-wider">Standings</span>
+            </button>
+            <button onclick="switchTab('auction')" id="tab-auction" class="flex-1 flex flex-col items-center p-2 text-cric-green transition-colors">
+                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
+                <span class="text-[10px] font-bold uppercase tracking-wider">Auction</span>
+            </button>
+            <button onclick="switchTab('pool')" id="tab-pool" class="flex-1 flex flex-col items-center p-2 text-gray-400 transition-colors">
+                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                <span class="text-[10px] font-bold uppercase tracking-wider">Pool</span>
+            </button>
+        </nav>
     </div>
 
     <!-- Firebase SDK Imports (Version 11.6.1 as strictly required) -->
@@ -398,6 +414,36 @@
             content: document.getElementById('exit-modal-content'),
             cancel: document.getElementById('btn-cancel-exit'),
             confirm: document.getElementById('btn-confirm-exit')
+        };
+
+        // Mobile Tab Navigation Logic
+        window.switchTab = (activeTab) => {
+            const panels = {
+                standings: document.getElementById('standings-panel'),
+                auction: document.getElementById('auction-panel'),
+                pool: document.getElementById('pool-panel')
+            };
+            const tabs = {
+                standings: document.getElementById('tab-standings'),
+                auction: document.getElementById('tab-auction'),
+                pool: document.getElementById('tab-pool')
+            };
+
+            if(!panels.standings || !tabs.standings) return;
+
+            Object.values(panels).forEach(panel => {
+                panel.classList.remove('flex');
+                panel.classList.add('hidden');
+            });
+            Object.values(tabs).forEach(tab => {
+                tab.classList.remove('text-cric-green');
+                tab.classList.add('text-gray-400');
+            });
+
+            panels[activeTab].classList.remove('hidden');
+            panels[activeTab].classList.add('flex');
+            tabs[activeTab].classList.remove('text-gray-400');
+            tabs[activeTab].classList.add('text-cric-green');
         };
 
         // Utility: Show Toast
