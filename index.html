@@ -81,7 +81,6 @@
 
     <!-- Dynamic PWA Installation Script -->
     <script>
-        // 1. Generate Manifest for App Installation
         const manifestJSON = {
             "name": "CricBid Live Auction",
             "short_name": "CricBid",
@@ -108,12 +107,11 @@
         manifestLink.href = manifestData;
         document.head.appendChild(manifestLink);
 
-        // 2. Register Minimal Service Worker (Required for Android/Desktop installation prompts)
         if ('serviceWorker' in navigator) {
             const swCode = `
                 self.addEventListener('install', (e) => self.skipWaiting());
                 self.addEventListener('activate', (e) => self.clients.claim());
-                self.addEventListener('fetch', (e) => { /* Network first, fallback to cache not needed for this real-time app */ });
+                self.addEventListener('fetch', (e) => { });
             `;
             const blob = new Blob([swCode], {type: 'application/javascript'});
             const blobUrl = URL.createObjectURL(blob);
@@ -309,20 +307,13 @@
 
     <!-- Firebase SDK Imports -->
     <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js';
-        import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js';
-        import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, onSnapshot, writeBatch, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js';
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+        import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, onSnapshot, writeBatch, serverTimestamp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-        // Configuration matching user's specific Firebase config
-        const firebaseConfig = {
-            apiKey: "AIzaSyCAd5OJKmVW2aSWgDogBg3lSpj1uzPxGrk",
-            authDomain: "cricbid-839eb.firebaseapp.com",
-            projectId: "cricbid-839eb",
-            storageBucket: "cricbid-839eb.firebasestorage.app",
-            messagingSenderId: "521652177425",
-            appId: "1:521652177425:web:c33adfb7ea97360d6affb0",
-            measurementId: "G-7WHCC3VSTW"
-        };
+        // Load config from environment or fallback to empty object
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -338,8 +329,8 @@
         let timerInterval = null;
 
         // Constants
-        const BUDGET_DEFAULT = 120.0; // Changed to 120 Cr
-        const TIMER_SECONDS = 10; // Changed to 10 seconds
+        const BUDGET_DEFAULT = 120.0; // 120 Cr
+        const TIMER_SECONDS = 10; // 10 seconds
 
         // Base Data Seed
         const DUMMY_PLAYERS = [
@@ -404,7 +395,11 @@
         // Initialize App & Auth
         async function init() {
             try {
-                await signInAnonymously(auth);
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
             } catch (e) {
                 console.error("Auth error:", e);
                 showToast("Connection failed. Try refreshing.");
@@ -441,7 +436,6 @@
         // Exit Modal Listeners
         buttons.leave.addEventListener('click', () => {
             modalElements.modal.classList.remove('hidden');
-            // Slight delay to allow CSS transitions to trigger
             setTimeout(() => {
                 modalElements.modal.classList.remove('opacity-0');
                 modalElements.content.classList.remove('scale-95');
@@ -464,10 +458,10 @@
 
         // ---------------- FIREBASE OPERATIONS ----------------
         
-        // Strict Path Builders (Clean root paths for GitHub deployment)
-        const getRoomsRef = () => collection(db, 'rooms');
-        const getUsersRef = () => collection(db, 'users');
-        const getPlayersRef = () => collection(db, 'players');
+        // Strict Path Builders conforming to platform rules
+        const getRoomsRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'rooms');
+        const getUsersRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'users');
+        const getPlayersRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'players');
 
         async function createRoom(roomId, username) {
             try {
@@ -588,6 +582,7 @@
                 });
                 usersData = tempUsers;
                 updateUsersUI();
+                updateRoomUI(); // Fix: Force central UI update when budgets/users change
             }, (error) => console.error("Users listener error:", error));
 
             unsubscribePlayers = onSnapshot(getPlayersRef(), (snapshot) => {
@@ -600,6 +595,7 @@
                 });
                 playersData = tempPlayers.sort((a, b) => a.order - b.order);
                 updatePlayersUI();
+                updateRoomUI(); // Fix: Force central UI update so clients instantly see sold/unsold transitions
             }, (error) => console.error("Players listener error:", error));
         }
 
@@ -787,7 +783,9 @@
                     const owner = usersData.find(u => u.userId === currentPlayer.ownerId);
                     const ownerName = owner ? owner.username : "Unknown";
                     
-                    if (!ui.soldOverlay.innerHTML.includes(currentPlayer.name)) {
+                    // Fix: Use dataset to ensure we redraw and fire confetti exactly once per sold player
+                    if (ui.soldOverlay.dataset.state !== `sold-${currentPlayer.playerId}`) {
+                        ui.soldOverlay.dataset.state = `sold-${currentPlayer.playerId}`;
                         ui.soldOverlay.innerHTML = `
                             <span class="hidden">${currentPlayer.name}</span>
                             <div class="animate-stamp flex flex-col items-center justify-center">
@@ -798,12 +796,14 @@
                                 </div>
                             </div>
                         `;
+                        triggerConfetti(); // Trigger for ALL devices when state changes
                     }
                 } else if(currentPlayer.status === 'unsold') {
                     ui.soldOverlay.classList.remove('hidden');
                     ui.soldOverlay.classList.add('flex', 'animate-fade-in-bg');
                     
-                    if (!ui.soldOverlay.innerHTML.includes(currentPlayer.name)) {
+                    if (ui.soldOverlay.dataset.state !== `unsold-${currentPlayer.playerId}`) {
+                        ui.soldOverlay.dataset.state = `unsold-${currentPlayer.playerId}`;
                         ui.soldOverlay.innerHTML = `
                             <span class="hidden">${currentPlayer.name}</span>
                             <div class="animate-stamp flex flex-col items-center justify-center">
@@ -815,6 +815,7 @@
                     ui.soldOverlay.classList.add('hidden');
                     ui.soldOverlay.classList.remove('flex', 'animate-fade-in-bg');
                     ui.soldOverlay.innerHTML = ''; 
+                    ui.soldOverlay.dataset.state = '';
                 }
 
             } else {
@@ -852,6 +853,7 @@
                 }
 
                 if(diff <= 0) {
+                    ui.timer.innerText = '00';
                     stopTimer();
                     handleTimerEnd();
                 }
@@ -900,11 +902,12 @@
                 return;
             }
 
-            const now = Date.now();
             let newEndTime = roomData.timerEndTime;
-            const remaining = newEndTime - now;
-            if(remaining < 5000) {
-                newEndTime = now + 10000; 
+            
+            // Fix: Calculate safe end time to prevent lagging device clocks from shrinking the timer
+            const proposedEndTime = Date.now() + 10000;
+            if (proposedEndTime > newEndTime) {
+                newEndTime = proposedEndTime;
             }
 
             try {
@@ -1007,7 +1010,7 @@
                     });
                 }
 
-                triggerConfetti();
+                // triggerConfetti() removed from here; it's now handled reliably in updateRoomUI() for everyone
 
                 setTimeout(() => {
                     const me = usersData.find(u => u.userId === myUserDocId);
