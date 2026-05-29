@@ -82,7 +82,7 @@
         .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
     </style>
 </head>
-<body class="fixed inset-0 w-full flex flex-col font-sans overflow-hidden bg-cric-dark">
+<body class="fixed inset-0 w-full flex flex-col font-sans overflow-hidden bg-cric-dark h-[100dvh]">
 
     <!-- Dynamic PWA Installation Script -->
     <script>
@@ -212,7 +212,7 @@
     </div>
 
     <!-- Screen 2: Auction Room -->
-    <div id="auction-screen" class="hidden flex-1 flex-col w-full min-h-0 overflow-hidden">
+    <div id="auction-screen" class="hidden flex-1 flex-col w-full h-full min-h-0 overflow-hidden">
         
         <!-- Header -->
         <header class="glass-panel border-b border-slate-700/50 p-3 sm:p-4 flex justify-between items-center z-10 relative shrink-0">
@@ -233,17 +233,13 @@
                 
                 <!-- Voice Chat Toggle -->
                 <button id="btn-mic" class="bg-red-500/20 text-red-400 hover:bg-slate-600/50 p-2 sm:p-2.5 rounded-lg transition-colors border border-slate-700/50 shadow-lg" title="Toggle Microphone">
-                    <!-- Mic Off Icon (Default) -->
                     <svg id="icon-mic-off" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11v1a7 7 0 01-14 0v-1m14 0c0 1.93-.784 3.682-2.05 4.95l-1.414-1.414A5.002 5.002 0 0017 12v-1m-4 8v4m-4-4v4m4-4H8m4-11a3 3 0 00-3 3v2.586L4.293 4.293A1 1 0 002.88 5.707l16.414 16.414a1 1 0 001.414-1.414l-9.121-9.121A3 3 0 0012 8z"></path></svg>
-                    <!-- Mic On Icon -->
                     <svg id="icon-mic-on" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
                 </button>
 
                 <!-- Video Chat Toggle -->
                 <button id="btn-video" class="bg-red-500/20 text-red-400 hover:bg-slate-600/50 p-2 sm:p-2.5 rounded-lg transition-colors border border-slate-700/50 shadow-lg" title="Toggle Camera">
-                    <!-- Video Off Icon (Default) -->
                     <svg id="icon-video-off" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path><line x1="3" y1="3" x2="21" y2="21" stroke-width="2" stroke-linecap="round"></line></svg>
-                    <!-- Video On Icon -->
                     <svg id="icon-video-on" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
                 </button>
 
@@ -254,7 +250,7 @@
         </header>
 
         <!-- Main Content -->
-        <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative min-h-0 pb-[80px] lg:pb-0">
+        <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative min-h-0">
             
             <!-- Left Sidebar: Team & Leaderboard -->
             <aside id="standings-panel" class="w-full lg:w-1/4 glass-panel border-r border-slate-700/50 overflow-y-auto hidden lg:flex flex-col p-4 z-10">
