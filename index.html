@@ -435,6 +435,7 @@
         let timerInterval = null;
         let failoverTimer = null; // Timer to prevent local-cache race condition for host assignment
         let playerToKick = null; // Stores target id for the kick modal
+        let heartbeatInterval = null; // Timer for connection pinging
 
         // Voice Chat State
         let peer = null;
@@ -707,6 +708,27 @@
             }
         });
 
+        // Handle tab switching, app minimizing, and mobile force closes
+        document.addEventListener('visibilitychange', () => {
+            if (myUserDocId) {
+                const isVisible = document.visibilityState === 'visible';
+                updateDoc(doc(getUsersRef(), myUserDocId), { 
+                    isOnline: isVisible,
+                    lastActive: Date.now()
+                }).catch(() => {});
+            }
+        });
+
+        // Handle network disconnections
+        window.addEventListener('offline', () => {
+            if (myUserDocId) updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: false }).catch(() => {});
+        });
+
+        // Handle network reconnections
+        window.addEventListener('online', () => {
+            if (myUserDocId) updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: true, lastActive: Date.now() }).catch(() => {});
+        });
+
         // ---------------- FIREBASE OPERATIONS ----------------
         
         // Host migration logic
@@ -716,7 +738,7 @@
             
             if (me && me.role === 'admin') {
                 // Find others who are actually online
-                const others = usersData.filter(u => u.userId !== myUserDocId && u.isOnline !== false);
+                const others = usersData.filter(u => u.userId !== myUserDocId && u._computedOnline);
                 if (others.length > 0) {
                     // Sort ascending by joinedAt to find the least recently joined (oldest) player
                     others.sort((a, b) => {
@@ -797,7 +819,8 @@
                     joinedAt: Date.now(),
                     isOnline: true,
                     kicked: false,
-                    peerId: null
+                    peerId: null,
+                    lastActive: Date.now()
                 });
 
                 const batch = writeBatch(db);
@@ -882,7 +905,8 @@
                         joinedAt: Date.now(),
                         isOnline: true,
                         kicked: false,
-                        peerId: null
+                        peerId: null,
+                        lastActive: Date.now()
                     });
                 }
 
@@ -902,6 +926,17 @@
             
             setupListeners();
             initVoiceChat();
+            startHeartbeat();
+        }
+
+        function startHeartbeat() {
+            if (heartbeatInterval) clearInterval(heartbeatInterval);
+            heartbeatInterval = setInterval(() => {
+                // Ping the server every 10 seconds to confirm we are still alive
+                if (myUserDocId && document.visibilityState === 'visible') {
+                    updateDoc(doc(getUsersRef(), myUserDocId), { lastActive: Date.now() }).catch(()=>{});
+                }
+            }, 10000); 
         }
 
         // ---------------- LISTENERS ----------------
@@ -923,9 +958,13 @@
 
             unsubscribeUsers = onSnapshot(getUsersRef(), (snapshot) => {
                 const tempUsers = [];
+                const now = Date.now();
                 snapshot.forEach(docSnap => {
                     const data = docSnap.data();
                     if(data.roomId === currentRoomId) {
+                        // Heartbeat threshold: 35 seconds. Honors explicit offline status too.
+                        const isHeartbeatAlive = data.lastActive ? (now - data.lastActive < 35000) : true;
+                        data._computedOnline = data.isOnline !== false && isHeartbeatAlive;
                         tempUsers.push(data);
                     }
                 });
@@ -942,7 +981,7 @@
                 }
 
                 // Fallback Auto-Failover: Debounced to prevent local-cache race condition
-                const onlineUsers = usersData.filter(u => u.isOnline !== false);
+                const onlineUsers = usersData.filter(u => u._computedOnline);
                 if (onlineUsers.length > 0) {
                     const hasAdmin = onlineUsers.some(u => u.role === 'admin');
                     
@@ -950,7 +989,7 @@
                         // Wait 2 seconds before claiming host incase of temporary disconnects or cache issues
                         if (!failoverTimer) {
                             failoverTimer = setTimeout(() => {
-                                const currentOnline = usersData.filter(u => u.isOnline !== false);
+                                const currentOnline = usersData.filter(u => u._computedOnline);
                                 if (!currentOnline.some(u => u.role === 'admin') && currentOnline.length > 0) {
                                     const sortedUsers = [...currentOnline].sort((a, b) => {
                                         const timeA = a.joinedAt || 0;
@@ -983,7 +1022,7 @@
                 if (peer && myPeerId) {
                     usersData.forEach(u => {
                         // Connect to new users
-                        if (u.userId !== myUserDocId && u.isOnline && u.peerId && !connectedPeers.has(u.peerId)) {
+                        if (u.userId !== myUserDocId && u._computedOnline && u.peerId && !connectedPeers.has(u.peerId)) {
                             const me = usersData.find(m => m.userId === myUserDocId);
                             // To prevent duplicate connections, only the newer user calls the older users
                             if (me && (me.joinedAt > u.joinedAt || (me.joinedAt === u.joinedAt && myUserDocId > u.userId))) {
@@ -992,7 +1031,7 @@
                         }
                         
                         // Disconnect offline users
-                        if (!u.isOnline && u.peerId && connectedPeers.has(u.peerId)) {
+                        if (!u._computedOnline && u.peerId && connectedPeers.has(u.peerId)) {
                             const audio = document.getElementById('audio-' + u.peerId);
                             if (audio) audio.remove();
                             connectedPeers.delete(u.peerId);
@@ -1036,7 +1075,7 @@
         // ---------------- UI UPDATES ----------------
 
         function updateUsersUI() {
-            const onlineUsersCount = usersData.filter(u => u.isOnline !== false).length;
+            const onlineUsersCount = usersData.filter(u => u._computedOnline).length;
             ui.onlineCount.innerText = onlineUsersCount;
             
             const amIHost = usersData.find(u => u.userId === myUserDocId)?.role === 'admin';
@@ -1059,7 +1098,7 @@
             
             sortedUsers.forEach(u => {
                 const isMe = u.userId === myUserDocId;
-                const isOffline = u.isOnline === false;
+                const isOffline = !u._computedOnline;
                 const boughtPlayers = playersData.filter(p => p.ownerId === u.userId);
 
                 let badgesHtml = '';
@@ -1295,7 +1334,7 @@
             select.innerHTML = '<option value="all">Everyone</option>';
             
             usersData.forEach(u => {
-                if(u.userId !== myUserDocId && u.isOnline) {
+                if(u.userId !== myUserDocId && u._computedOnline) {
                     const opt = document.createElement('option');
                     opt.value = u.userId;
                     opt.innerText = `Whisper: ${u.username}`;
