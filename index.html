@@ -363,6 +363,7 @@
         let usersData = [];
         let playersData = [];
         let timerInterval = null;
+        let failoverTimer = null; // Timer to prevent local-cache race condition for host assignment
 
         // Constants
         const BUDGET_DEFAULT = 120.0;
@@ -528,7 +529,7 @@
         modalElements.confirm.addEventListener('click', async () => {
             if (myUserDocId) {
                 try {
-                    await transferHostRole(); // Transfer host privileges if applicable
+                    await transferHostRole(); // Transfer host privileges securely
                     // Soft exit: mark as offline instead of deleting to preserve budget and bought players
                     await updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: false });
                 } catch (e) {
@@ -558,17 +559,18 @@
                 // Find others who are actually online
                 const others = usersData.filter(u => u.userId !== myUserDocId && u.isOnline !== false);
                 if (others.length > 0) {
-                    // Strict sorting to prevent race conditions: sort by joinedAt, tie-break with userId
+                    // Sort ascending by joinedAt to find the least recently joined (oldest) player
                     others.sort((a, b) => {
                         const timeA = a.joinedAt || 0;
                         const timeB = b.joinedAt || 0;
                         if (timeA === timeB) return a.userId.localeCompare(b.userId);
                         return timeA - timeB;
                     });
+                    
                     const nextHost = others[0];
                     try {
                         const batch = writeBatch(db);
-                        batch.update(doc(getUsersRef(), myUserDocId), { role: 'player' }); // Surrender role to prevent dual hosts
+                        batch.update(doc(getUsersRef(), myUserDocId), { role: 'player' }); // Surrender role
                         batch.update(doc(getUsersRef(), nextHost.userId), { role: 'admin' });
                         batch.update(doc(getRoomsRef(), currentRoomId), { hostId: nextHost.authId });
                         await batch.commit();
@@ -597,7 +599,14 @@
                     createdAt: serverTimestamp()
                 });
 
-                myUserDocId = currentUser.uid + "_" + roomId; 
+                // Generate a local session ID so multiple tabs can act as different users even if sharing Auth ID
+                let localSessionId = sessionStorage.getItem('cricbid_session');
+                if (!localSessionId) {
+                    localSessionId = Math.random().toString(36).substring(2, 9);
+                    sessionStorage.setItem('cricbid_session', localSessionId);
+                }
+
+                myUserDocId = currentUser.uid + "_" + localSessionId + "_" + roomId; 
                 await setDoc(doc(getUsersRef(), myUserDocId), {
                     userId: myUserDocId,
                     authId: currentUser.uid,
@@ -660,7 +669,14 @@
 
                 roomId = foundRoomId; // Normalize to exact room ID
 
-                myUserDocId = currentUser.uid + "_" + roomId;
+                // Use session storage so different tabs can act as different players
+                let localSessionId = sessionStorage.getItem('cricbid_session');
+                if (!localSessionId) {
+                    localSessionId = Math.random().toString(36).substring(2, 9);
+                    sessionStorage.setItem('cricbid_session', localSessionId);
+                }
+
+                myUserDocId = currentUser.uid + "_" + localSessionId + "_" + roomId;
                 const userRef = doc(getUsersRef(), myUserDocId);
                 const userSnap = await getDoc(userRef);
 
@@ -708,7 +724,6 @@
         function setupListeners() {
             if(!currentUser) return;
 
-            // Notice standard non-complex query collection fetching here. Filtering is done locally.
             unsubscribeRooms = onSnapshot(getRoomsRef(), (snapshot) => {
                 snapshot.forEach(docSnap => {
                     const data = docSnap.data();
@@ -729,24 +744,41 @@
                 });
                 usersData = tempUsers;
                 
-                // Fallback Auto-Failover: If host drops unexpectedly, oldest online player auto-promotes
+                // Fallback Auto-Failover: Debounced to prevent local-cache race condition
                 const onlineUsers = usersData.filter(u => u.isOnline !== false);
                 if (onlineUsers.length > 0) {
                     const hasAdmin = onlineUsers.some(u => u.role === 'admin');
+                    
                     if (!hasAdmin) {
-                        const sortedUsers = [...onlineUsers].sort((a, b) => {
-                            const timeA = a.joinedAt || 0;
-                            const timeB = b.joinedAt || 0;
-                            if (timeA === timeB) return a.userId.localeCompare(b.userId);
-                            return timeA - timeB;
-                        });
-                        
-                        if (sortedUsers[0].userId === myUserDocId) {
-                            const myIndex = usersData.findIndex(u => u.userId === myUserDocId);
-                            if (myIndex > -1) usersData[myIndex].role = 'admin'; // Assume role instantly locally
-                            
-                            updateDoc(doc(getUsersRef(), myUserDocId), { role: 'admin' }).catch(console.error);
-                            updateDoc(doc(getRoomsRef(), currentRoomId), { hostId: currentUser.uid }).catch(console.error);
+                        // If we think there's no admin, wait 2 seconds. 
+                        // If it's just a local cache glitch from a new user joining, the server will sync within ms and clear this.
+                        if (!failoverTimer) {
+                            failoverTimer = setTimeout(() => {
+                                const currentOnline = usersData.filter(u => u.isOnline !== false);
+                                if (!currentOnline.some(u => u.role === 'admin') && currentOnline.length > 0) {
+                                    const sortedUsers = [...currentOnline].sort((a, b) => {
+                                        const timeA = a.joinedAt || 0;
+                                        const timeB = b.joinedAt || 0;
+                                        if (timeA === timeB) return a.userId.localeCompare(b.userId);
+                                        return timeA - timeB;
+                                    });
+                                    
+                                    if (sortedUsers[0].userId === myUserDocId) {
+                                        const myIndex = usersData.findIndex(u => u.userId === myUserDocId);
+                                        if (myIndex > -1) usersData[myIndex].role = 'admin'; // Assume role instantly locally
+                                        
+                                        updateDoc(doc(getUsersRef(), myUserDocId), { role: 'admin' }).catch(console.error);
+                                        updateDoc(doc(getRoomsRef(), currentRoomId), { hostId: currentUser.uid }).catch(console.error);
+                                    }
+                                }
+                                failoverTimer = null;
+                            }, 2000);
+                        }
+                    } else {
+                        // Server fully synced and we have an admin. Cancel any pending false-alarms.
+                        if (failoverTimer) {
+                            clearTimeout(failoverTimer);
+                            failoverTimer = null;
                         }
                     }
                 }
