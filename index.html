@@ -108,7 +108,7 @@
         manifestLink.href = manifestData;
         document.head.appendChild(manifestLink);
 
-        // 2. Register Minimal Service Worker (Required for Android/Desktop installation prompts)
+        // 2. Register Minimal Service Worker
         if ('serviceWorker' in navigator) {
             const swCode = `
                 self.addEventListener('install', (e) => self.skipWaiting());
@@ -307,26 +307,39 @@
         </main>
     </div>
 
-    <!-- Firebase SDK Imports -->
+    <!-- Firebase SDK Imports (Version 11.6.1 as strictly required) -->
     <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js';
-        import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js';
-        import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, onSnapshot, writeBatch, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js';
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+        import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, onSnapshot, writeBatch, serverTimestamp, deleteDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-        // Configuration matching user's specific Firebase config
-        const firebaseConfig = {
-            apiKey: "AIzaSyCAd5OJKmVW2aSWgDogBg3lSpj1uzPxGrk",
-            authDomain: "cricbid-839eb.firebaseapp.com",
-            projectId: "cricbid-839eb",
-            storageBucket: "cricbid-839eb.firebasestorage.app",
-            messagingSenderId: "521652177425",
-            appId: "1:521652177425:web:c33adfb7ea97360d6affb0",
-            measurementId: "G-7WHCC3VSTW"
-        };
+        // Fetch Environment variables for robust multi-tenant operation
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        let firebaseConfig;
+        
+        if (typeof __firebase_config !== 'undefined') {
+            firebaseConfig = JSON.parse(__firebase_config);
+        } else {
+            // Fallback for isolated testing
+            firebaseConfig = {
+                apiKey: "AIzaSyCAd5OJKmVW2aSWgDogBg3lSpj1uzPxGrk",
+                authDomain: "cricbid-839eb.firebaseapp.com",
+                projectId: "cricbid-839eb",
+                storageBucket: "cricbid-839eb.firebasestorage.app",
+                messagingSenderId: "521652177425",
+                appId: "1:521652177425:web:c33adfb7ea97360d6affb0",
+                measurementId: "G-7WHCC3VSTW"
+            };
+        }
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+
+        // Strict Paths corresponding to App Environment
+        const getRoomsRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'rooms');
+        const getUsersRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'users');
+        const getPlayersRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'players');
 
         // State
         let currentUser = null;
@@ -338,8 +351,8 @@
         let timerInterval = null;
 
         // Constants
-        const BUDGET_DEFAULT = 120.0; // Changed to 120 Cr
-        const TIMER_SECONDS = 10; // Changed to 10 seconds
+        const BUDGET_DEFAULT = 120.0;
+        const TIMER_SECONDS = 10;
 
         // Base Data Seed
         const DUMMY_PLAYERS = [
@@ -401,10 +414,14 @@
         // Utility: Generate Room Code
         const generateRoomCode = () => Math.random().toString(36).substring(2, 8).toUpperCase();
 
-        // Initialize App & Auth
-        async function init() {
+        // Initialize Authentication (Strictly follows RULE 3)
+        async function initAuth() {
             try {
-                await signInAnonymously(auth);
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
             } catch (e) {
                 console.error("Auth error:", e);
                 showToast("Connection failed. Try refreshing.");
@@ -441,7 +458,6 @@
         // Exit Modal Listeners
         buttons.leave.addEventListener('click', () => {
             modalElements.modal.classList.remove('hidden');
-            // Slight delay to allow CSS transitions to trigger
             setTimeout(() => {
                 modalElements.modal.classList.remove('opacity-0');
                 modalElements.content.classList.remove('scale-95');
@@ -458,18 +474,30 @@
             }, 300);
         });
 
-        modalElements.confirm.addEventListener('click', () => {
+        modalElements.confirm.addEventListener('click', async () => {
+            if (myUserDocId) {
+                try {
+                    // Remove user from the room's active user list before reloading
+                    await deleteDoc(doc(getUsersRef(), myUserDocId));
+                } catch (e) {
+                    console.error("Error removing user:", e);
+                }
+            }
             window.location.reload();
+        });
+
+        // Clean up user on tab close/page refresh
+        window.addEventListener('beforeunload', () => {
+            if (myUserDocId) {
+                // Best effort removal on unexpected exits
+                deleteDoc(doc(getUsersRef(), myUserDocId)).catch(() => {});
+            }
         });
 
         // ---------------- FIREBASE OPERATIONS ----------------
         
-        // Strict Path Builders (Clean root paths for GitHub deployment)
-        const getRoomsRef = () => collection(db, 'rooms');
-        const getUsersRef = () => collection(db, 'users');
-        const getPlayersRef = () => collection(db, 'players');
-
         async function createRoom(roomId, username) {
+            if(!currentUser) return; // Guard
             try {
                 buttons.create.disabled = true;
                 buttons.create.innerText = "Creating...";
@@ -524,6 +552,7 @@
         }
 
         async function joinRoom(roomId, username) {
+            if(!currentUser) return; // Guard
             try {
                 buttons.join.disabled = true;
                 
@@ -568,6 +597,7 @@
         function setupListeners() {
             if(!currentUser) return;
 
+            // Notice standard non-complex query collection fetching here. Filtering is done locally.
             unsubscribeRooms = onSnapshot(getRoomsRef(), (snapshot) => {
                 snapshot.forEach(docSnap => {
                     const data = docSnap.data();
@@ -923,7 +953,7 @@
 
         // Admin Actions
         document.getElementById('btn-host-start').addEventListener('click', async () => {
-            if(!roomData) return;
+            if(!currentUser || !roomData) return; // Guard
             
             const currentPlayer = playersData.find(p => p.order === roomData.currentAuctionIndex);
             
@@ -965,7 +995,7 @@
         });
 
         document.getElementById('btn-host-pause').addEventListener('click', async () => {
-            if(!roomData) return;
+            if(!currentUser || !roomData) return; // Guard
             await updateDoc(doc(getRoomsRef(), currentRoomId), {
                 status: 'paused',
                 timerEndTime: 0
@@ -973,7 +1003,7 @@
         });
 
         document.getElementById('btn-host-unsold').addEventListener('click', async () => {
-            if(!roomData) return;
+            if(!currentUser || !roomData) return; // Guard
             
             if(roomData.currentBidder) {
                 showToast("Cannot mark unsold: Bids exist!");
@@ -987,6 +1017,7 @@
         });
 
         async function markPlayerSold(playerId, price, ownerDocId) {
+            if(!currentUser) return; // Guard
             try {
                 await updateDoc(doc(getRoomsRef(), currentRoomId), {
                     status: 'paused',
@@ -1021,6 +1052,7 @@
         }
 
         async function markPlayerUnsold(playerId) {
+            if(!currentUser) return; // Guard
             try {
                 await updateDoc(doc(getRoomsRef(), currentRoomId), {
                     status: 'paused',
@@ -1063,7 +1095,7 @@
         }
 
         // Kickoff
-        init();
+        initAuth();
 
     </script>
 </body>
