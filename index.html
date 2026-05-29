@@ -81,9 +81,6 @@
 </head>
 <body class="min-h-screen flex flex-col font-sans">
 
-    <!-- Container for incoming Voice Chat streams -->
-    <div id="audio-container" class="hidden"></div>
-
     <!-- Dynamic PWA Installation Script -->
     <script>
         const manifestJSON = {
@@ -224,6 +221,14 @@
                     <svg id="icon-mic-on" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
                 </button>
 
+                <!-- Video Chat Toggle -->
+                <button id="btn-video" class="bg-red-500/20 text-red-400 hover:bg-slate-600/50 p-2.5 rounded-lg transition-colors border border-slate-700/50 shadow-lg" title="Toggle Camera">
+                    <!-- Video Off Icon (Default) -->
+                    <svg id="icon-video-off" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path><line x1="3" y1="3" x2="21" y2="21" stroke-width="2" stroke-linecap="round"></line></svg>
+                    <!-- Video On Icon -->
+                    <svg id="icon-video-on" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                </button>
+
                 <button id="btn-leave" class="bg-red-500/20 text-red-400 hover:bg-red-500/30 p-2 rounded-lg transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                 </button>
@@ -247,6 +252,15 @@
             <!-- Center: Auction Area -->
             <section id="auction-panel" class="flex-1 flex flex-col justify-between p-4 sm:p-8 overflow-y-auto relative z-10 lg:flex">
                 
+                <!-- Video Gallery (Mesh Network) -->
+                <div id="video-gallery" class="flex justify-center flex-wrap gap-4 mb-4">
+                    <!-- Local Video -->
+                    <div class="relative group flex flex-col items-center">
+                       <video id="local-video" class="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover border-2 border-slate-600 bg-slate-800 shadow-md" autoplay muted playsinline></video>
+                       <span class="absolute bottom-0 bg-black/70 text-white text-[10px] px-2 py-0.5 rounded-full whitespace-nowrap overflow-hidden text-ellipsis max-w-[70px]">Me</span>
+                    </div>
+                </div>
+
                 <!-- Status/Timer -->
                 <div class="flex justify-center mb-6">
                     <div id="timer-container" class="bg-slate-800/80 border border-slate-700 rounded-full px-6 py-2 flex items-center gap-3 shadow-lg">
@@ -437,12 +451,13 @@
         let playerToKick = null; // Stores target id for the kick modal
         let heartbeatInterval = null; // Timer for connection pinging
 
-        // Voice Chat State
+        // Media Chat State
         let peer = null;
         let myPeerId = null;
         let localStream = null;
         let connectedPeers = new Set();
         let isMicMuted = true;
+        let isVideoMuted = true;
 
         // Constants
         const BUDGET_DEFAULT = 120.0;
@@ -1032,8 +1047,8 @@
                         
                         // Disconnect offline users
                         if (!u._computedOnline && u.peerId && connectedPeers.has(u.peerId)) {
-                            const audio = document.getElementById('audio-' + u.peerId);
-                            if (audio) audio.remove();
+                            const wrapper = document.getElementById('video-wrapper-' + u.peerId);
+                            if (wrapper) wrapper.remove();
                             connectedPeers.delete(u.peerId);
                         }
                     });
@@ -1473,14 +1488,27 @@
             return flags[countryCode] || '🏳️';
         }
 
-        // ---------------- VOICE CHAT LOGIC ----------------
+        // ---------------- MEDIA CHAT LOGIC ----------------
 
         async function initVoiceChat() {
             try {
-                localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                // Try requesting both camera and mic first
+                try {
+                    localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+                } catch (camErr) {
+                    console.warn("Camera failed/denied, falling back to audio only.", camErr);
+                    localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                }
                 
-                // Start muted
+                // Attach to local video preview
+                const localVid = document.getElementById('local-video');
+                if (localVid) {
+                    localVid.srcObject = localStream;
+                }
+                
+                // Start muted & camera off
                 localStream.getAudioTracks().forEach(track => track.enabled = false);
+                localStream.getVideoTracks().forEach(track => track.enabled = false);
                 
                 peer = new Peer(); // Creates a connection to the public PeerJS server
                 
@@ -1501,8 +1529,8 @@
                 });
                 
             } catch (err) {
-                console.error("Microphone access denied or error:", err);
-                showToast("Mic access denied. Voice chat disabled.");
+                console.error("Media access denied or error:", err);
+                showToast("Media access denied. Voice/Video chat disabled.");
             }
         }
 
@@ -1515,24 +1543,42 @@
         function handleCallStream(call) {
             connectedPeers.add(call.peer);
             call.on('stream', (remoteStream) => {
-                if (!document.getElementById('audio-' + call.peer)) {
-                    const audio = document.createElement('audio');
-                    audio.id = 'audio-' + call.peer;
-                    audio.srcObject = remoteStream;
-                    audio.autoplay = true;
-                    document.getElementById('audio-container').appendChild(audio);
+                if (!document.getElementById('video-wrapper-' + call.peer)) {
+                    const user = usersData.find(u => u.peerId === call.peer);
+                    const userName = user ? user.username : 'Player';
+
+                    const wrapper = document.createElement('div');
+                    wrapper.id = 'video-wrapper-' + call.peer;
+                    wrapper.className = "relative group flex flex-col items-center animate-fade-in-bg";
+                    
+                    const video = document.createElement('video');
+                    video.id = 'video-' + call.peer;
+                    video.srcObject = remoteStream;
+                    video.autoplay = true;
+                    video.playsInline = true;
+                    // Note: No 'muted' attribute on remote streams so you can hear them
+                    video.className = "w-16 h-16 md:w-20 md:h-20 rounded-full object-cover border-2 border-cric-green bg-slate-800 shadow-md transition-colors";
+                    
+                    const nameTag = document.createElement('span');
+                    nameTag.className = "absolute bottom-0 bg-black/70 text-white text-[10px] px-2 py-0.5 rounded-full whitespace-nowrap overflow-hidden text-ellipsis max-w-[70px]";
+                    nameTag.innerText = userName;
+
+                    wrapper.appendChild(video);
+                    wrapper.appendChild(nameTag);
+                    
+                    document.getElementById('video-gallery').appendChild(wrapper);
                 }
             });
 
             call.on('close', () => {
-                const audio = document.getElementById('audio-' + call.peer);
-                if (audio) audio.remove();
+                const wrapper = document.getElementById('video-wrapper-' + call.peer);
+                if (wrapper) wrapper.remove();
                 connectedPeers.delete(call.peer);
             });
         }
 
         document.getElementById('btn-mic').addEventListener('click', () => {
-            if (!localStream) {
+            if (!localStream || localStream.getAudioTracks().length === 0) {
                 showToast("Microphone is not connected!");
                 return;
             }
@@ -1554,6 +1600,35 @@
                 iconOff.classList.add('hidden');
                 btn.classList.remove('bg-red-500/20', 'text-red-400');
                 btn.classList.add('bg-cric-green/20', 'text-cric-green');
+            }
+        });
+
+        document.getElementById('btn-video').addEventListener('click', () => {
+            if (!localStream || localStream.getVideoTracks().length === 0) {
+                showToast("Camera is not connected or permission denied!");
+                return;
+            }
+            
+            isVideoMuted = !isVideoMuted;
+            localStream.getVideoTracks().forEach(track => track.enabled = !isVideoMuted);
+            
+            const btn = document.getElementById('btn-video');
+            const iconOn = document.getElementById('icon-video-on');
+            const iconOff = document.getElementById('icon-video-off');
+            const localVid = document.getElementById('local-video');
+            
+            if (isVideoMuted) {
+                iconOn.classList.add('hidden');
+                iconOff.classList.remove('hidden');
+                btn.classList.add('bg-red-500/20', 'text-red-400');
+                btn.classList.remove('bg-cric-green/20', 'text-cric-green');
+                if(localVid) localVid.classList.replace('border-cric-green', 'border-slate-600');
+            } else {
+                iconOn.classList.remove('hidden');
+                iconOff.classList.add('hidden');
+                btn.classList.remove('bg-red-500/20', 'text-red-400');
+                btn.classList.add('bg-cric-green/20', 'text-cric-green');
+                if(localVid) localVid.classList.replace('border-slate-600', 'border-cric-green');
             }
         });
 
