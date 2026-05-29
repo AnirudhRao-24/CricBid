@@ -1205,14 +1205,22 @@
                 }
 
                 let adminControlsHtml = '';
-                if (amIHost && !isMe && !isOffline) {
+                if (amIHost && !isMe) {
                     const safeName = u.username.replace(/'/g, "\\'");
-                    adminControlsHtml = `
-                        <div class="flex gap-1 mt-3 pt-2 border-t border-slate-700/50">
+                    
+                    let hostBtnHtml = '';
+                    if (!isOffline) {
+                        hostBtnHtml = `
                             <button onclick="transferHostTo('${u.userId}')" class="flex-1 text-[10px] font-bold bg-blue-500/20 text-blue-400 hover:bg-blue-500/40 py-1.5 rounded transition-colors flex items-center justify-center gap-1" title="Make Host">
                                 <svg class="w-3 h-3 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg> 
                                 Host
                             </button>
+                        `;
+                    }
+
+                    adminControlsHtml = `
+                        <div class="flex gap-1 mt-3 pt-2 border-t border-slate-700/50">
+                            ${hostBtnHtml}
                             <button onclick="openKickModal('${u.userId}', '${safeName}')" class="flex-1 text-[10px] font-bold bg-orange-500/20 text-orange-400 hover:bg-orange-500/40 py-1.5 rounded transition-colors flex items-center justify-center gap-1" title="Kick Player">
                                 <svg class="w-3 h-3 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6"></path></svg> 
                                 Kick
