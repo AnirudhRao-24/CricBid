@@ -411,8 +411,15 @@
         // Utility: Format Currency
         const formatMoney = (val) => val.toFixed(2);
 
-        // Utility: Generate Room Code
-        const generateRoomCode = () => Math.random().toString(36).substring(2, 8).toUpperCase();
+        // Utility: Generate Room Code (Updated to avoid ambiguous chars like O, 0, I, 1)
+        const generateRoomCode = () => {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let result = '';
+            for (let i = 0; i < 6; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        };
 
         // Initialize Authentication (Strictly follows RULE 3)
         async function initAuth() {
@@ -556,20 +563,24 @@
             try {
                 buttons.join.disabled = true;
                 
-                // Workaround for specific sandbox constraints: Fetch collection to find the room
+                // Robust verification: Fetch collection and check data to avoid direct ID read quirks
                 const roomsSnap = await getDocs(getRoomsRef());
-                let roomExists = false;
+                let foundRoomId = null;
+                
                 roomsSnap.forEach(docSnap => {
-                    if (docSnap.id === roomId) {
-                        roomExists = true;
+                    const data = docSnap.data();
+                    if (data.roomId && data.roomId.toUpperCase() === roomId.toUpperCase()) {
+                        foundRoomId = data.roomId;
                     }
                 });
 
-                if (!roomExists) {
-                    showToast("Room not found!");
+                if (!foundRoomId) {
+                    showToast("Room not found! Check the code.");
                     buttons.join.disabled = false;
                     return;
                 }
+
+                roomId = foundRoomId; // Normalize to exact room ID
 
                 myUserDocId = currentUser.uid + "_" + roomId;
                 await setDoc(doc(getUsersRef(), myUserDocId), {
