@@ -529,10 +529,10 @@
             if (myUserDocId) {
                 try {
                     await transferHostRole(); // Transfer host privileges if applicable
-                    // Remove user from the room's active user list before reloading
-                    await deleteDoc(doc(getUsersRef(), myUserDocId));
+                    // Soft exit: mark as offline instead of deleting to preserve budget and bought players
+                    await updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: false });
                 } catch (e) {
-                    console.error("Error removing user:", e);
+                    console.error("Error on exit:", e);
                 }
             }
             window.location.reload();
@@ -542,8 +542,8 @@
         window.addEventListener('beforeunload', () => {
             if (myUserDocId) {
                 transferHostRole();
-                // Best effort removal on unexpected exits
-                deleteDoc(doc(getUsersRef(), myUserDocId)).catch(() => {});
+                // Best effort offline marking on unexpected exits
+                updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: false }).catch(() => {});
             }
         });
 
@@ -555,14 +555,23 @@
             const me = usersData.find(u => u.userId === myUserDocId);
             
             if (me && me.role === 'admin') {
-                const others = usersData.filter(u => u.userId !== myUserDocId);
+                // Find others who are actually online
+                const others = usersData.filter(u => u.userId !== myUserDocId && u.isOnline !== false);
                 if (others.length > 0) {
-                    // Sort ascending by joinedAt to find the least recently joined (oldest) player
-                    others.sort((a, b) => (a.joinedAt || 0) - (b.joinedAt || 0));
+                    // Strict sorting to prevent race conditions: sort by joinedAt, tie-break with userId
+                    others.sort((a, b) => {
+                        const timeA = a.joinedAt || 0;
+                        const timeB = b.joinedAt || 0;
+                        if (timeA === timeB) return a.userId.localeCompare(b.userId);
+                        return timeA - timeB;
+                    });
                     const nextHost = others[0];
                     try {
-                        await updateDoc(doc(getUsersRef(), nextHost.userId), { role: 'admin' });
-                        await updateDoc(doc(getRoomsRef(), currentRoomId), { hostId: nextHost.authId });
+                        const batch = writeBatch(db);
+                        batch.update(doc(getUsersRef(), myUserDocId), { role: 'player' }); // Surrender role to prevent dual hosts
+                        batch.update(doc(getUsersRef(), nextHost.userId), { role: 'admin' });
+                        batch.update(doc(getRoomsRef(), currentRoomId), { hostId: nextHost.authId });
+                        await batch.commit();
                     } catch (e) {
                         console.error("Failed to transfer host role:", e);
                     }
@@ -596,7 +605,8 @@
                     username: username,
                     budget: BUDGET_DEFAULT,
                     role: 'admin',
-                    joinedAt: Date.now()
+                    joinedAt: Date.now(),
+                    isOnline: true
                 });
 
                 const batch = writeBatch(db);
@@ -651,15 +661,28 @@
                 roomId = foundRoomId; // Normalize to exact room ID
 
                 myUserDocId = currentUser.uid + "_" + roomId;
-                await setDoc(doc(getUsersRef(), myUserDocId), {
-                    userId: myUserDocId,
-                    authId: currentUser.uid,
-                    roomId: roomId,
-                    username: username,
-                    budget: BUDGET_DEFAULT,
-                    role: 'player',
-                    joinedAt: Date.now()
-                });
+                const userRef = doc(getUsersRef(), myUserDocId);
+                const userSnap = await getDoc(userRef);
+
+                if (userSnap.exists()) {
+                    // Rejoining user: keep their budget and bought players intact
+                    await updateDoc(userRef, {
+                        username: username,
+                        isOnline: true
+                    });
+                } else {
+                    // Brand new user
+                    await setDoc(userRef, {
+                        userId: myUserDocId,
+                        authId: currentUser.uid,
+                        roomId: roomId,
+                        username: username,
+                        budget: BUDGET_DEFAULT,
+                        role: 'player',
+                        joinedAt: Date.now(),
+                        isOnline: true
+                    });
+                }
 
                 enterRoom(roomId);
             } catch(e) {
@@ -706,11 +729,18 @@
                 });
                 usersData = tempUsers;
                 
-                // Fallback Auto-Failover: If host drops unexpectedly, oldest player auto-promotes
-                if (usersData.length > 0) {
-                    const hasAdmin = usersData.some(u => u.role === 'admin');
+                // Fallback Auto-Failover: If host drops unexpectedly, oldest online player auto-promotes
+                const onlineUsers = usersData.filter(u => u.isOnline !== false);
+                if (onlineUsers.length > 0) {
+                    const hasAdmin = onlineUsers.some(u => u.role === 'admin');
                     if (!hasAdmin) {
-                        const sortedUsers = [...usersData].sort((a, b) => (a.joinedAt || 0) - (b.joinedAt || 0));
+                        const sortedUsers = [...onlineUsers].sort((a, b) => {
+                            const timeA = a.joinedAt || 0;
+                            const timeB = b.joinedAt || 0;
+                            if (timeA === timeB) return a.userId.localeCompare(b.userId);
+                            return timeA - timeB;
+                        });
+                        
                         if (sortedUsers[0].userId === myUserDocId) {
                             const myIndex = usersData.findIndex(u => u.userId === myUserDocId);
                             if (myIndex > -1) usersData[myIndex].role = 'admin'; // Assume role instantly locally
@@ -740,7 +770,8 @@
         // ---------------- UI UPDATES ----------------
 
         function updateUsersUI() {
-            ui.onlineCount.innerText = usersData.length;
+            const onlineUsersCount = usersData.filter(u => u.isOnline !== false).length;
+            ui.onlineCount.innerText = onlineUsersCount;
             
             const me = usersData.find(u => u.userId === myUserDocId);
             if(me) {
@@ -760,6 +791,7 @@
             
             sortedUsers.forEach(u => {
                 const isMe = u.userId === myUserDocId;
+                const isOffline = u.isOnline === false;
                 const boughtPlayers = playersData.filter(p => p.ownerId === u.userId);
 
                 let badgesHtml = '';
@@ -772,12 +804,14 @@
                 }
 
                 const div = document.createElement('div');
-                div.className = `p-3 rounded-lg border ${isMe ? 'border-cric-green bg-cric-green/10' : 'border-slate-700 bg-slate-800'} flex flex-col justify-center`;
+                div.className = `p-3 rounded-lg border ${isMe ? 'border-cric-green bg-cric-green/10' : 'border-slate-700 bg-slate-800'} flex flex-col justify-center ${isOffline ? 'opacity-40 grayscale' : ''}`;
                 div.innerHTML = `
                     <div class="flex justify-between items-center w-full">
                         <div>
                             <p class="font-bold text-white text-sm flex items-center gap-1">
-                                ${u.username} ${u.role === 'admin' ? '<span class="text-[10px] bg-red-500/20 text-red-400 px-1 rounded">HOST</span>' : ''}
+                                ${u.username} 
+                                ${u.role === 'admin' ? '<span class="text-[10px] bg-red-500/20 text-red-400 px-1 rounded">HOST</span>' : ''}
+                                ${isOffline ? '<span class="text-[10px] bg-slate-500/20 text-slate-400 px-1 rounded">OFFLINE</span>' : ''}
                             </p>
                             <p class="text-xs text-gray-400">${boughtPlayers.length} Players</p>
                         </div>
