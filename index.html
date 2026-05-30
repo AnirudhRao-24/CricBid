@@ -2,11 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- Responsive Viewport for Mobile Devices -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CricBid - Premium Live Auction</title>
     
-    <!-- PWA & Mobile Meta Tags -->
     <meta name="theme-color" content="#09090b">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -67,7 +65,6 @@
     </script>
     
     <style>
-        /* Base styles allowing scroll on main elements */
         body { background-color: #09090b; color: #fafafa; }
         
         .glass-panel {
@@ -518,6 +515,157 @@
 
     </div>
 
+    <!-- ==================== SCREEN 3: SEASON MODE ==================== -->
+    <div id="season-screen" class="hidden flex-1 w-full h-full flex-col bg-zinc-950 relative overflow-hidden">
+        <header class="bg-zinc-950/90 backdrop-blur-xl border-b border-zinc-800/80 pt-safe flex justify-between items-center px-4 py-3 sm:px-6 z-[60] shrink-0">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-cric-accent to-blue-800 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.3)]">
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                </div>
+                <div>
+                    <h1 class="font-display font-black text-white text-base sm:text-xl tracking-wide">SEASON SIMULATOR</h1>
+                    <p id="ui-season-phase" class="text-[9px] sm:text-[10px] text-cric-accent font-bold uppercase tracking-widest">League Phase</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="document.getElementById('season-screen').classList.add('hidden'); document.getElementById('season-screen').classList.remove('flex'); document.getElementById('auction-screen').classList.remove('hidden'); document.getElementById('auction-screen').classList.add('flex');" class="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-bold px-3 py-1.5 rounded-lg text-xs transition-colors border border-zinc-700">Back to Squads</button>
+            </div>
+        </header>
+
+        <main class="flex-1 flex flex-col lg:flex-row w-full overflow-hidden relative">
+            <!-- Left: Points Table -->
+            <aside class="w-full lg:w-[350px] shrink-0 bg-zinc-950/80 border-r border-zinc-800/80 flex flex-col h-[40vh] lg:h-full">
+                <div class="p-4 border-b border-zinc-800/80 bg-zinc-900/30">
+                    <h2 class="font-display font-bold text-white flex items-center gap-2 tracking-wide uppercase text-sm">
+                        <span class="w-1.5 h-5 rounded-full bg-cric-green shrink-0"></span> Points Table
+                    </h2>
+                </div>
+                <div class="flex-1 overflow-y-auto hide-scrollbar p-2">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="text-[9px] sm:text-[10px] text-zinc-500 uppercase tracking-widest border-b border-zinc-800/50">
+                                <th class="pb-2 font-bold pl-2">Team</th>
+                                <th class="pb-2 font-bold text-center w-8">P</th>
+                                <th class="pb-2 font-bold text-center w-8 text-emerald-500">W</th>
+                                <th class="pb-2 font-bold text-center w-8 text-red-500">L</th>
+                                <th class="pb-2 font-bold text-center w-8 text-white">Pts</th>
+                                <th class="pb-2 font-bold text-right w-12 pr-2">NRR</th>
+                            </tr>
+                        </thead>
+                        <tbody id="season-points-table" class="text-xs sm:text-sm">
+                            <!-- Injected -->
+                        </tbody>
+                    </table>
+                </div>
+            </aside>
+
+            <!-- Center: Match Center -->
+            <section class="flex-1 bg-zinc-950 flex flex-col h-[60vh] lg:h-full border-t lg:border-t-0 lg:border-r border-zinc-800/80">
+                <div class="p-4 border-b border-zinc-800/80 bg-zinc-900/30 flex justify-between items-center z-10">
+                    <h2 class="font-display font-bold text-white flex items-center gap-2 tracking-wide uppercase text-sm">
+                        <span class="w-1.5 h-5 rounded-full bg-red-500 shrink-0"></span> Match Center
+                    </h2>
+                    <div id="season-host-controls" class="hidden gap-2">
+                        <button id="btn-sim-next" class="bg-white text-zinc-950 hover:bg-zinc-200 px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-md">Simulate Match</button>
+                        <button id="btn-sim-all" class="bg-zinc-800 text-white hover:bg-zinc-700 px-4 py-1.5 rounded-lg text-xs font-bold transition-all border border-zinc-700">Simulate Round</button>
+                    </div>
+                </div>
+                
+                <div class="flex-1 overflow-y-auto hide-scrollbar p-4 relative">
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-cric-accent/5 rounded-full blur-[80px] pointer-events-none"></div>
+                    
+                    <div id="current-match-display" class="w-full max-w-2xl mx-auto mb-8 empty:hidden">
+                        <!-- Current Match Inject -->
+                    </div>
+
+                    <h3 class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3 pl-1">Recent Results</h3>
+                    <div id="season-results-list" class="space-y-3 max-w-2xl mx-auto">
+                        <!-- Injected Results -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right: Leaderboards -->
+            <aside class="w-full lg:w-[320px] shrink-0 bg-zinc-950/80 flex flex-col h-[40vh] lg:h-full border-t lg:border-t-0 border-zinc-800/80">
+                <div class="p-4 border-b border-zinc-800/80 bg-zinc-900/30">
+                    <h2 class="font-display font-bold text-white flex items-center gap-2 tracking-wide uppercase text-sm">
+                        <span class="w-1.5 h-5 rounded-full bg-cric-gold shrink-0"></span> Leaderboards
+                    </h2>
+                </div>
+                <div class="flex-1 overflow-y-auto hide-scrollbar p-4 space-y-6">
+                    
+                    <!-- Orange Cap -->
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-6 h-6 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-500/30">
+                                <span class="text-[10px] text-orange-400">🧢</span>
+                            </div>
+                            <h3 class="text-xs font-bold text-orange-400 uppercase tracking-widest">Orange Cap (Runs)</h3>
+                        </div>
+                        <div id="orange-cap-list" class="space-y-2">
+                            <!-- Injected -->
+                        </div>
+                    </div>
+
+                    <!-- Purple Cap -->
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center border border-purple-500/30">
+                                <span class="text-[10px] text-purple-400">🧢</span>
+                            </div>
+                            <h3 class="text-xs font-bold text-purple-400 uppercase tracking-widest">Purple Cap (Wickets)</h3>
+                        </div>
+                        <div id="purple-cap-list" class="space-y-2">
+                            <!-- Injected -->
+                        </div>
+                    </div>
+
+                    <!-- News / Events -->
+                    <div>
+                        <h3 class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3 border-t border-zinc-800/50 pt-4">Injury Updates</h3>
+                        <div id="injury-list" class="space-y-2">
+                            <p class="text-xs text-zinc-500 italic">No injuries reported yet.</p>
+                        </div>
+                    </div>
+
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <!-- Mid-Season Transfer Modal -->
+    <div id="transfer-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[120] hidden flex-col items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="glass-panel bg-zinc-900 border border-zinc-700 p-6 sm:p-8 rounded-[2rem] max-w-3xl w-full shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]">
+            <div class="text-center mb-6 shrink-0">
+                <div class="w-16 h-16 bg-blue-500/10 rounded-2xl mx-auto mb-4 flex items-center justify-center text-blue-400 shadow-inner border border-blue-500/20">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-display font-black text-white">Mid-Season Transfer Window</h2>
+                <p class="text-zinc-400 text-sm mt-2">Replace your injured or underperforming players with unsold players.</p>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto hide-scrollbar flex flex-col lg:flex-row gap-6 min-h-[300px]">
+                <div class="flex-1 flex flex-col">
+                    <h3 class="text-xs font-bold text-red-400 uppercase tracking-widest mb-3">Release a Player</h3>
+                    <div id="transfer-my-players" class="space-y-2 flex-1 overflow-y-auto border border-zinc-800 rounded-xl p-2 bg-zinc-950/50"></div>
+                </div>
+                <div class="flex flex-col items-center justify-center shrink-0">
+                    <svg class="w-8 h-8 text-zinc-600 hidden lg:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                    <svg class="w-8 h-8 text-zinc-600 block lg:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path></svg>
+                </div>
+                <div class="flex-1 flex flex-col">
+                    <h3 class="text-xs font-bold text-cric-green uppercase tracking-widest mb-3">Sign Unsold Player</h3>
+                    <div id="transfer-unsold-players" class="space-y-2 flex-1 overflow-y-auto border border-zinc-800 rounded-xl p-2 bg-zinc-950/50"></div>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-zinc-800 flex justify-end gap-3 shrink-0">
+                <button onclick="document.getElementById('transfer-modal').classList.add('hidden')" class="px-5 py-2.5 rounded-xl text-white font-bold bg-zinc-800 hover:bg-zinc-700 transition-colors">Skip</button>
+                <button id="btn-confirm-transfer" class="px-5 py-2.5 rounded-xl text-zinc-950 font-bold bg-cric-green hover:bg-emerald-400 transition-colors shadow-lg disabled:opacity-50">Confirm Trade</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
@@ -558,6 +706,10 @@
         let playerToBan = null;
         let heartbeatInterval = null;
 
+        let seasonData = null;
+        let selectedTransferRelease = null;
+        let selectedTransferSign = null;
+
         let peer = null;
         let myPeerId = null;
         let connectedPeers = new Set();
@@ -565,10 +717,26 @@
         let localStream = null;
         let isMicMuted = true;
         let isVideoMuted = true;
+        let lastBidderState = null;
+
+        let playerStatsCache = {};
+        let activeFetches = {};
+
+        function processPrefetchQueue() {
+            if (!playersData || playersData.length === 0) return;
+            // Pre-fetch up to 4 upcoming players immediately in the background
+            const upcoming = playersData.filter(p => p.status === 'upcoming').sort((a,b) => a.order - b.order);
+            for(let i = 0; i < Math.min(4, upcoming.length); i++) {
+                const p = upcoming[i];
+                if (!playerStatsCache[p.name] && !activeFetches[p.name]) {
+                    fetchRealPlayerStats(p).catch(()=>{});
+                }
+            }
+        }
 
         function getHash(str) { let h=0; for(let i=0;i<str.length;i++) h=(h<<5)-h+str.charCodeAt(i); return Math.abs(h); }
 
-        function generatePlayerAnalytics(player) {
+        function getFallbackAnalytics(player) {
             const h = getHash(player.name);
             
             // Intelligently weight matches based on the category/set
@@ -612,12 +780,137 @@
             return { matches, stat1, stat2, form, aiRating, predMin: parseFloat(predMin), predMax: parseFloat(predMax) };
         }
 
+        async function fetchRealPlayerStats(player) {
+            if (playerStatsCache[player.name]) return playerStatsCache[player.name];
+            if (activeFetches[player.name]) return activeFetches[player.name];
+
+            const fetchPromise = (async () => {
+                const formatStr = roomData && roomData.format === 'TEST' ? 'Test' : (roomData && roomData.format === 'ODI' ? 'ODI' : 'T20I');
+                const prompt = `Act as an expert Cricket Analyst. Retrieve the real-world international career stats strictly for the ${formatStr} format only (DO NOT include domestic, franchise, or other formats) and recent ${formatStr} form for the cricketer "${player.name}". 
+Role: ${player.role}. Base Price: ${player.basePrice} Cr.
+Return a JSON object exactly matching the schema. 
+- matches: Total ${formatStr} matches played.
+- stat1Label: 'Runs' if batsman/all-rounder, 'Wickets' if bowler.
+- stat1Value: Total ${formatStr} runs or wickets.
+- stat2Label: 'Strike Rate' if batsman, 'Economy' if bowler.
+- stat2Value: Number value for SR or Economy.
+- form: Array of exactly 5 recent ${formatStr} scores or bowling figures as strings (e.g., ["45", "12", "0", "100*", "30"] or ["2/24", "1/30", "0/40", "3/15", "1/20"]).
+- aiRating: A score out of 10.0 reflecting their real-world current franchise value.
+- predictedValueMin: Minimum predicted auction price in Crores.
+- predictedValueMax: Maximum predicted auction price in Crores.`;
+
+                const payload = {
+                    contents: [{ parts: [{ text: prompt }] }],
+                    tools: [{ "google_search": {} }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "OBJECT",
+                            properties: {
+                                "matches": { "type": "NUMBER" },
+                                "stat1Label": { "type": "STRING" },
+                                "stat1Value": { "type": "NUMBER" },
+                                "stat2Label": { "type": "STRING" },
+                                "stat2Value": { "type": "NUMBER" },
+                                "form": { "type": "ARRAY", "items": { "type": "STRING" } },
+                                "aiRating": { "type": "NUMBER" },
+                                "predictedValueMin": { "type": "NUMBER" },
+                                "predictedValueMax": { "type": "NUMBER" }
+                            },
+                            required: ["matches", "stat1Label", "stat1Value", "stat2Label", "stat2Value", "form", "aiRating", "predictedValueMin", "predictedValueMax"]
+                        }
+                    }
+                };
+
+                const apiKey = ""; // Left empty to be injected by the runtime environment
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+                try {
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    const result = await response.json();
+                    
+                    if (result.candidates && result.candidates.length > 0 && result.candidates[0].content?.parts?.[0]?.text) {
+                        const parsed = JSON.parse(result.candidates[0].content.parts[0].text);
+                        const analytics = {
+                            matches: parsed.matches,
+                            stat1: { label: parsed.stat1Label, val: parsed.stat1Value },
+                            stat2: { label: parsed.stat2Label, val: parsed.stat2Value },
+                            form: parsed.form,
+                            aiRating: parsed.aiRating.toFixed(1),
+                            predMin: parsed.predictedValueMin,
+                            predMax: parsed.predictedValueMax
+                        };
+                        playerStatsCache[player.name] = analytics;
+                        
+                        if (roomData && playersData.find(p => p.order === roomData.currentAuctionIndex)?.name === player.name) {
+                            renderPlayerAnalyticsUI(player, analytics);
+                        }
+                        return analytics;
+                    }
+                } catch (e) { console.error("AI Fetch Error:", e); }
+                
+                const fallback = getFallbackAnalytics(player);
+                playerStatsCache[player.name] = fallback;
+                if (roomData && playersData.find(p => p.order === roomData.currentAuctionIndex)?.name === player.name) {
+                    renderPlayerAnalyticsUI(player, fallback);
+                }
+                return fallback;
+            })();
+
+            activeFetches[player.name] = fetchPromise;
+            const result = await fetchPromise;
+            delete activeFetches[player.name];
+            return result;
+        }
+
+        function renderPlayerAnalyticsUI(currentPlayer, analytics) {
+            const statRating = document.getElementById('ui-stat-rating');
+            if (!statRating) return;
+
+            statRating.innerText = analytics.aiRating;
+            document.getElementById('ui-stat-predicted').innerText = `₹ ${analytics.predMin.toFixed(2)} - ${analytics.predMax.toFixed(2)} Cr`;
+            document.getElementById('ui-stat-matches').innerText = analytics.matches;
+            document.getElementById('ui-stat-l1').innerText = analytics.stat1.label;
+            document.getElementById('ui-stat-v1').innerText = analytics.stat1.val;
+            document.getElementById('ui-stat-l2').innerText = analytics.stat2.label;
+            document.getElementById('ui-stat-v2').innerText = analytics.stat2.val;
+            
+            let formHtml = '';
+            analytics.form.forEach(f => {
+                let fStr = String(f);
+                let color = fStr.includes('W') || fStr.includes('/') ? (parseInt(fStr)>1?'text-cric-green':'text-zinc-400') : (parseInt(fStr)>40?'text-cric-green':(parseInt(fStr)===0?'text-red-500':'text-zinc-400'));
+                formHtml += `<div class="bg-zinc-950 border border-zinc-800 flex-1 py-1.5 sm:py-2 rounded-lg text-center font-bold font-display text-[10px] sm:text-xs ${color} shadow-inner truncate px-1">${fStr}</div>`;
+            });
+            document.getElementById('ui-stat-form').innerHTML = formHtml;
+
+            const currentBidVal = roomData.currentBid > 0 ? roomData.currentBid : currentPlayer.basePrice;
+            const barCurrent = document.getElementById('ui-stat-bar-current');
+            const barPredicted = document.getElementById('ui-stat-bar-predicted');
+            const verdict = document.getElementById('ui-stat-verdict');
+            
+            const maxScale = analytics.predMax + 2.0;
+            const predCenter = (analytics.predMin + analytics.predMax) / 2;
+            
+            barPredicted.style.width = `${Math.min(100, (predCenter / maxScale) * 100)}%`;
+            barCurrent.style.width = `${Math.min(100, (currentBidVal / maxScale) * 100)}%`;
+            
+            if (currentBidVal < analytics.predMin) {
+                verdict.innerText = "Steal Deal!"; verdict.className = "text-[9px] sm:text-[11px] font-bold text-emerald-400 uppercase tracking-wider";
+                barCurrent.className = "absolute top-0 left-0 h-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.8)] transition-all duration-500 z-10";
+            } else if (currentBidVal > analytics.predMax) {
+                verdict.innerText = "Overpriced!"; verdict.className = "text-[9px] sm:text-[11px] font-bold text-red-500 uppercase tracking-wider";
+                barCurrent.className = "absolute top-0 left-0 h-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)] transition-all duration-500 z-10";
+            } else {
+                verdict.innerText = "Fair Value"; verdict.className = "text-[9px] sm:text-[11px] font-bold text-yellow-400 uppercase tracking-wider";
+                barCurrent.className = "absolute top-0 left-0 h-full bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.8)] transition-all duration-500 z-10";
+            }
+        }
+
         const BUDGET_DEFAULT = 120.0;
         const TIMER_SECONDS = 15;
 
         const AUCTION_DATABASES = {
             "T20": [
-                // MARQUEE
                 { name: "Virat Kohli", role: "Batsman", country: "IND", base: 2.0, set: "Marquee" },
                 { name: "Jasprit Bumrah", role: "Pacer", country: "IND", base: 2.0, set: "Marquee" },
                 { name: "Jos Buttler", role: "WK Batsman", country: "ENG", base: 2.0, set: "Marquee" },
@@ -628,7 +921,6 @@
                 { name: "Nicholas Pooran", role: "WK Batsman", country: "WI", base: 2.0, set: "Marquee" },
                 { name: "Suryakumar Yadav", role: "Batsman", country: "IND", base: 2.0, set: "Marquee" },
                 { name: "Hardik Pandya", role: "All-Rounder", country: "IND", base: 2.0, set: "Marquee" },
-                // BATSMEN
                 { name: "Shubman Gill", role: "Batsman", country: "IND", base: 1.5, set: "Batsmen" },
                 { name: "Yashasvi Jaiswal", role: "Batsman", country: "IND", base: 1.5, set: "Batsmen" },
                 { name: "Ruturaj Gaikwad", role: "Batsman", country: "IND", base: 1.0, set: "Batsmen" },
@@ -644,7 +936,6 @@
                 { name: "Ryan Rickelton", role: "Batsman", country: "SA", base: 0.75, set: "Batsmen" },
                 { name: "Dewald Brevis", role: "Batsman", country: "SA", base: 0.75, set: "Batsmen" },
                 { name: "Rahul Tripathi", role: "Batsman", country: "IND", base: 0.5, set: "Batsmen" },
-                // PACERS
                 { name: "Mohammed Shami", role: "Pacer", country: "IND", base: 1.5, set: "Pacers" },
                 { name: "Mohammed Siraj", role: "Pacer", country: "IND", base: 1.5, set: "Pacers" },
                 { name: "Arshdeep Singh", role: "Pacer", country: "IND", base: 1.5, set: "Pacers" },
@@ -660,7 +951,6 @@
                 { name: "Spencer Johnson", role: "Pacer", country: "AUS", base: 0.75, set: "Pacers" },
                 { name: "Nandre Burger", role: "Pacer", country: "SA", base: 0.75, set: "Pacers" },
                 { name: "Naveen-ul-Haq", role: "Pacer", country: "AFG", base: 0.75, set: "Pacers" },
-                // WICKETKEEPERS
                 { name: "KL Rahul", role: "WK Batsman", country: "IND", base: 1.5, set: "Wicketkeepers" },
                 { name: "Rishabh Pant", role: "WK Batsman", country: "IND", base: 2.0, set: "Wicketkeepers" },
                 { name: "Sanju Samson", role: "WK Batsman", country: "IND", base: 1.5, set: "Wicketkeepers" },
@@ -671,7 +961,6 @@
                 { name: "Josh Inglis", role: "WK Batsman", country: "AUS", base: 1.0, set: "Wicketkeepers" },
                 { name: "Tom Banton", role: "WK Batsman", country: "ENG", base: 0.75, set: "Wicketkeepers" },
                 { name: "Tim Seifert", role: "WK Batsman", country: "NZ", base: 0.75, set: "Wicketkeepers" },
-                // ALL-ROUNDERS
                 { name: "Ravindra Jadeja", role: "All-Rounder", country: "IND", base: 2.0, set: "All-Rounders" },
                 { name: "Axar Patel", role: "All-Rounder", country: "IND", base: 1.5, set: "All-Rounders" },
                 { name: "Washington Sundar", role: "All-Rounder", country: "IND", base: 1.0, set: "All-Rounders" },
@@ -692,7 +981,6 @@
                 { name: "Sikandar Raza", role: "All-Rounder", country: "ZIM", base: 1.0, set: "All-Rounders" },
                 { name: "Michael Bracewell", role: "All-Rounder", country: "NZ", base: 1.0, set: "All-Rounders" },
                 { name: "Rachin Ravindra", role: "All-Rounder", country: "NZ", base: 1.5, set: "All-Rounders" },
-                // SPINNERS
                 { name: "Kuldeep Yadav", role: "Spinner", country: "IND", base: 1.5, set: "Spinners" },
                 { name: "Yuzvendra Chahal", role: "Spinner", country: "IND", base: 1.5, set: "Spinners" },
                 { name: "Ravi Bishnoi", role: "Spinner", country: "IND", base: 1.0, set: "Spinners" },
@@ -705,7 +993,6 @@
                 { name: "Akeal Hosein", role: "Spinner", country: "WI", base: 0.75, set: "Spinners" }
             ],
             "ODI": [
-                // MARQUEE
                 { name: "Virat Kohli", role: "Batsman", country: "IND", base: 2.0, set: "Marquee" },
                 { name: "Rohit Sharma", role: "Batsman", country: "IND", base: 2.0, set: "Marquee" },
                 { name: "Jasprit Bumrah", role: "Pacer", country: "IND", base: 2.0, set: "Marquee" },
@@ -716,7 +1003,6 @@
                 { name: "Pat Cummins", role: "Pacer", country: "AUS", base: 2.0, set: "Marquee" },
                 { name: "Rashid Khan", role: "Spinner", country: "AFG", base: 2.0, set: "Marquee" },
                 { name: "Heinrich Klaasen", role: "WK Batsman", country: "SA", base: 2.0, set: "Marquee" },
-                // BATSMEN
                 { name: "Yashasvi Jaiswal", role: "Batsman", country: "IND", base: 1.5, set: "Batsmen" },
                 { name: "Ruturaj Gaikwad", role: "Batsman", country: "IND", base: 1.0, set: "Batsmen" },
                 { name: "Sai Sudharsan", role: "Batsman", country: "IND", base: 1.0, set: "Batsmen" },
@@ -732,7 +1018,6 @@
                 { name: "Dawid Malan", role: "Batsman", country: "ENG", base: 1.0, set: "Batsmen" },
                 { name: "Tom Latham", role: "Batsman", country: "NZ", base: 0.75, set: "Batsmen" },
                 { name: "Will Young", role: "Batsman", country: "NZ", base: 0.75, set: "Batsmen" },
-                // PACERS
                 { name: "Mohammed Shami", role: "Pacer", country: "IND", base: 1.5, set: "Pacers" },
                 { name: "Mohammed Siraj", role: "Pacer", country: "IND", base: 1.5, set: "Pacers" },
                 { name: "Arshdeep Singh", role: "Pacer", country: "IND", base: 1.0, set: "Pacers" },
@@ -748,7 +1033,6 @@
                 { name: "Gerald Coetzee", role: "Pacer", country: "SA", base: 1.0, set: "Pacers" },
                 { name: "Lungi Ngidi", role: "Pacer", country: "SA", base: 0.75, set: "Pacers" },
                 { name: "Taskin Ahmed", role: "Pacer", country: "BAN", base: 0.75, set: "Pacers" },
-                // WICKETKEEPERS
                 { name: "KL Rahul", role: "WK Batsman", country: "IND", base: 1.5, set: "Wicketkeepers" },
                 { name: "Rishabh Pant", role: "WK Batsman", country: "IND", base: 2.0, set: "Wicketkeepers" },
                 { name: "Sanju Samson", role: "WK Batsman", country: "IND", base: 1.0, set: "Wicketkeepers" },
@@ -759,7 +1043,6 @@
                 { name: "Rahmanullah Gurbaz", role: "WK Batsman", country: "AFG", base: 1.0, set: "Wicketkeepers" },
                 { name: "Kusal Mendis", role: "WK Batsman", country: "SL", base: 1.0, set: "Wicketkeepers" },
                 { name: "Ryan Rickelton", role: "WK Batsman", country: "SA", base: 0.75, set: "Wicketkeepers" },
-                // ALL-ROUNDERS
                 { name: "Hardik Pandya", role: "All-Rounder", country: "IND", base: 2.0, set: "All-Rounders" },
                 { name: "Ravindra Jadeja", role: "All-Rounder", country: "IND", base: 2.0, set: "All-Rounders" },
                 { name: "Axar Patel", role: "All-Rounder", country: "IND", base: 1.5, set: "All-Rounders" },
@@ -780,7 +1063,6 @@
                 { name: "Jason Holder", role: "All-Rounder", country: "WI", base: 1.0, set: "All-Rounders" },
                 { name: "Sam Curran", role: "All-Rounder", country: "ENG", base: 1.5, set: "All-Rounders" },
                 { name: "Angelo Mathews", role: "All-Rounder", country: "SL", base: 1.0, set: "All-Rounders" },
-                // SPINNERS
                 { name: "Kuldeep Yadav", role: "Spinner", country: "IND", base: 1.5, set: "Spinners" },
                 { name: "Yuzvendra Chahal", role: "Spinner", country: "IND", base: 1.0, set: "Spinners" },
                 { name: "Ravi Bishnoi", role: "Spinner", country: "IND", base: 1.0, set: "Spinners" },
@@ -793,7 +1075,6 @@
                 { name: "Wanindu Hasaranga", role: "Spinner", country: "SL", base: 1.5, set: "Spinners" }
             ],
             "TEST": [
-                // MARQUEE
                 { name: "Sachin Tendulkar", role: "Batsman", country: "IND", base: 2.0, set: "Marquee" },
                 { name: "Rahul Dravid", role: "Batsman", country: "IND", base: 2.0, set: "Marquee" },
                 { name: "Sunil Gavaskar", role: "Batsman", country: "IND", base: 2.0, set: "Marquee" },
@@ -819,7 +1100,6 @@
                 { name: "Kane Williamson", role: "Batsman", country: "NZ", base: 2.0, set: "Marquee" },
                 { name: "Jasprit Bumrah", role: "Pacer", country: "IND", base: 2.0, set: "Marquee" },
                 { name: "Ravichandran Ashwin", role: "Spinner", country: "IND", base: 2.0, set: "Marquee" },
-                // BATSMEN
                 { name: "Rohit Sharma", role: "Batsman", country: "IND", base: 1.5, set: "Batsmen" },
                 { name: "Shubman Gill", role: "Batsman", country: "IND", base: 1.5, set: "Batsmen" },
                 { name: "Yashasvi Jaiswal", role: "Batsman", country: "IND", base: 1.5, set: "Batsmen" },
@@ -853,7 +1133,6 @@
                 { name: "Litton Das", role: "Batsman", country: "BAN", base: 0.75, set: "Batsmen" },
                 { name: "Najmul Hossain Shanto", role: "Batsman", country: "BAN", base: 0.75, set: "Batsmen" },
                 { name: "Craig Ervine", role: "Batsman", country: "ZIM", base: 0.5, set: "Batsmen" },
-                // PACERS
                 { name: "Mohammed Shami", role: "Pacer", country: "IND", base: 1.5, set: "Pacers" },
                 { name: "Mohammed Siraj", role: "Pacer", country: "IND", base: 1.5, set: "Pacers" },
                 { name: "Ishant Sharma", role: "Pacer", country: "IND", base: 1.0, set: "Pacers" },
@@ -883,7 +1162,6 @@
                 { name: "Matt Henry", role: "Pacer", country: "NZ", base: 1.0, set: "Pacers" },
                 { name: "Chaminda Vaas", role: "Pacer", country: "SL", base: 1.5, set: "Pacers" },
                 { name: "Lasith Malinga", role: "Pacer", country: "SL", base: 2.0, set: "Pacers" },
-                // WICKETKEEPERS
                 { name: "Rishabh Pant", role: "WK Batsman", country: "IND", base: 2.0, set: "Wicketkeepers" },
                 { name: "Dhruv Jurel", role: "WK Batsman", country: "IND", base: 1.0, set: "Wicketkeepers" },
                 { name: "Wriddhiman Saha", role: "WK Batsman", country: "IND", base: 1.0, set: "Wicketkeepers" },
@@ -899,7 +1177,6 @@
                 { name: "BJ Watling", role: "WK Batsman", country: "NZ", base: 1.0, set: "Wicketkeepers" },
                 { name: "Dinesh Chandimal", role: "WK Batsman", country: "SL", base: 1.0, set: "Wicketkeepers" },
                 { name: "Kusal Mendis", role: "WK Batsman", country: "SL", base: 1.0, set: "Wicketkeepers" },
-                // ALL-ROUNDERS
                 { name: "Kapil Dev", role: "All-Rounder", country: "IND", base: 2.0, set: "All-Rounders" },
                 { name: "Hardik Pandya", role: "All-Rounder", country: "IND", base: 1.5, set: "All-Rounders" },
                 { name: "Axar Patel", role: "All-Rounder", country: "IND", base: 1.5, set: "All-Rounders" },
@@ -925,7 +1202,6 @@
                 { name: "Azmatullah Omarzai", role: "All-Rounder", country: "AFG", base: 1.0, set: "All-Rounders" },
                 { name: "Mohammad Nabi", role: "All-Rounder", country: "AFG", base: 1.0, set: "All-Rounders" },
                 { name: "Michael Bracewell", role: "All-Rounder", country: "NZ", base: 1.0, set: "All-Rounders" },
-                // SPINNERS
                 { name: "Ravindra Jadeja", role: "Spinner", country: "IND", base: 2.0, set: "Spinners" },
                 { name: "Harbhajan Singh", role: "Spinner", country: "IND", base: 1.5, set: "Spinners" },
                 { name: "Anil Kumble", role: "Spinner", country: "IND", base: 2.0, set: "Spinners" },
@@ -949,7 +1225,7 @@
             ]
         };
 
-        const screens = { lobby: document.getElementById('lobby-screen'), auction: document.getElementById('auction-screen') };
+        const screens = { lobby: document.getElementById('lobby-screen'), auction: document.getElementById('auction-screen'), season: document.getElementById('season-screen') };
         const inputs = { username: document.getElementById('username-input'), roomCode: document.getElementById('room-code-input') };
         const buttons = { create: document.getElementById('btn-create-room'), join: document.getElementById('btn-join-room'), leave: document.getElementById('btn-leave') };
         const ui = {
@@ -1316,6 +1592,7 @@
                 snapshot.forEach(docSnap => { const data = docSnap.data(); if(data.roomId === currentRoomId) tempPlayers.push(data); });
                 playersData = tempPlayers.sort((a, b) => a.order - b.order);
                 updatePlayersUI();
+                processPrefetchQueue();
             }, (error) => { console.error("Players sync error", error) });
 
             unsubscribeChat = onSnapshot(getChatRef(), (snapshot) => {
@@ -1478,11 +1755,23 @@
             }
         }
 
-        let lastBidderState = null;
         function updateRoomUI() {
             if(!roomData) return;
             const isHost = usersData.find(u => u.userId === myUserDocId)?.role === 'admin';
             const currentPlayer = playersData.find(p => p.order === roomData.currentAuctionIndex);
+
+            if (roomData.status === 'season') {
+                screens.auction.classList.add('hidden'); screens.auction.classList.remove('flex');
+                screens.season.classList.remove('hidden'); screens.season.classList.add('flex');
+                seasonData = roomData.season || null;
+                updateSeasonUI();
+                return; // Stop rendering auction UI
+            } else {
+                screens.season.classList.add('hidden'); screens.season.classList.remove('flex');
+                if (currentRoomId && screens.lobby.classList.contains('hidden')) {
+                    screens.auction.classList.remove('hidden'); screens.auction.classList.add('flex');
+                }
+            }
 
             if (isHost && ui.btnHostUnsold) { 
                 ui.btnHostUnsold.disabled = roomData.currentBidder ? true : false; 
@@ -1514,6 +1803,15 @@
                 } else if(roomData.status === 'finished') {
                     ui.roomStatus.innerText = "Completed"; ui.roomStatus.className = "font-bold text-emerald-500 text-[9px] sm:text-xs lg:text-sm tracking-widest uppercase";
                     ui.statusIndicator.className = "w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-emerald-500 shadow-[0_0_12px_#10b981]";
+                    
+                    if (isHost && !document.getElementById('btn-host-start-season')) {
+                        const btn = document.createElement('button');
+                        btn.id = 'btn-host-start-season';
+                        btn.className = "bg-cric-accent hover:bg-blue-500 text-white font-bold px-2.5 sm:px-5 py-2 sm:py-3 rounded-lg sm:rounded-xl shadow-[0_0_20px_rgba(59,130,246,0.4)] flex-1 min-w-[100%] sm:min-w-[150px] transition-colors active:scale-95 text-[10px] sm:text-sm uppercase tracking-wider mt-2";
+                        btn.innerText = "Simulate Season 🏆";
+                        btn.onclick = initializeSeason;
+                        ui.hostControls.appendChild(btn);
+                    }
                 }
             }
 
@@ -1532,47 +1830,24 @@
                     if(ui.playerSet) ui.playerSet.classList.add('hidden');
                 }
                 
-                const analytics = generatePlayerAnalytics(currentPlayer);
-                const statRating = document.getElementById('ui-stat-rating');
-                if (statRating) {
-                    statRating.innerText = analytics.aiRating;
-                    document.getElementById('ui-stat-predicted').innerText = `₹ ${analytics.predMin.toFixed(2)} - ${analytics.predMax.toFixed(2)} Cr`;
-                    document.getElementById('ui-stat-matches').innerText = analytics.matches;
-                    document.getElementById('ui-stat-l1').innerText = analytics.stat1.label;
-                    document.getElementById('ui-stat-v1').innerText = analytics.stat1.val;
-                    document.getElementById('ui-stat-l2').innerText = analytics.stat2.label;
-                    document.getElementById('ui-stat-v2').innerText = analytics.stat2.val;
-                    
-                    let formHtml = '';
-                    analytics.form.forEach(f => {
-                        let color = String(f).includes('W') ? (parseInt(f)>1?'text-cric-green':'text-zinc-400') : (parseInt(f)>40?'text-cric-green':(parseInt(f)===0?'text-red-500':'text-zinc-400'));
-                        formHtml += `<div class="bg-zinc-950 border border-zinc-800 flex-1 py-1.5 sm:py-2 rounded-lg text-center font-bold font-display text-[10px] sm:text-xs ${color} shadow-inner">${f}</div>`;
-                    });
-                    document.getElementById('ui-stat-form').innerHTML = formHtml;
-
-                    // Live Value Verdict Logic
-                    const currentBidVal = roomData.currentBid > 0 ? roomData.currentBid : currentPlayer.basePrice;
-                    const barCurrent = document.getElementById('ui-stat-bar-current');
-                    const barPredicted = document.getElementById('ui-stat-bar-predicted');
-                    const verdict = document.getElementById('ui-stat-verdict');
-                    
-                    const maxScale = analytics.predMax + 2.0;
-                    const predCenter = (analytics.predMin + analytics.predMax) / 2;
-                    
-                    barPredicted.style.width = `${Math.min(100, (predCenter / maxScale) * 100)}%`;
-                    barCurrent.style.width = `${Math.min(100, (currentBidVal / maxScale) * 100)}%`;
-                    
-                    if (currentBidVal < analytics.predMin) {
-                        verdict.innerText = "Steal Deal!"; verdict.className = "text-[9px] sm:text-[11px] font-bold text-emerald-400 uppercase tracking-wider";
-                        barCurrent.className = "absolute top-0 left-0 h-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.8)] transition-all duration-500 z-10";
-                    } else if (currentBidVal > analytics.predMax) {
-                        verdict.innerText = "Overpriced!"; verdict.className = "text-[9px] sm:text-[11px] font-bold text-red-500 uppercase tracking-wider";
-                        barCurrent.className = "absolute top-0 left-0 h-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)] transition-all duration-500 z-10";
-                    } else {
-                        verdict.innerText = "Fair Value"; verdict.className = "text-[9px] sm:text-[11px] font-bold text-yellow-400 uppercase tracking-wider";
-                        barCurrent.className = "absolute top-0 left-0 h-full bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.8)] transition-all duration-500 z-10";
+                if (playerStatsCache[currentPlayer.name]) {
+                    renderPlayerAnalyticsUI(currentPlayer, playerStatsCache[currentPlayer.name]);
+                } else {
+                    const statRating = document.getElementById('ui-stat-rating');
+                    if (statRating) {
+                        statRating.innerText = "AI";
+                        document.getElementById('ui-stat-predicted').innerText = "Fetching...";
+                        document.getElementById('ui-stat-verdict').innerText = "Generating Stats...";
+                        document.getElementById('ui-stat-matches').innerText = "-";
+                        document.getElementById('ui-stat-v1').innerText = "-";
+                        document.getElementById('ui-stat-v2').innerText = "-";
+                        document.getElementById('ui-stat-form').innerHTML = '<div class="w-full text-center text-[10px] text-zinc-500 py-2 animate-pulse">Fetching Real Int\'l Data...</div>';
                     }
+                    fetchRealPlayerStats(currentPlayer);
                 }
+
+                // Trigger background pre-fetching for the next upcoming players
+                processPrefetchQueue();
 
                 const displayBid = roomData.currentBid > 0 ? roomData.currentBid : currentPlayer.basePrice;
                 if(ui.currentBid) ui.currentBid.innerHTML = `₹ ${formatMoney(displayBid)} <span class="text-xl sm:text-2xl lg:text-3xl text-zinc-500 font-bold tracking-normal">Cr</span>`;
@@ -1642,19 +1917,454 @@
             }
         }
 
-        function updateChatRecipients() {
-            const select = document.getElementById('chat-recipient');
-            if(!select) return;
-            const currentVal = select.value;
-            select.innerHTML = '<option value="all">Public Chat</option>';
-            usersData.forEach(u => {
-                if(u.userId !== myUserDocId && u._computedOnline) {
-                    const opt = document.createElement('option');
-                    opt.value = u.userId; opt.innerText = `Whisper: ${u.username}`; select.appendChild(opt);
+        async function initializeSeason() {
+            if (!currentUser || !roomData) return;
+            const teams = usersData.filter(u => playersData.some(p => p.ownerId === u.userId));
+            if (teams.length < 2) return showToast("Need at least 2 teams with players to start Season.");
+
+            const matches = [];
+            let matchId = 0;
+            for (let i = 0; i < teams.length; i++) {
+                for (let j = i + 1; j < teams.length; j++) {
+                    matches.push({ id: matchId++, t1: teams[i].userId, t2: teams[j].userId, winner: null, summary: '', isPlayed: false, type: 'league' });
+                    matches.push({ id: matchId++, t1: teams[j].userId, t2: teams[i].userId, winner: null, summary: '', isPlayed: false, type: 'league' });
                 }
+            }
+            matches.sort(() => Math.random() - 0.5);
+
+            const standings = {};
+            teams.forEach(t => standings[t.userId] = { p: 0, w: 0, l: 0, pts: 0, nrr: 0, name: t.username });
+
+            const stats = {};
+            playersData.filter(p => p.ownerId).forEach(p => {
+                stats[p.playerId] = { runs: 0, wickets: 0, injuredFor: 0, name: p.name, owner: p.ownerId, role: p.role, set: p.set };
             });
-            if([...select.options].some(o => o.value === currentVal)) select.value = currentVal;
+
+            const initialSeason = {
+                phase: 'league',
+                matches: matches,
+                currentMatchIndex: 0,
+                standings: standings,
+                playerStats: stats,
+                injuries: []
+            };
+
+            try {
+                await updateDoc(doc(getRoomsRef(), currentRoomId), { status: 'season', season: initialSeason });
+            } catch (e) { console.error("Season Init Err", e); showToast("Failed to start season"); }
         }
+
+        document.getElementById('btn-sim-next')?.addEventListener('click', async () => {
+            if (!seasonData || roomData.status !== 'season') return;
+            await simulateNextMatch();
+        });
+
+        document.getElementById('btn-sim-all')?.addEventListener('click', async () => {
+            if (!seasonData || roomData.status !== 'season') return;
+            for(let i=0; i<5; i++) {
+                if (seasonData.phase === 'league' || seasonData.phase === 'playoffs') {
+                    await simulateNextMatch();
+                } else { break; }
+            }
+        });
+
+        async function simulateNextMatch() {
+            const sd = JSON.parse(JSON.stringify(seasonData)); 
+            const mIdx = sd.currentMatchIndex;
+            
+            if (mIdx >= sd.matches.length) {
+                if (sd.phase === 'league') return handleLeagueEnd(sd);
+                if (sd.phase === 'playoffs') return handlePlayoffsEnd(sd);
+                return;
+            }
+
+            if (sd.phase === 'league' && mIdx === Math.floor(sd.matches.filter(m=>m.type==='league').length / 2)) {
+                sd.phase = 'transfer';
+                await updateDoc(doc(getRoomsRef(), currentRoomId), { 'season.phase': 'transfer' });
+                return;
+            }
+
+            const match = sd.matches[mIdx];
+            const t1 = usersData.find(u => u.userId === match.t1);
+            const t2 = usersData.find(u => u.userId === match.t2);
+
+            const t1Players = playersData.filter(p => p.ownerId === match.t1 && (!sd.playerStats[p.playerId] || sd.playerStats[p.playerId].injuredFor <= 0));
+            const t2Players = playersData.filter(p => p.ownerId === match.t2 && (!sd.playerStats[p.playerId] || sd.playerStats[p.playerId].injuredFor <= 0));
+
+            Object.values(sd.playerStats).forEach(ps => { if(ps.injuredFor > 0) ps.injuredFor--; });
+
+            const getStr = (teamPlayers) => teamPlayers.reduce((sum, p) => sum + parseFloat((playerStatsCache[p.name] || getFallbackAnalytics(p)).aiRating), 0);
+            const str1 = getStr(t1Players) || 1;
+            const str2 = getStr(t2Players) || 1;
+
+            const roll1 = str1 * (0.8 + Math.random() * 0.4);
+            const roll2 = str2 * (0.8 + Math.random() * 0.4);
+
+            const winner = roll1 > roll2 ? match.t1 : match.t2;
+            const loser = winner === match.t1 ? match.t2 : match.t1;
+            
+            match.winner = winner;
+            match.isPlayed = true;
+
+            const margin = Math.floor(Math.random() * 40) + 5;
+            const isChasing = Math.random() > 0.5;
+            if (isChasing) {
+                const wktMargin = Math.floor(Math.random() * 7) + 2;
+                match.summary = `${usersData.find(u=>u.userId===winner).username} won by ${wktMargin} wkts`;
+            } else {
+                match.summary = `${usersData.find(u=>u.userId===winner).username} won by ${margin} runs`;
+            }
+
+            sd.standings[winner].p++; sd.standings[winner].w++; sd.standings[winner].pts += 2;
+            sd.standings[loser].p++; sd.standings[loser].l++;
+            
+            const nrrDiff = margin * 0.01;
+            sd.standings[winner].nrr += nrrDiff; sd.standings[loser].nrr -= nrrDiff;
+
+            distributeMatchStats(t1Players, t2Players, sd.playerStats);
+
+            const checkInjury = (teamPlayers) => {
+                if(Math.random() < 0.03 && teamPlayers.length > 0) {
+                    const victim = teamPlayers[Math.floor(Math.random() * teamPlayers.length)];
+                    sd.playerStats[victim.playerId].injuredFor = 3; 
+                    sd.injuries.unshift(`${victim.name} (${usersData.find(u=>u.userId===victim.ownerId).username}) injured for 3 matches.`);
+                    if (sd.injuries.length > 10) sd.injuries.pop();
+                }
+            };
+            checkInjury(t1Players); checkInjury(t2Players);
+
+            sd.currentMatchIndex++;
+
+            try {
+                await updateDoc(doc(getRoomsRef(), currentRoomId), { season: sd });
+            } catch(e) { console.error("Sim error", e); }
+        }
+
+        function distributeMatchStats(t1, t2, statsObj) {
+            const distribute = (players, oppPlayers) => {
+                let totalRuns = Math.floor(Math.random() * 80) + 140;
+                let runCandidates = players.filter(p => p.role.includes('Batsman') || p.role.includes('All-Rounder'));
+                if(runCandidates.length === 0) runCandidates = players;
+                
+                for(let r=0; r<totalRuns; r+=Math.floor(Math.random()*20)+5) {
+                    if (runCandidates.length > 0) {
+                        const batter = runCandidates[Math.floor(Math.random() * runCandidates.length)];
+                        const runsScored = Math.floor(Math.random() * 30) + 5;
+                        statsObj[batter.playerId].runs += runsScored;
+                    }
+                }
+
+                let totalWkts = Math.floor(Math.random() * 7) + 4;
+                let bowlCandidates = oppPlayers.filter(p => p.role.includes('Pacer') || p.role.includes('Spinner') || p.role.includes('All-Rounder'));
+                if(bowlCandidates.length === 0) bowlCandidates = oppPlayers;
+
+                for(let w=0; w<totalWkts; w++) {
+                    if (bowlCandidates.length > 0) {
+                        const bowler = bowlCandidates[Math.floor(Math.random() * bowlCandidates.length)];
+                        statsObj[bowler.playerId].wickets += 1;
+                    }
+                }
+            };
+            distribute(t1, t2);
+            distribute(t2, t1);
+        }
+
+        async function handleLeagueEnd(sd) {
+            const teams = Object.entries(sd.standings).map(([id, data]) => ({ id, ...data }));
+            teams.sort((a,b) => b.pts - a.pts || b.nrr - a.nrr);
+            
+            if (teams.length < 4) {
+                sd.phase = 'finished';
+                await updateDoc(doc(getRoomsRef(), currentRoomId), { season: sd });
+                showToast("Season Over! Not enough teams for playoffs.");
+                return;
+            }
+
+            const top4 = teams.slice(0, 4);
+            const mStart = sd.matches.length;
+            
+            sd.matches.push({ id: mStart, t1: top4[0].id, t2: top4[1].id, type: 'Qualifier 1', winner: null, isPlayed: false, summary: '' });
+            sd.matches.push({ id: mStart+1, t1: top4[2].id, t2: top4[3].id, type: 'Eliminator', winner: null, isPlayed: false, summary: '' });
+            
+            sd.phase = 'playoffs';
+            try { await updateDoc(doc(getRoomsRef(), currentRoomId), { season: sd }); showToast("League Phase Ended! Playoffs Begin."); } 
+            catch(e) { console.error(e); }
+        }
+
+        async function handlePlayoffsEnd(sd) {
+            const pMatches = sd.matches.filter(m => m.type !== 'league');
+            const unplayed = pMatches.find(m => !m.isPlayed);
+            
+            if (!unplayed) {
+                const q1 = pMatches.find(m => m.type === 'Qualifier 1');
+                const elim = pMatches.find(m => m.type === 'Eliminator');
+                const q2 = pMatches.find(m => m.type === 'Qualifier 2');
+                const final = pMatches.find(m => m.type === 'Final');
+
+                if (q1.isPlayed && elim.isPlayed && !q2) {
+                    const q1Loser = q1.winner === q1.t1 ? q1.t2 : q1.t1;
+                    sd.matches.push({ id: sd.matches.length, t1: q1Loser, t2: elim.winner, type: 'Qualifier 2', winner: null, isPlayed: false, summary: '' });
+                } else if (q2 && q2.isPlayed && !final) {
+                    sd.matches.push({ id: sd.matches.length, t1: q1.winner, t2: q2.winner, type: 'Final', winner: null, isPlayed: false, summary: '' });
+                } else if (final && final.isPlayed) {
+                    sd.phase = 'finished';
+                    showToast(`🏆 ${sd.standings[final.winner].name} wins the Season!`);
+                }
+                await updateDoc(doc(getRoomsRef(), currentRoomId), { season: sd });
+            }
+        }
+
+        function updateSeasonUI() {
+            if (!seasonData) return;
+            const isHost = usersData.find(u => u.userId === myUserDocId)?.role === 'admin';
+
+            const hostControls = document.getElementById('season-host-controls');
+            if (isHost && seasonData.phase !== 'finished') {
+                hostControls.classList.remove('hidden'); hostControls.classList.add('flex');
+                
+                if (seasonData.phase === 'transfer') {
+                    hostControls.innerHTML = `<button onclick="openTransferWindow()" class="bg-blue-500 hover:bg-blue-400 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-[0_0_10px_rgba(59,130,246,0.5)] animate-pulse">Open Transfer Window</button>`;
+                } else {
+                    hostControls.innerHTML = `
+                        <button id="btn-sim-next" class="bg-white text-zinc-950 hover:bg-zinc-200 px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-md">Simulate Match</button>
+                        <button id="btn-sim-all" class="bg-zinc-800 text-white hover:bg-zinc-700 px-4 py-1.5 rounded-lg text-xs font-bold transition-all border border-zinc-700">Simulate 5</button>
+                    `;
+                    document.getElementById('btn-sim-next').addEventListener('click', simulateNextMatch);
+                    document.getElementById('btn-sim-all').addEventListener('click', async () => { for(let i=0;i<5;i++) await simulateNextMatch(); });
+                }
+            } else {
+                hostControls.classList.add('hidden'); hostControls.classList.remove('flex');
+            }
+
+            document.getElementById('ui-season-phase').innerText = seasonData.phase.toUpperCase();
+
+            const ptBody = document.getElementById('season-points-table');
+            ptBody.innerHTML = '';
+            const sortedTeams = Object.entries(seasonData.standings).sort((a,b) => b[1].pts - a[1].pts || b[1].nrr - a[1].nrr);
+            
+            sortedTeams.forEach(([id, t], idx) => {
+                const isMe = id === myUserDocId;
+                const row = document.createElement('tr');
+                row.className = `border-b border-zinc-800/30 hover:bg-zinc-800/30 transition-colors ${isMe ? 'bg-cric-green/10 border-l-2 border-l-cric-green' : ''} ${idx < 4 ? 'bg-blue-500/5' : ''}`;
+                row.innerHTML = `
+                    <td class="py-2.5 pl-2 font-bold text-white flex items-center gap-1.5">
+                        <span class="text-[9px] text-zinc-500 w-3">${idx+1}</span> 
+                        <span class="truncate max-w-[100px] sm:max-w-[150px]">${t.name}</span>
+                        ${idx < 4 ? '<span class="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_5px_rgba(59,130,246,0.8)]" title="Playoff Spot"></span>' : ''}
+                    </td>
+                    <td class="py-2.5 text-center text-zinc-400 font-medium">${t.p}</td>
+                    <td class="py-2.5 text-center text-emerald-400 font-bold">${t.w}</td>
+                    <td class="py-2.5 text-center text-red-400 font-bold">${t.l}</td>
+                    <td class="py-2.5 text-center text-white font-black">${t.pts}</td>
+                    <td class="py-2.5 text-right pr-2 text-zinc-400 font-display">${t.nrr > 0 ? '+'+t.nrr.toFixed(2) : t.nrr.toFixed(2)}</td>
+                `;
+                ptBody.appendChild(row);
+            });
+
+            const pStatsArr = Object.values(seasonData.playerStats);
+            
+            const orangeList = document.getElementById('orange-cap-list');
+            orangeList.innerHTML = '';
+            pStatsArr.sort((a,b) => b.runs - a.runs).slice(0,5).forEach((p, idx) => {
+                orangeList.innerHTML += `
+                    <div class="flex justify-between items-center bg-zinc-900/50 border border-zinc-800 p-2 rounded-lg ${idx===0 ? 'border-orange-500/50 shadow-[0_0_10px_rgba(249,115,22,0.1)]' : ''}">
+                        <div class="flex items-center gap-2 overflow-hidden">
+                            <span class="text-xs font-black ${idx===0 ? 'text-orange-500' : 'text-zinc-600'}">#${idx+1}</span>
+                            <div class="truncate">
+                                <p class="text-sm font-bold text-zinc-200 truncate">${p.name}</p>
+                                <p class="text-[9px] text-zinc-500 uppercase tracking-widest truncate">${usersData.find(u=>u.userId===p.owner)?.username}</p>
+                            </div>
+                        </div>
+                        <span class="font-display font-black text-white ml-2 bg-zinc-950 px-2 py-0.5 rounded border border-zinc-800">${p.runs}</span>
+                    </div>
+                `;
+            });
+
+            const purpleList = document.getElementById('purple-cap-list');
+            purpleList.innerHTML = '';
+            pStatsArr.sort((a,b) => b.wickets - a.wickets).slice(0,5).forEach((p, idx) => {
+                purpleList.innerHTML += `
+                    <div class="flex justify-between items-center bg-zinc-900/50 border border-zinc-800 p-2 rounded-lg ${idx===0 ? 'border-purple-500/50 shadow-[0_0_10px_rgba(168,85,247,0.1)]' : ''}">
+                        <div class="flex items-center gap-2 overflow-hidden">
+                            <span class="text-xs font-black ${idx===0 ? 'text-purple-500' : 'text-zinc-600'}">#${idx+1}</span>
+                            <div class="truncate">
+                                <p class="text-sm font-bold text-zinc-200 truncate">${p.name}</p>
+                                <p class="text-[9px] text-zinc-500 uppercase tracking-widest truncate">${usersData.find(u=>u.userId===p.owner)?.username}</p>
+                            </div>
+                        </div>
+                        <span class="font-display font-black text-white ml-2 bg-zinc-950 px-2 py-0.5 rounded border border-zinc-800">${p.wickets}</span>
+                    </div>
+                `;
+            });
+
+            const injList = document.getElementById('injury-list');
+            injList.innerHTML = '';
+            if (seasonData.injuries && seasonData.injuries.length > 0) {
+                seasonData.injuries.forEach(inj => {
+                    injList.innerHTML += `<div class="bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] p-2 rounded-md font-medium">⚠️ ${inj}</div>`;
+                });
+            } else {
+                injList.innerHTML = `<p class="text-xs text-zinc-500 italic">No injuries reported yet.</p>`;
+            }
+
+            const currentMatchDiv = document.getElementById('current-match-display');
+            const resultsList = document.getElementById('season-results-list');
+            resultsList.innerHTML = '';
+
+            const currentMatch = seasonData.matches[seasonData.currentMatchIndex];
+            
+            if (seasonData.phase === 'transfer') {
+                currentMatchDiv.innerHTML = `
+                    <div class="bg-blue-900/20 border border-blue-500/40 rounded-2xl p-6 text-center shadow-[0_0_30px_rgba(59,130,246,0.15)] animate-pulse-fast">
+                        <span class="text-4xl mb-2 block">🔄</span>
+                        <h3 class="text-xl font-display font-black text-blue-400 uppercase tracking-widest mb-1">Transfer Window Open</h3>
+                        <p class="text-zinc-400 text-sm">Teams are trading players. Awaiting Host to proceed.</p>
+                    </div>
+                `;
+            } else if (currentMatch && seasonData.phase !== 'finished') {
+                const t1Name = usersData.find(u=>u.userId===currentMatch.t1)?.username;
+                const t2Name = usersData.find(u=>u.userId===currentMatch.t2)?.username;
+                const matchType = currentMatch.type === 'league' ? `Match ${seasonData.currentMatchIndex + 1}` : currentMatch.type;
+                
+                currentMatchDiv.innerHTML = `
+                    <div class="bg-gradient-to-b from-zinc-900 to-zinc-950 border border-zinc-700/50 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent opacity-50"></div>
+                        <p class="text-center text-[10px] font-bold text-red-500 uppercase tracking-widest mb-4">UP NEXT • ${matchType}</p>
+                        <div class="flex justify-between items-center gap-4">
+                            <div class="flex-1 text-center">
+                                <div class="w-12 h-12 sm:w-16 sm:h-16 mx-auto bg-zinc-800 rounded-full flex items-center justify-center font-display font-bold text-xl sm:text-2xl text-zinc-300 border border-zinc-700 shadow-inner mb-2">${t1Name.charAt(0)}</div>
+                                <p class="font-bold text-white text-sm sm:text-base truncate">${t1Name}</p>
+                            </div>
+                            <div class="shrink-0 text-center">
+                                <span class="text-xs sm:text-sm font-black italic text-zinc-600 px-3 py-1 bg-zinc-950 rounded-full border border-zinc-800">VS</span>
+                            </div>
+                            <div class="flex-1 text-center">
+                                <div class="w-12 h-12 sm:w-16 sm:h-16 mx-auto bg-zinc-800 rounded-full flex items-center justify-center font-display font-bold text-xl sm:text-2xl text-zinc-300 border border-zinc-700 shadow-inner mb-2">${t2Name.charAt(0)}</div>
+                                <p class="font-bold text-white text-sm sm:text-base truncate">${t2Name}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (seasonData.phase === 'finished') {
+                const finalMatch = seasonData.matches.find(m => m.type === 'Final');
+                const winnerName = usersData.find(u=>u.userId===finalMatch.winner)?.username;
+                currentMatchDiv.innerHTML = `
+                    <div class="bg-gradient-to-b from-emerald-900/30 to-zinc-950 border border-emerald-500/40 rounded-2xl p-6 text-center shadow-[0_0_40px_rgba(16,185,129,0.2)]">
+                        <span class="text-5xl mb-3 block animate-float">🏆</span>
+                        <h3 class="text-2xl font-display font-black text-white mb-1">Season Champions</h3>
+                        <p class="text-xl font-bold text-emerald-400">${winnerName}</p>
+                    </div>
+                `;
+            }
+
+            const playedMatches = seasonData.matches.filter(m => m.isPlayed).reverse();
+            playedMatches.forEach(m => {
+                const t1 = usersData.find(u=>u.userId===m.t1);
+                const t2 = usersData.find(u=>u.userId===m.t2);
+                if(!t1 || !t2) return;
+                
+                const isT1Winner = m.winner === m.t1;
+                
+                resultsList.innerHTML += `
+                    <div class="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm">
+                        <div class="flex items-center justify-center sm:justify-start gap-3 flex-1">
+                            <span class="${isT1Winner ? 'text-white font-bold' : 'text-zinc-500'} text-right flex-1 truncate">${t1.username}</span>
+                            <span class="text-[10px] font-black text-zinc-700 bg-zinc-950 px-1.5 py-0.5 rounded border border-zinc-800">VS</span>
+                            <span class="${!isT1Winner ? 'text-white font-bold' : 'text-zinc-500'} text-left flex-1 truncate">${t2.username}</span>
+                        </div>
+                        <div class="text-[10px] sm:text-xs text-cric-green font-bold bg-cric-green/10 border border-cric-green/20 px-2.5 py-1 rounded-md text-center shrink-0">
+                            ${m.summary}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        window.openTransferWindow = () => {
+            selectedTransferRelease = null; selectedTransferSign = null;
+            document.getElementById('btn-confirm-transfer').disabled = true;
+            renderTransferLists();
+            
+            const modal = document.getElementById('transfer-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.remove('opacity-0'), 10);
+        };
+
+        function renderTransferLists() {
+            const myPlayersList = document.getElementById('transfer-my-players');
+            const unsoldList = document.getElementById('transfer-unsold-players');
+            myPlayersList.innerHTML = ''; unsoldList.innerHTML = '';
+
+            const myPlayers = playersData.filter(p => p.ownerId === myUserDocId);
+            const unsoldPlayers = playersData.filter(p => p.status === 'unsold');
+
+            myPlayers.forEach(p => {
+                const stat = seasonData.playerStats[p.playerId];
+                const isInj = stat && stat.injuredFor > 0;
+                
+                const div = document.createElement('div');
+                div.className = `p-2.5 rounded-lg border cursor-pointer transition-all flex justify-between items-center ${selectedTransferRelease === p.playerId ? 'border-red-500 bg-red-500/20' : 'border-zinc-800 bg-zinc-900 hover:border-zinc-600'}`;
+                div.innerHTML = `
+                    <div>
+                        <p class="text-sm font-bold text-white">${p.name}</p>
+                        <p class="text-[9px] text-zinc-500 uppercase">${p.role}</p>
+                    </div>
+                    ${isInj ? '<span class="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded font-bold">INJURED</span>' : ''}
+                `;
+                div.onclick = () => { selectedTransferRelease = p.playerId; renderTransferLists(); checkTransferValid(); };
+                myPlayersList.appendChild(div);
+            });
+
+            if(myPlayers.length === 0) myPlayersList.innerHTML = '<p class="text-xs text-zinc-500 italic p-2">No players owned.</p>';
+
+            unsoldPlayers.forEach(p => {
+                const div = document.createElement('div');
+                div.className = `p-2.5 rounded-lg border cursor-pointer transition-all flex justify-between items-center ${selectedTransferSign === p.playerId ? 'border-cric-green bg-cric-green/20' : 'border-zinc-800 bg-zinc-900 hover:border-zinc-600'}`;
+                div.innerHTML = `
+                    <div>
+                        <p class="text-sm font-bold text-white">${p.name}</p>
+                        <p class="text-[9px] text-zinc-500 uppercase">${p.role}</p>
+                    </div>
+                    <span class="font-display font-black text-xs text-zinc-400">₹${p.base}</span>
+                `;
+                div.onclick = () => { selectedTransferSign = p.playerId; renderTransferLists(); checkTransferValid(); };
+                unsoldList.appendChild(div);
+            });
+            if(unsoldPlayers.length === 0) unsoldList.innerHTML = '<p class="text-xs text-zinc-500 italic p-2">No unsold players available.</p>';
+        }
+
+        function checkTransferValid() {
+            document.getElementById('btn-confirm-transfer').disabled = !(selectedTransferRelease && selectedTransferSign);
+        }
+
+        document.getElementById('btn-confirm-transfer').addEventListener('click', async () => {
+            if (!selectedTransferRelease || !selectedTransferSign) return;
+            const releaseP = playersData.find(p => p.playerId === selectedTransferRelease);
+            const signP = playersData.find(p => p.playerId === selectedTransferSign);
+            const me = usersData.find(u => u.userId === myUserDocId);
+            
+            const budgetDiff = releaseP.basePrice - signP.basePrice;
+            if (me.budget + budgetDiff < 0) return showToast("Insufficient budget for this swap.");
+
+            try {
+                const batch = writeBatch(db);
+                batch.update(doc(getPlayersRef(), releaseP.playerId), { status: 'unsold', ownerId: null, soldPrice: null });
+                batch.update(doc(getPlayersRef(), signP.playerId), { status: 'sold', ownerId: myUserDocId, soldPrice: signP.basePrice });
+                batch.update(doc(getUsersRef(), myUserDocId), { budget: me.budget + budgetDiff });
+                
+                let newSd = JSON.parse(JSON.stringify(seasonData));
+                newSd.playerStats[signP.playerId] = { runs: 0, wickets: 0, injuredFor: 0, name: signP.name, owner: myUserDocId, role: signP.role, set: signP.set };
+                newSd.injuries.unshift(`${me.username} signed ${signP.name} replacing ${releaseP.name}.`);
+                
+                if(me.role === 'admin') newSd.phase = 'league';
+                
+                batch.update(doc(getRoomsRef(), currentRoomId), { season: newSd });
+                await batch.commit();
+
+                document.getElementById('transfer-modal').classList.add('hidden');
+                showToast("Transfer Successful!");
+            } catch(e) { console.error("Transfer Error", e); showToast("Failed to process transfer."); }
+        });
 
         function updateChatUI() {
             const container = document.getElementById('chat-messages'); if (!container) return;
@@ -1736,63 +2446,6 @@
             }
         }, 1000);
 
-        async function initVoiceChat() {
-            try {
-                try { localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: { facingMode: "user" } }); } 
-                catch (camErr) { console.warn("Camera failed, audio only."); localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false }); }
-                
-                const localVid = document.getElementById('local-video'); if (localVid) localVid.srcObject = localStream;
-                localStream.getAudioTracks().forEach(track => track.enabled = false); localStream.getVideoTracks().forEach(track => track.enabled = false);
-
-                try {
-                    peer = new Peer();
-                    peer.on('open', (id) => { myPeerId = id; if (myUserDocId) { updateDoc(doc(getUsersRef(), myUserDocId), { peerId: myPeerId }).catch(console.error); } });
-                    peer.on('call', (call) => { call.answer(localStream); handleCallStream(call); });
-                    peer.on('error', (err) => { if (err.type === 'network' || String(err).includes('SecurityError') || String(err).includes('WebSocket')) { showToast("Video blocked by browser policy. Deploy to test."); } else if (err.type !== 'peer-unavailable') { console.warn("PeerJS:", err); } });
-                } catch (peerErr) { console.error("PeerJS init failed:", peerErr); }
-            } catch (err) { console.error("Media err:", err); }
-        }
-
-        function makeCall(remotePeerId) {
-            if (!localStream || !peer || peer.destroyed) return;
-            try { const call = peer.call(remotePeerId, localStream); if (call) handleCallStream(call); } 
-            catch(e) { console.warn("Call failed:", e); }
-        }
-
-        function handleCallStream(call) {
-            connectedPeers.add(call.peer);
-            call.on('stream', (remoteStream) => { activeStreams.set(call.peer, remoteStream); updateVideoGallery(); });
-            call.on('close', () => { connectedPeers.delete(call.peer); activeStreams.delete(call.peer); updateVideoGallery(); });
-        }
-
-        document.getElementById('btn-mic').addEventListener('click', () => {
-            if (!localStream || localStream.getAudioTracks().length === 0) return showToast("Mic unavailable!");
-            isMicMuted = !isMicMuted; localStream.getAudioTracks().forEach(t => t.enabled = !isMicMuted);
-            const btn = document.getElementById('btn-mic'); const iconOn = document.getElementById('icon-mic-on'); const iconOff = document.getElementById('icon-mic-off');
-            if (isMicMuted) { iconOn.classList.add('hidden'); iconOff.classList.remove('hidden'); btn.classList.add('bg-red-500/10', 'text-red-400'); btn.classList.remove('bg-cric-green/20', 'text-cric-green'); } 
-            else { iconOn.classList.remove('hidden'); iconOff.classList.add('hidden'); btn.classList.remove('bg-red-500/10', 'text-red-400'); btn.classList.add('bg-cric-green/20', 'text-cric-green'); }
-        });
-
-        document.getElementById('btn-video').addEventListener('click', async () => {
-            if (!localStream) return;
-            if (localStream.getVideoTracks().length === 0) {
-                try {
-                    const vidStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
-                    localStream.addTrack(vidStream.getVideoTracks()[0]);
-                    const localVid = document.getElementById('local-video'); if (localVid) localVid.srcObject = localStream;
-                } catch (e) { return showToast("Camera denied!"); }
-            }
-            isVideoMuted = !isVideoMuted; localStream.getVideoTracks().forEach(t => t.enabled = !isVideoMuted);
-            const btn = document.getElementById('btn-video'); const iconOn = document.getElementById('icon-video-on'); const iconOff = document.getElementById('icon-video-off'); const localVid = document.getElementById('local-video');
-            if (isVideoMuted) {
-                iconOn.classList.add('hidden'); iconOff.classList.remove('hidden'); btn.classList.add('bg-red-500/10', 'text-red-400'); btn.classList.remove('bg-cric-green/20', 'text-cric-green');
-                if(localVid) { localVid.classList.replace('opacity-100', 'opacity-30'); localVid.classList.add('grayscale'); }
-            } else {
-                iconOn.classList.remove('hidden'); iconOff.classList.add('hidden'); btn.classList.remove('bg-red-500/10', 'text-red-400'); btn.classList.add('bg-cric-green/20', 'text-cric-green');
-                if(localVid) { localVid.classList.replace('opacity-30', 'opacity-100'); localVid.classList.remove('grayscale'); }
-            }
-        });
-
         function startTimer(endTime) {
             stopTimer();
             timerInterval = setInterval(() => {
@@ -1802,9 +2455,9 @@
                 if(diff <= 0) { stopTimer(); handleTimerEnd(); }
             }, 100);
         }
-        
+
         function stopTimer() { if(timerInterval) clearInterval(timerInterval); }
-        
+
         async function handleTimerEnd() {
             const me = usersData.find(u => u.userId === myUserDocId);
             if(me && me.role === 'admin' && roomData.status === 'active') {
@@ -1833,10 +2486,8 @@
             } catch(e) { console.error("Bid err", e); }
         };
 
-        document.getElementById('btn-host-start').addEventListener('click', async () => {
+        document.getElementById('btn-host-start')?.addEventListener('click', async () => {
             if(!currentUser || !roomData) return;
-            
-            // PRIORITY SET ORDER
             const SET_ORDER = ["Marquee", "Batsmen", "Pacers", "Wicketkeepers", "All-Rounders", "Spinners"];
             const currentPlayer = playersData.find(p => p.order === roomData.currentAuctionIndex);
 
@@ -1868,7 +2519,6 @@
                         }
                     }
                 }
-                
                 if (firstPlayer) {
                     await updateDoc(doc(getRoomsRef(), currentRoomId), { currentAuctionIndex: firstPlayer.order, status: 'active', currentBid: 0, currentBidder: null, timerEndTime: Date.now() + (TIMER_SECONDS * 1000) });
                     await updateDoc(doc(getPlayersRef(), firstPlayer.playerId), { status: 'auctioning' });
@@ -1878,32 +2528,29 @@
             }
         });
 
-        document.getElementById('btn-host-pause').addEventListener('click', async () => {
+        document.getElementById('btn-host-pause')?.addEventListener('click', async () => {
             if(!currentUser || !roomData) return;
             await updateDoc(doc(getRoomsRef(), currentRoomId), { status: 'paused', timerEndTime: 0 });
         });
 
-        document.getElementById('btn-host-unsold').addEventListener('click', async () => {
+        document.getElementById('btn-host-unsold')?.addEventListener('click', async () => {
             if(!currentUser || !roomData) return;
             if(roomData.currentBidder) return showToast("Cannot mark unsold: Bids exist!");
             const currentPlayer = playersData.find(p => p.order === roomData.currentAuctionIndex);
             if(currentPlayer) await markPlayerUnsold(currentPlayer.playerId);
         });
 
-        document.getElementById('btn-host-skip').addEventListener('click', async () => {
+        document.getElementById('btn-host-skip')?.addEventListener('click', async () => {
             if(!currentUser || !roomData) return;
             if(roomData.currentBidder) return showToast("Cannot skip: Bids exist!");
             const currentPlayer = playersData.find(p => p.order === roomData.currentAuctionIndex);
             if(currentPlayer) {
-                // Immediately set unsold, skip the waiting time
                 await updateDoc(doc(getRoomsRef(), currentRoomId), { status: 'paused', timerEndTime: 0 });
                 await updateDoc(doc(getPlayersRef(), currentPlayer.playerId), { status: 'unsold' });
-                
-                // Instantly advance right after state updates
                 setTimeout(() => {
                     const me = usersData.find(u => u.userId === myUserDocId);
                     if(me && me.role === 'admin') { const b = document.getElementById('btn-host-start'); if(b) b.click(); }
-                }, 300); // 300ms visual buffer
+                }, 300);
             }
         });
 
@@ -1935,6 +2582,77 @@
                 }, 3500);
             } catch(e) { console.error("Unsold err:", e); }
         }
+
+        function updateChatRecipients() {
+            const select = document.getElementById('chat-recipient');
+            if(!select) return;
+            const currentVal = select.value;
+            select.innerHTML = '<option value="all">Public Chat</option>';
+            usersData.forEach(u => {
+                if(u.userId !== myUserDocId && u._computedOnline) {
+                    const opt = document.createElement('option');
+                    opt.value = u.userId; opt.innerText = `Whisper: ${u.username}`; select.appendChild(opt);
+                }
+            });
+            if([...select.options].some(o => o.value === currentVal)) select.value = currentVal;
+        }
+
+        async function initVoiceChat() {
+            try {
+                try { localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: { facingMode: "user" } }); } 
+                catch (camErr) { console.warn("Camera failed, audio only."); localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false }); }
+                
+                const localVid = document.getElementById('local-video'); if (localVid) localVid.srcObject = localStream;
+                localStream.getAudioTracks().forEach(track => track.enabled = false); localStream.getVideoTracks().forEach(track => track.enabled = false);
+
+                try {
+                    peer = new Peer();
+                    peer.on('open', (id) => { myPeerId = id; if (myUserDocId) { updateDoc(doc(getUsersRef(), myUserDocId), { peerId: myPeerId }).catch(console.error); } });
+                    peer.on('call', (call) => { call.answer(localStream); handleCallStream(call); });
+                    peer.on('error', (err) => { if (err.type === 'network' || String(err).includes('SecurityError') || String(err).includes('WebSocket')) { showToast("Video blocked by browser policy. Deploy to test."); } else if (err.type !== 'peer-unavailable') { console.warn("PeerJS:", err); } });
+                } catch (peerErr) { console.error("PeerJS init failed:", peerErr); }
+            } catch (err) { console.error("Media err:", err); }
+        }
+
+        function makeCall(remotePeerId) {
+            if (!localStream || !peer || peer.destroyed) return;
+            try { const call = peer.call(remotePeerId, localStream); if (call) handleCallStream(call); } 
+            catch(e) { console.warn("Call failed:", e); }
+        }
+
+        function handleCallStream(call) {
+            connectedPeers.add(call.peer);
+            call.on('stream', (remoteStream) => { activeStreams.set(call.peer, remoteStream); updateVideoGallery(); });
+            call.on('close', () => { connectedPeers.delete(call.peer); activeStreams.delete(call.peer); updateVideoGallery(); });
+        }
+
+        document.getElementById('btn-mic')?.addEventListener('click', () => {
+            if (!localStream || localStream.getAudioTracks().length === 0) return showToast("Mic unavailable!");
+            isMicMuted = !isMicMuted; localStream.getAudioTracks().forEach(t => t.enabled = !isMicMuted);
+            const btn = document.getElementById('btn-mic'); const iconOn = document.getElementById('icon-mic-on'); const iconOff = document.getElementById('icon-mic-off');
+            if (isMicMuted) { iconOn.classList.add('hidden'); iconOff.classList.remove('hidden'); btn.classList.add('bg-red-500/10', 'text-red-400'); btn.classList.remove('bg-cric-green/20', 'text-cric-green'); } 
+            else { iconOn.classList.remove('hidden'); iconOff.classList.add('hidden'); btn.classList.remove('bg-red-500/10', 'text-red-400'); btn.classList.add('bg-cric-green/20', 'text-cric-green'); }
+        });
+
+        document.getElementById('btn-video')?.addEventListener('click', async () => {
+            if (!localStream) return;
+            if (localStream.getVideoTracks().length === 0) {
+                try {
+                    const vidStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+                    localStream.addTrack(vidStream.getVideoTracks()[0]);
+                    const localVid = document.getElementById('local-video'); if (localVid) localVid.srcObject = localStream;
+                } catch (e) { return showToast("Camera denied!"); }
+            }
+            isVideoMuted = !isVideoMuted; localStream.getVideoTracks().forEach(t => t.enabled = !isVideoMuted);
+            const btn = document.getElementById('btn-video'); const iconOn = document.getElementById('icon-video-on'); const iconOff = document.getElementById('icon-video-off'); const localVid = document.getElementById('local-video');
+            if (isVideoMuted) {
+                iconOn.classList.add('hidden'); iconOff.classList.remove('hidden'); btn.classList.add('bg-red-500/10', 'text-red-400'); btn.classList.remove('bg-cric-green/20', 'text-cric-green');
+                if(localVid) { localVid.classList.replace('opacity-100', 'opacity-30'); localVid.classList.add('grayscale'); }
+            } else {
+                iconOn.classList.remove('hidden'); iconOff.classList.add('hidden'); btn.classList.remove('bg-red-500/10', 'text-red-400'); btn.classList.add('bg-cric-green/20', 'text-cric-green');
+                if(localVid) { localVid.classList.replace('opacity-30', 'opacity-100'); localVid.classList.remove('grayscale'); }
+            }
+        });
 
         function triggerConfetti() {
             var duration = 3 * 1000; var animationEnd = Date.now() + duration;
