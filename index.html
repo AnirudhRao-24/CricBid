@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- Responsive Viewport for Mobile Devices -->
+    <!-- Restored proper viewport for native mobile scaling -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CricBid - Premium Live Auction</title>
     
@@ -20,6 +20,7 @@
     <script>
         tailwind.config = {
             theme: {
+                // Removed the overriding 'screens' object to restore natural breakpoints
                 extend: {
                     fontFamily: {
                         sans: ['Outfit', 'sans-serif'],
@@ -126,7 +127,8 @@
         }
     </style>
 </head>
-<body class="relative w-full h-[100dvh] flex flex-col font-sans antialiased bg-cric-dark overflow-hidden selection:bg-cric-green selection:text-white">
+<!-- Removed 'overflow-hidden' from mobile body, constrained strictly to 'lg' breakpoints for desktop paneling -->
+<body class="relative w-full min-h-[100dvh] lg:h-[100dvh] flex flex-col font-sans antialiased bg-cric-dark lg:overflow-hidden selection:bg-cric-green selection:text-white touch-scroll">
 
     <div id="toast" class="toast bg-zinc-900/95 backdrop-blur-md border border-zinc-800 text-zinc-100 px-5 py-4 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] font-medium flex items-center gap-3 min-w-[300px] max-w-[90vw] ring-1 ring-white/5">
         <div class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
@@ -135,7 +137,6 @@
         <span id="toast-msg" class="flex-1 text-sm leading-relaxed font-semibold">Notification message</span>
     </div>
 
-    <!-- Modals -->
     <div id="exit-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden flex-col items-center justify-center p-4 opacity-0 transition-opacity duration-300">
         <div class="glass-panel bg-zinc-900 p-8 rounded-3xl max-w-sm w-full text-center shadow-2xl transform scale-95 transition-transform duration-300" id="exit-modal-content">
             <div class="w-16 h-16 sm:w-20 sm:h-20 bg-red-500/10 rounded-3xl mx-auto mb-6 flex items-center justify-center text-red-500 shadow-inner">
@@ -179,8 +180,8 @@
     </div>
 
     <!-- ==================== SCREEN 1: LOBBY ==================== -->
-    <div id="lobby-screen" class="flex flex-1 flex-col items-center justify-center p-4 sm:p-5 overflow-y-auto min-h-0 mesh-bg w-full">
-        <div class="glass-panel p-6 sm:p-12 rounded-[2rem] sm:rounded-[2.5rem] w-full max-w-[460px] text-center shadow-[0_30px_60px_rgba(0,0,0,0.6)] animate-fade-in-up relative overflow-hidden">
+    <div id="lobby-screen" class="flex flex-1 flex-col items-center justify-center p-4 sm:p-5 min-h-[100dvh] mesh-bg w-full relative z-10">
+        <div class="glass-panel p-6 sm:p-12 rounded-[2rem] sm:rounded-[2.5rem] w-full max-w-[460px] text-center shadow-[0_30px_60px_rgba(0,0,0,0.6)] animate-fade-in-up relative overflow-hidden my-auto">
             <div class="absolute -top-32 -right-32 w-48 h-48 sm:w-64 sm:h-64 bg-cric-green/10 rounded-full blur-[60px] sm:blur-[80px] pointer-events-none"></div>
             <div class="absolute -bottom-32 -left-32 w-48 h-48 sm:w-64 sm:h-64 bg-cric-accent/10 rounded-full blur-[60px] sm:blur-[80px] pointer-events-none"></div>
             
@@ -220,10 +221,10 @@
     </div>
 
     <!-- ==================== SCREEN 2: AUCTION ROOM ==================== -->
-    <div id="auction-screen" class="hidden flex-1 w-full h-full min-h-0 flex flex-col bg-zinc-950 relative">
+    <div id="auction-screen" class="hidden flex-1 w-full flex-col bg-zinc-950 relative">
         
         <!-- Header -->
-        <header class="bg-zinc-950/90 backdrop-blur-xl border-b border-zinc-800/80 pt-safe flex flex-wrap justify-between items-center px-4 py-3 sm:px-6 z-30 shrink-0 gap-y-2">
+        <header class="bg-zinc-950/90 backdrop-blur-xl border-b border-zinc-800/80 pt-safe flex flex-wrap justify-between items-center px-4 py-3 sm:px-6 z-[60] shrink-0 sticky top-0 lg:relative">
             <div class="flex items-center gap-2 sm:gap-5">
                 <div class="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-2">
                     <span class="text-[9px] sm:text-xs text-zinc-500 font-bold uppercase tracking-widest">Room</span>
@@ -263,10 +264,10 @@
         </header>
 
         <!-- Main Workspace (Responsive flex layout causing panels to stack vertically on mobile and horizontally on desktop) -->
-        <main class="flex-1 flex flex-col lg:flex-row overflow-x-hidden overflow-y-auto lg:overflow-hidden relative w-full h-full min-h-0 hide-scrollbar pb-24 lg:pb-0 touch-pan-y touch-scroll">
+        <main class="flex-1 flex flex-col lg:flex-row w-full lg:overflow-hidden relative bg-zinc-950">
             
             <!-- PANEL: Main Auction Area (Centered on Desktop, Top on Mobile) -->
-            <section id="auction-panel" class="flex flex-col w-full lg:flex-1 lg:h-full relative z-20 shrink-0 bg-zinc-950 order-1 lg:order-2 lg:overflow-y-auto">
+            <section id="auction-panel" class="flex flex-col w-full lg:flex-1 lg:h-full relative z-20 shrink-0 bg-zinc-950 order-1 lg:order-2 lg:overflow-y-auto pb-6 lg:pb-0">
                 <div class="flex-1 overflow-y-visible lg:overflow-y-auto hide-scrollbar flex flex-col relative w-full lg:h-full">
                     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] sm:w-[600px] sm:h-[600px] bg-cric-green/5 rounded-full blur-[80px] sm:blur-[100px] pointer-events-none"></div>
 
@@ -367,7 +368,7 @@
             </section>
 
             <!-- PANEL: Standings (Left on Desktop, Middle on Mobile) -->
-            <aside id="standings-panel" class="flex flex-col w-full lg:w-[320px] xl:w-[360px] lg:h-full shrink-0 bg-zinc-950/80 border-t lg:border-t-0 lg:border-r border-zinc-800/80 p-4 z-10 order-2 lg:order-1 lg:overflow-y-auto hide-scrollbar">
+            <aside id="standings-panel" class="flex flex-col w-full lg:w-[320px] xl:w-[360px] lg:h-full shrink-0 bg-zinc-950/80 border-t lg:border-t-0 lg:border-r border-zinc-800/80 p-4 z-10 order-2 lg:order-1 lg:overflow-y-auto hide-scrollbar pb-6 lg:pb-4">
                 <div class="sticky top-0 bg-zinc-950/95 backdrop-blur-xl pb-3 sm:pb-4 pt-1 sm:pt-2 z-10 mb-2">
                     <h2 class="text-sm sm:text-base font-display font-bold text-white flex items-center gap-2 tracking-wide uppercase">
                         <span class="w-1.5 sm:w-2 h-5 sm:h-6 rounded-full bg-cric-gold shrink-0"></span>
@@ -380,7 +381,7 @@
             </aside>
 
             <!-- PANEL: Pool (Right on Desktop, Bottom on Mobile) -->
-            <aside id="pool-panel" class="flex flex-col w-full lg:w-[300px] xl:w-[340px] lg:h-full shrink-0 bg-zinc-950/80 border-t lg:border-t-0 lg:border-l border-zinc-800/80 p-4 z-10 order-3 lg:overflow-y-auto hide-scrollbar">
+            <aside id="pool-panel" class="flex flex-col w-full lg:w-[300px] xl:w-[340px] lg:h-full shrink-0 bg-zinc-950/80 border-t lg:border-t-0 lg:border-l border-zinc-800/80 p-4 z-10 order-3 lg:overflow-y-auto hide-scrollbar pb-24 lg:pb-4">
                 <div class="sticky top-0 bg-zinc-950/95 backdrop-blur-xl pb-3 sm:pb-4 pt-1 sm:pt-2 z-10 mb-2">
                     <h2 class="text-sm sm:text-base font-display font-bold text-white flex items-center gap-2 tracking-wide uppercase">
                         <span class="w-1.5 sm:w-2 h-5 sm:h-6 rounded-full bg-cric-accent shrink-0"></span>
@@ -845,10 +846,8 @@
 
         function enterRoom(roomId) {
             currentRoomId = roomId;
-            screens.lobby.classList.add('hidden');
-            screens.lobby.classList.remove('flex');
-            screens.auction.classList.remove('hidden');
-            screens.auction.classList.add('flex');
+            screens.lobby.classList.add('hidden'); screens.lobby.classList.remove('flex');
+            screens.auction.classList.remove('hidden'); screens.auction.classList.add('flex');
             ui.roomCode.innerText = roomId;
             setupListeners(); initVoiceChat(); startHeartbeat();
         }
