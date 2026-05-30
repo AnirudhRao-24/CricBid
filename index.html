@@ -723,14 +723,15 @@
         let playerStatsCache = {};
         let activeFetches = {};
 
-        function processPrefetchQueue() {
+        async function processPrefetchQueue() {
             if (!playersData || playersData.length === 0) return;
-            // Pre-fetch up to 8 upcoming players immediately in the background
+            // Pre-fetch up to 3 upcoming players sequentially to avoid API rate limits
             const upcoming = playersData.filter(p => p.status === 'upcoming').sort((a,b) => a.order - b.order);
-            for(let i = 0; i < Math.min(8, upcoming.length); i++) {
+            for(let i = 0; i < Math.min(3, upcoming.length); i++) {
                 const p = upcoming[i];
                 if (!playerStatsCache[p.name] && !activeFetches[p.name]) {
                     fetchRealPlayerStats(p).catch(()=>{});
+                    await new Promise(r => setTimeout(r, 1500)); // Stagger requests by 1.5 seconds
                 }
             }
         }
@@ -822,18 +823,20 @@ Return a JSON object exactly matching the schema.
                     }
                 };
 
-                // --- THIS IS THE CORRECT GEMINI AI KEY BLOCK ---
-                const apiKey = "AQ.Ab8RN6Lhnw9R1VuBbckLMHDYYMGEQGv16rk2oB4DvS4L5t__Q";
+                const apiKey = "";
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
 
                 let result = null;
-                let retries = 5;
-                let delay = 1000;
+                let retries = 3;
+                let delay = 2000;
 
                 for (let i = 0; i < retries; i++) {
                     try {
                         const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                        if (!response.ok) throw new Error('API Error');
+                        if (!response.ok) {
+                            const errText = await response.text();
+                            throw new Error(`HTTP ${response.status}: ${errText}`);
+                        }
                         result = await response.json();
                         break;
                     } catch (err) {
