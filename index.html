@@ -729,9 +729,18 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
         import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, onSnapshot, writeBatch, serverTimestamp, deleteDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const appId = typeof __app_id !== 'undefined' && String(__app_id).trim() !== '' ? String(__app_id) : 'default-app-id';
         
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+        let parsedConfig = null;
+        if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+            try {
+                parsedConfig = typeof __firebase_config === 'string' ? JSON.parse(__firebase_config) : __firebase_config;
+            } catch(e) {
+                console.error("Firebase config parse error", e);
+            }
+        }
+
+        const firebaseConfig = parsedConfig || {
           apiKey: "AIzaSyCAd5OJKmVW2aSWgDogBg3lSpj1uzPxGrk",
           authDomain: "cricbid.firebaseapp.com",
           projectId: "cricbid",
@@ -1258,22 +1267,36 @@ Return a JSON object exactly matching the schema.
             if(!currentUser) return;
             try {
                 buttons.create.disabled = true; buttons.create.innerText = "Hosting...";
-                await setDoc(doc(getRoomsRef(), roomId), {
+
+                let localSessionId;
+                try {
+                    localSessionId = sessionStorage.getItem('cricbid_session');
+                    if (!localSessionId) { 
+                        localSessionId = Math.random().toString(36).substring(2, 9); 
+                        sessionStorage.setItem('cricbid_session', localSessionId); 
+                    }
+                } catch(e) {
+                    // Safe fallback if iframe blocks sessionStorage
+                    localSessionId = Math.random().toString(36).substring(2, 9);
+                }
+
+                myUserDocId = currentUser.uid + "_" + localSessionId + "_" + roomId; 
+
+                const batch = writeBatch(db);
+
+                // Add the room to the batch
+                batch.set(doc(getRoomsRef(), roomId), {
                     roomId: roomId, hostId: currentUser.uid, status: 'waiting', format: format,
                     currentAuctionIndex: 0, timerEndTime: 0, currentBid: 0, currentBidder: null, createdAt: serverTimestamp()
                 });
-
-                let localSessionId = sessionStorage.getItem('cricbid_session');
-                if (!localSessionId) { localSessionId = Math.random().toString(36).substring(2, 9); sessionStorage.setItem('cricbid_session', localSessionId); }
-                myUserDocId = currentUser.uid + "_" + localSessionId + "_" + roomId; 
                 
-                await setDoc(doc(getUsersRef(), myUserDocId), {
+                // Add the host user to the batch
+                batch.set(doc(getUsersRef(), myUserDocId), {
                     userId: myUserDocId, authId: currentUser.uid, roomId: roomId, username: username,
                     budget: BUDGET_DEFAULT, role: 'admin', joinedAt: Date.now(), isOnline: true,
                     kicked: false, banned: false, peerId: null, lastActive: Date.now()
                 });
 
-                const batch = writeBatch(db);
                 let playersToLoad = [...(AUCTION_DATABASES[format] || AUCTION_DATABASES["T20"])];
                 
                 // Ensure enough players to support 5 teams hitting up to 25 players
@@ -1293,13 +1316,21 @@ Return a JSON object exactly matching the schema.
                     }
                 }
                 
+                // Add all the players to the batch
                 playersToLoad.forEach((p, idx) => {
                     const pRef = doc(getPlayersRef());
                     batch.set(pRef, { playerId: pRef.id, roomId: roomId, name: p.name, role: p.role, country: p.country, basePrice: p.base, set: p.set, soldPrice: null, ownerId: null, status: 'upcoming', order: idx });
                 });
+                
+                // Commit everything at once
                 await batch.commit();
                 enterRoom(roomId);
-            } catch(e) { console.error(e); showToast("Error creating room."); buttons.create.disabled = false; buttons.create.innerText = "Host New Auction"; }
+            } catch(e) { 
+                console.error("Create Room Error:", e); 
+                showToast("Error creating room: " + (e.message || "Network Error")); 
+                buttons.create.disabled = false; 
+                buttons.create.innerText = "Host New Auction"; 
+            }
         }
 
         async function joinRoom(roomId, username) {
