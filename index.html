@@ -822,14 +822,31 @@ Return a JSON object exactly matching the schema.
                     }
                 };
 
-                const apiKey = ""; // Left empty to be injected by the runtime environment
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                const apiKey = ""; // Will be injected by execution environment
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
 
-                try {
-                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                    const result = await response.json();
-                    
-                    if (result.candidates && result.candidates.length > 0 && result.candidates[0].content?.parts?.[0]?.text) {
+                let result = null;
+                let retries = 5;
+                let delay = 1000;
+
+                for (let i = 0; i < retries; i++) {
+                    try {
+                        const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                        if (!response.ok) throw new Error('API Error');
+                        result = await response.json();
+                        break;
+                    } catch (err) {
+                        if (i === retries - 1) {
+                            console.error("AI Fetch Error:", err);
+                        } else {
+                            await new Promise(res => setTimeout(res, delay));
+                            delay *= 2;
+                        }
+                    }
+                }
+                
+                if (result && result.candidates && result.candidates.length > 0 && result.candidates[0].content?.parts?.[0]?.text) {
+                    try {
                         const parsed = JSON.parse(result.candidates[0].content.parts[0].text);
                         const analytics = {
                             matches: parsed.matches,
@@ -846,8 +863,10 @@ Return a JSON object exactly matching the schema.
                             renderPlayerAnalyticsUI(player, analytics);
                         }
                         return analytics;
+                    } catch (parseErr) {
+                        console.error("JSON parsing error", parseErr);
                     }
-                } catch (e) { console.error("AI Fetch Error:", e); }
+                }
                 
                 const fallback = getFallbackAnalytics(player);
                 playerStatsCache[player.name] = fallback;
@@ -1297,7 +1316,7 @@ Return a JSON object exactly matching the schema.
                     try {
                         await signInWithCustomToken(auth, __initial_auth_token);
                     } catch (customErr) {
-                        console.warn("Custom token mismatch (expected if using custom Firebase config). Falling back to Anonymous Auth.");
+                        console.warn("Custom token mismatch. Falling back to Anonymous Auth.");
                         await signInAnonymously(auth);
                     }
                 } else {
@@ -1454,7 +1473,6 @@ Return a JSON object exactly matching the schema.
                 });
 
                 const batch = writeBatch(db);
-                // Load format specific players
                 const playersToLoad = AUCTION_DATABASES[format] || AUCTION_DATABASES["T20"];
                 
                 playersToLoad.forEach((p, idx) => {
@@ -1765,7 +1783,7 @@ Return a JSON object exactly matching the schema.
                 screens.season.classList.remove('hidden'); screens.season.classList.add('flex');
                 seasonData = roomData.season || null;
                 updateSeasonUI();
-                return; // Stop rendering auction UI
+                return; 
             } else {
                 screens.season.classList.add('hidden'); screens.season.classList.remove('flex');
                 if (currentRoomId && screens.lobby.classList.contains('hidden')) {
