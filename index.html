@@ -107,6 +107,7 @@
         ::-webkit-scrollbar-thumb:hover { background: #52525b; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .touch-scroll { -webkit-overflow-scrolling: touch; }
         
         .toast {
             position: fixed; top: max(1.5rem, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%) translateY(-120px);
@@ -178,7 +179,7 @@
     </div>
 
     <!-- ==================== SCREEN 1: LOBBY ==================== -->
-    <div id="lobby-screen" class="flex-1 flex flex-col items-center justify-center p-4 sm:p-5 overflow-y-auto min-h-0 mesh-bg w-full">
+    <div id="lobby-screen" class="flex flex-1 flex-col items-center justify-center p-4 sm:p-5 overflow-y-auto min-h-0 mesh-bg w-full">
         <div class="glass-panel p-6 sm:p-12 rounded-[2rem] sm:rounded-[2.5rem] w-full max-w-[460px] text-center shadow-[0_30px_60px_rgba(0,0,0,0.6)] animate-fade-in-up relative overflow-hidden">
             <div class="absolute -top-32 -right-32 w-48 h-48 sm:w-64 sm:h-64 bg-cric-green/10 rounded-full blur-[60px] sm:blur-[80px] pointer-events-none"></div>
             <div class="absolute -bottom-32 -left-32 w-48 h-48 sm:w-64 sm:h-64 bg-cric-accent/10 rounded-full blur-[60px] sm:blur-[80px] pointer-events-none"></div>
@@ -219,7 +220,7 @@
     </div>
 
     <!-- ==================== SCREEN 2: AUCTION ROOM ==================== -->
-    <div id="auction-screen" class="hidden flex-1 w-full h-full min-h-0 flex-col bg-zinc-950 relative">
+    <div id="auction-screen" class="hidden flex-1 w-full h-full min-h-0 flex flex-col bg-zinc-950 relative">
         
         <!-- Header -->
         <header class="bg-zinc-950/90 backdrop-blur-xl border-b border-zinc-800/80 pt-safe flex flex-wrap justify-between items-center px-4 py-3 sm:px-6 z-30 shrink-0 gap-y-2">
@@ -262,11 +263,11 @@
         </header>
 
         <!-- Main Workspace (Responsive flex layout causing panels to stack vertically on mobile and horizontally on desktop) -->
-        <main class="flex-1 flex flex-col lg:flex-row overflow-x-hidden overflow-y-auto lg:overflow-hidden relative w-full hide-scrollbar">
+        <main class="flex-1 flex flex-col lg:flex-row overflow-x-hidden overflow-y-auto lg:overflow-hidden relative w-full h-full min-h-0 hide-scrollbar pb-24 lg:pb-0 touch-pan-y touch-scroll">
             
             <!-- PANEL: Main Auction Area (Centered on Desktop, Top on Mobile) -->
-            <section id="auction-panel" class="flex flex-col w-full lg:flex-1 lg:h-full relative z-20 shrink-0 bg-zinc-950 order-1 lg:order-2 lg:overflow-y-auto pb-16 lg:pb-0">
-                <div class="flex-1 overflow-y-visible lg:overflow-y-auto hide-scrollbar flex flex-col relative w-full h-full">
+            <section id="auction-panel" class="flex flex-col w-full lg:flex-1 lg:h-full relative z-20 shrink-0 bg-zinc-950 order-1 lg:order-2 lg:overflow-y-auto">
+                <div class="flex-1 overflow-y-visible lg:overflow-y-auto hide-scrollbar flex flex-col relative w-full lg:h-full">
                     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] sm:w-[600px] sm:h-[600px] bg-cric-green/5 rounded-full blur-[80px] sm:blur-[100px] pointer-events-none"></div>
 
                     <!-- Video Gallery -->
@@ -844,7 +845,10 @@
 
         function enterRoom(roomId) {
             currentRoomId = roomId;
-            screens.lobby.classList.add('hidden'); screens.auction.classList.remove('hidden');
+            screens.lobby.classList.add('hidden');
+            screens.lobby.classList.remove('flex');
+            screens.auction.classList.remove('hidden');
+            screens.auction.classList.add('flex');
             ui.roomCode.innerText = roomId;
             setupListeners(); initVoiceChat(); startHeartbeat();
         }
