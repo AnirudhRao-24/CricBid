@@ -14,7 +14,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <!-- REMOVED PEERJS TO COMPLY WITH CANVAS SECURITY POLICIES -->
+    <!-- PeerJS for WebRTC Video/Audio Chat -->
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     
     <script>
         tailwind.config = {
@@ -496,7 +497,11 @@
         let playerToBan = null;
         let heartbeatInterval = null;
 
-        // Media State (Local Only, NO PeerJS)
+        // Media State (With PeerJS WebRTC)
+        let peer = null;
+        let myPeerId = null;
+        let connectedPeers = new Set();
+        let activeStreams = new Map();
         let localStream = null;
         let isMicMuted = true;
         let isVideoMuted = true;
@@ -780,7 +785,7 @@
                 await setDoc(doc(getUsersRef(), myUserDocId), {
                     userId: myUserDocId, authId: currentUser.uid, roomId: roomId, username: username,
                     budget: BUDGET_DEFAULT, role: 'admin', joinedAt: Date.now(), isOnline: true,
-                    kicked: false, banned: false, lastActive: Date.now()
+                    kicked: false, banned: false, peerId: null, lastActive: Date.now()
                 });
 
                 const batch = writeBatch(db);
@@ -821,12 +826,12 @@
                 const userRef = doc(getUsersRef(), myUserDocId);
                 const userSnap = await getDoc(userRef);
                 if (userSnap.exists()) {
-                    await updateDoc(userRef, { username: username, isOnline: true, kicked: false });
+                    await updateDoc(userRef, { username: username, isOnline: true, kicked: false, peerId: null });
                 } else {
                     await setDoc(userRef, {
                         userId: myUserDocId, authId: currentUser.uid, roomId: roomId, username: username,
                         budget: BUDGET_DEFAULT, role: 'player', joinedAt: Date.now(), isOnline: true,
-                        kicked: false, banned: false, lastActive: Date.now()
+                        kicked: false, banned: false, peerId: null, lastActive: Date.now()
                     });
                 }
                 enterRoom(roomId);
@@ -904,6 +909,25 @@
                     }
                 }
 
+                // WebRTC Mesh Network Logic: Connect to new users
+                if (peer && !peer.destroyed && myPeerId) {
+                    usersData.forEach(u => {
+                        if (u.userId !== myUserDocId && u._computedOnline && u.peerId && !connectedPeers.has(u.peerId)) {
+                            const me = usersData.find(m => m.userId === myUserDocId);
+                            // To prevent duplicate connections, only the newer user calls the older users
+                            if (me && (me.joinedAt > u.joinedAt || (me.joinedAt === u.joinedAt && myUserDocId > u.userId))) {
+                                makeCall(u.peerId);
+                            }
+                        }
+                        
+                        // Clean up offline users
+                        if (!u._computedOnline && u.peerId && connectedPeers.has(u.peerId)) {
+                            connectedPeers.delete(u.peerId);
+                            activeStreams.delete(u.peerId);
+                        }
+                    });
+                }
+
                 updateUsersUI();
                 updateVideoGallery();
             });
@@ -942,21 +966,32 @@
                 if (!child.querySelector('#local-video')) child.remove();
             });
 
-            // Generate Avatars for online remote users instead of WebRTC Video (To fix Canvas WebSocket Block)
+            // Generate Avatars or Video Elements for online remote users
             usersData.forEach(u => {
                 if (u.userId !== myUserDocId && u._computedOnline) {
                     const wrapper = document.createElement('div');
                     wrapper.className = "relative group flex flex-col items-center animate-fade-in shrink-0 snap-start";
                     
-                    const avatar = document.createElement('div');
-                    avatar.className = "w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border-2 border-slate-600 bg-slate-700 flex items-center justify-center text-xl sm:text-2xl font-bold shadow-lg text-white font-display uppercase";
-                    avatar.innerText = u.username.charAt(0);
+                    const stream = u.peerId ? activeStreams.get(u.peerId) : null;
+
+                    if (stream) {
+                        const video = document.createElement('video');
+                        video.srcObject = stream;
+                        video.autoplay = true;
+                        video.playsInline = true;
+                        video.className = "w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover border-2 border-cric-green bg-slate-800 shadow-lg";
+                        wrapper.appendChild(video);
+                    } else {
+                        const avatar = document.createElement('div');
+                        avatar.className = "w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border-2 border-slate-600 bg-slate-700 flex items-center justify-center text-xl sm:text-2xl font-bold shadow-lg text-white font-display uppercase";
+                        avatar.innerText = u.username.charAt(0);
+                        wrapper.appendChild(avatar);
+                    }
                     
                     const nameTag = document.createElement('span');
                     nameTag.className = "absolute -bottom-2 bg-slate-900 border border-slate-700 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-md whitespace-nowrap z-10 shadow-sm";
                     nameTag.innerText = u.username;
 
-                    wrapper.appendChild(avatar);
                     wrapper.appendChild(nameTag);
                     gallery.appendChild(wrapper);
                 }
@@ -1219,66 +1254,12 @@
             }
             
             container.innerHTML = '';
-            chatMessages.forEach(msg => {
-                const isMe = msg.senderId === myUserDocId;
-                const isWhisper = msg.receiverId !== 'all';
-                const isWhisperToMe = isWhisper && msg.receiverId === myUserDocId;
-                
-                const div = document.createElement('div');
-                div.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} w-full mb-4`;
-                
-                let labelText = isMe ? 'Me' : msg.senderName;
-                if (isWhisper) { labelText = isWhisperToMe ? `Whisper from ${msg.senderName}` : `Whisper to ${msg.receiverName}`; }
-                
-                let bubbleClasses = isMe ? 'bg-cric-green text-slate-950 rounded-2xl rounded-tr-sm font-medium shadow-md' : 'bg-slate-800 text-slate-100 rounded-2xl rounded-tl-sm border border-slate-700 shadow-sm';
-                if (isWhisper) {
-                    bubbleClasses = isMe ? 'bg-indigo-500 text-white rounded-2xl rounded-tr-sm border border-indigo-400 shadow-[0_4px_15px_rgba(99,102,241,0.3)]' : 'bg-indigo-900/80 text-indigo-100 rounded-2xl rounded-tl-sm border border-indigo-500/50 shadow-[0_4px_15px_rgba(99,102,241,0.3)]';
-                }
-                
-                div.innerHTML = `
-                    <span class="text-[10px] ${isWhisper ? 'text-indigo-400 font-bold' : 'text-slate-500'} mb-1 ml-1 mr-1 uppercase tracking-wider">${labelText}</span>
-                    <div class="px-4 py-2.5 text-[15px] inline-block max-w-[85%] break-words ${bubbleClasses} leading-relaxed">
-                        ${msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
-                    </div>
-                `;
-                container.appendChild(div);
-            });
-            scrollToBottomChat();
+            const flags = { 'IND': '🇮🇳', 'AUS': '🇦🇺', 'ENG': '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'AFG': '🇦🇫', 'RSA': '🇿🇦', 'NZ': '🇳🇿', 'PAK': '🇵🇰' };
+            return flags[countryCode] || '🏳️';
         }
 
-        function scrollToBottomChat() {
-            const container = document.getElementById('chat-messages');
-            if(container) container.scrollTop = container.scrollHeight;
-        }
-
-        window.sendChatMessage = async () => {
-            const input = document.getElementById('chat-input');
-            const text = input.value.trim();
-            if(!text || !currentUser || !currentRoomId) return;
-            
-            const select = document.getElementById('chat-recipient');
-            const receiverId = select.value;
-            const receiverName = receiverId === 'all' ? 'Everyone' : select.options[select.selectedIndex].text.replace('Whisper: ', '');
-            
-            const me = usersData.find(u => u.userId === myUserDocId);
-            if(!me) return;
-            
-            try {
-                input.value = ''; 
-                const msgRef = doc(getChatRef());
-                await setDoc(msgRef, { id: msgRef.id, roomId: currentRoomId, senderId: myUserDocId, senderName: me.username, receiverId: receiverId, receiverName: receiverName, text: text, timestamp: Date.now() });
-            } catch(e) { console.error("Chat send error:", e); showToast("Failed to send message"); }
-        };
-
-        setTimeout(() => {
-            const chatInput = document.getElementById('chat-input');
-            const sendBtn = document.getElementById('btn-send-chat');
-            if(chatInput && sendBtn) {
-                chatInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') sendChatMessage(); });
-                sendBtn.addEventListener('click', sendChatMessage);
-            }
-        }, 1000);
-
+        // ---------------- MEDIA LOGIC (WebRTC Mesh Network) ----------------
+        
         async function initVoiceChat() {
             try {
                 try {
@@ -1292,7 +1273,61 @@
                 localStream.getAudioTracks().forEach(track => track.enabled = false);
                 localStream.getVideoTracks().forEach(track => track.enabled = false);
                 
-            } catch (err) { console.error("Media err:", err); showToast("Camera denied or not found."); }
+                // Initialize PeerJS
+                try {
+                    peer = new Peer();
+                    
+                    peer.on('open', (id) => {
+                        myPeerId = id;
+                        if (myUserDocId) {
+                            updateDoc(doc(getUsersRef(), myUserDocId), { peerId: myPeerId }).catch(console.error);
+                        }
+                    });
+
+                    peer.on('call', (call) => {
+                        call.answer(localStream);
+                        handleCallStream(call);
+                    });
+                    
+                    peer.on('error', (err) => {
+                        if (err.type === 'network' || String(err).includes('SecurityError') || String(err).includes('WebSocket')) {
+                            showToast("Video blocked by Preview sandbox! Download HTML and run locally to test video.");
+                        } else if (err.type !== 'peer-unavailable') {
+                            console.warn("PeerJS Warning:", err);
+                        }
+                    });
+                } catch (peerErr) {
+                    console.error("PeerJS init failed:", peerErr);
+                    showToast("Video signaling blocked! Download HTML and run locally.");
+                }
+
+            } catch (err) { 
+                console.error("Media err:", err); 
+                showToast("Camera/Mic access denied."); 
+            }
+        }
+
+        function makeCall(remotePeerId) {
+            if (!localStream || !peer || peer.destroyed) return;
+            try {
+                const call = peer.call(remotePeerId, localStream);
+                if (call) handleCallStream(call);
+            } catch(e) {
+                console.warn("Call failed:", e);
+            }
+        }
+
+        function handleCallStream(call) {
+            connectedPeers.add(call.peer);
+            call.on('stream', (remoteStream) => {
+                activeStreams.set(call.peer, remoteStream);
+                updateVideoGallery();
+            });
+            call.on('close', () => {
+                connectedPeers.delete(call.peer);
+                activeStreams.delete(call.peer);
+                updateVideoGallery();
+            });
         }
 
         document.getElementById('btn-mic').addEventListener('click', () => {
