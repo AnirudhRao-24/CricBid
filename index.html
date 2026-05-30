@@ -197,7 +197,7 @@
                     <input type="text" id="username-input" placeholder="Enter your name" class="w-full bg-zinc-950/50 border border-zinc-800 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3.5 sm:py-4 text-white focus:outline-none focus:border-cric-green focus:bg-zinc-900/80 transition-all placeholder:text-zinc-600 text-sm sm:text-base shadow-inner">
                 </div>
                 
-                <!-- NEW: Format Selector for Host -->
+                <!-- Format Selector for Host -->
                 <div class="text-left group mt-4">
                     <label class="block text-[10px] sm:text-xs font-bold text-zinc-400 mb-2 ml-2 uppercase tracking-wider group-focus-within:text-cric-green transition-colors">Auction Format (Host Only)</label>
                     <div class="relative">
@@ -244,7 +244,7 @@
                     <span class="text-[9px] sm:text-xs text-zinc-500 font-bold uppercase tracking-widest">Room</span>
                     <span id="ui-room-code" class="text-white bg-zinc-800/50 px-2 py-0.5 sm:py-1 rounded-md border border-zinc-700/50 font-display font-bold tracking-widest text-[10px] sm:text-sm">---</span>
                 </div>
-                <!-- NEW: Format Badge -->
+                <!-- Format Badge -->
                 <div id="ui-format-badge" class="hidden text-[8px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded bg-blue-600/20 text-blue-400 border border-blue-500/30 uppercase tracking-widest">---</div>
                 <div class="h-4 sm:h-6 w-px bg-zinc-800"></div>
                 <div class="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-sm text-zinc-400 font-medium">
@@ -279,10 +279,10 @@
             </div>
         </header>
 
-        <!-- Main Workspace (Responsive flex layout causing panels to stack vertically on mobile and horizontally on desktop) -->
+        <!-- Main Workspace -->
         <main class="flex-1 flex flex-col lg:flex-row w-full overflow-x-hidden overflow-y-auto lg:overflow-hidden relative bg-zinc-950 touch-scroll hide-scrollbar pb-24 lg:pb-0">
             
-            <!-- PANEL: Main Auction Area (Centered on Desktop, Top on Mobile) -->
+            <!-- PANEL: Main Auction Area -->
             <section id="auction-panel" class="flex flex-col w-full lg:flex-1 lg:h-full relative z-20 shrink-0 bg-zinc-950 order-1 lg:order-2 pb-6 lg:pb-0">
                 <div class="flex-1 lg:overflow-y-auto hide-scrollbar flex flex-col relative w-full lg:h-full">
                     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] sm:w-[600px] sm:h-[600px] bg-cric-green/5 rounded-full blur-[80px] sm:blur-[100px] pointer-events-none"></div>
@@ -312,25 +312,93 @@
                         </div>
 
                         <!-- Player Card -->
-                        <div id="player-card" class="w-full max-w-[95%] sm:max-w-md lg:max-w-lg xl:max-w-2xl premium-card-bg rounded-[1.25rem] sm:rounded-[2rem] border border-zinc-700/50 shadow-[0_15px_40px_rgba(0,0,0,0.5)] overflow-hidden relative transition-all duration-500 shrink-0 transform flex flex-col min-h-[300px]">
+                        <div id="player-card" class="w-full max-w-[92%] sm:max-w-md lg:max-w-lg xl:max-w-2xl premium-card-bg rounded-[1.5rem] sm:rounded-[2rem] border border-zinc-700/50 shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden relative transition-all duration-500 shrink-0 transform aspect-[4/5] sm:aspect-auto flex flex-col">
                             
                             <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wMykiLz48L3N2Zz4=')] opacity-50 pointer-events-none"></div>
 
                             <div id="sold-overlay" class="absolute inset-0 bg-zinc-950/90 backdrop-blur-lg z-30 hidden flex-col items-center justify-center p-4 sm:p-6 text-center w-full h-full"></div>
 
-                            <div class="p-4 sm:p-8 flex justify-between items-start relative z-10 flex-1 sm:flex-none">
+                            <!-- STATS OVERLAY -->
+                            <div id="stats-overlay" class="absolute inset-0 bg-zinc-950/95 backdrop-blur-2xl z-[25] hidden flex-col p-5 sm:p-8 animate-fade-in border border-zinc-700/50 rounded-[1.5rem] sm:rounded-[2rem]">
+                                <div class="flex justify-between items-center mb-4 sm:mb-6 border-b border-zinc-800/80 pb-3 shrink-0">
+                                    <h3 class="text-white font-display font-bold text-base sm:text-xl flex items-center gap-2">
+                                        <svg class="w-4 h-4 sm:w-5 sm:h-5 text-cric-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                                        AI Analytics & Stats
+                                    </h3>
+                                    <button onclick="document.getElementById('stats-overlay').classList.add('hidden'); document.getElementById('stats-overlay').classList.remove('flex');" class="text-zinc-400 hover:text-white bg-zinc-900 hover:bg-zinc-800 p-1.5 sm:p-2 rounded-lg transition-colors active:scale-95">
+                                        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    </button>
+                                </div>
+                                
+                                <div class="flex-1 overflow-y-auto hide-scrollbar space-y-4 sm:space-y-5">
+                                    <div class="grid grid-cols-2 gap-3 sm:gap-4">
+                                        <div class="bg-zinc-900/50 border border-zinc-800/80 rounded-xl p-3 sm:p-4 flex flex-col justify-center items-center text-center">
+                                            <p class="text-[8px] sm:text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-1">AI Rating</p>
+                                            <div class="flex items-baseline gap-1">
+                                                <span id="ui-stat-rating" class="font-display font-black text-2xl sm:text-4xl text-cric-green">0.0</span>
+                                                <span class="text-[10px] sm:text-sm text-zinc-500 font-bold">/10</span>
+                                            </div>
+                                        </div>
+                                        <div class="bg-zinc-900/50 border border-zinc-800/80 rounded-xl p-3 sm:p-4 flex flex-col justify-center items-center text-center">
+                                            <p class="text-[8px] sm:text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-1">Predicted Value</p>
+                                            <span id="ui-stat-predicted" class="font-display font-black text-sm sm:text-xl text-cric-accent">₹ 0.0 Cr</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-zinc-900/50 border border-zinc-800/80 rounded-xl p-3 sm:p-4">
+                                        <div class="flex justify-between items-end mb-2">
+                                            <p class="text-[8px] sm:text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Live Bid vs Predicted</p>
+                                            <p id="ui-stat-verdict" class="text-[9px] sm:text-[11px] font-bold text-emerald-400 uppercase tracking-wider">Evaluating</p>
+                                        </div>
+                                        <div class="w-full bg-zinc-950 rounded-full h-2 sm:h-2.5 border border-zinc-800 overflow-hidden relative">
+                                            <div id="ui-stat-bar-predicted" class="absolute top-0 left-0 h-full bg-zinc-700/60 border-r border-zinc-400 z-0"></div>
+                                            <div id="ui-stat-bar-current" class="absolute top-0 left-0 h-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.8)] transition-all duration-500 z-10 w-0"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-zinc-900/50 border border-zinc-800/80 rounded-xl p-3 sm:p-4">
+                                        <p class="text-[8px] sm:text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-3">Career Stats</p>
+                                        <div class="grid grid-cols-3 gap-2 divide-x divide-zinc-800/80">
+                                            <div class="text-center">
+                                                <p class="text-[8px] sm:text-[10px] text-zinc-400 mb-0.5">Matches</p>
+                                                <p id="ui-stat-matches" class="font-bold text-white text-sm sm:text-base font-display">0</p>
+                                            </div>
+                                            <div class="text-center">
+                                                <p id="ui-stat-l1" class="text-[8px] sm:text-[10px] text-zinc-400 mb-0.5">Runs</p>
+                                                <p id="ui-stat-v1" class="font-bold text-white text-sm sm:text-base font-display">0</p>
+                                            </div>
+                                            <div class="text-center">
+                                                <p id="ui-stat-l2" class="text-[8px] sm:text-[10px] text-zinc-400 mb-0.5">Strike Rate</p>
+                                                <p id="ui-stat-v2" class="font-bold text-white text-sm sm:text-base font-display">0.0</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-zinc-900/50 border border-zinc-800/80 rounded-xl p-3 sm:p-4 mb-2">
+                                        <p class="text-[8px] sm:text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-2.5">Recent Form (Last 5)</p>
+                                        <div id="ui-stat-form" class="flex justify-between items-center gap-1.5 sm:gap-2">
+                                            <!-- Injection -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="p-5 sm:p-8 flex justify-between items-start relative z-10 flex-1 sm:flex-none">
                                 <div class="flex-1">
                                     <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
-                                        <!-- UI Updates for SET identifier -->
-                                        <span id="ui-player-set" class="bg-blue-600/20 text-blue-400 border border-blue-500/30 text-[8px] sm:text-[10px] font-black px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-md uppercase tracking-widest inline-block hidden">SET</span>
-                                        <span id="ui-player-role" class="bg-zinc-800 text-zinc-300 border border-zinc-700 text-[8px] sm:text-[10px] font-bold px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-md uppercase tracking-widest inline-block truncate max-w-[80px] sm:max-w-none">Role</span>
-                                        <span id="ui-player-country" class="bg-zinc-800 text-zinc-300 border border-zinc-700 text-[8px] sm:text-[10px] font-bold px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-md uppercase tracking-widest inline-flex items-center gap-1 shrink-0">---</span>
+                                        <span id="ui-player-set" class="bg-blue-600/20 text-blue-400 border border-blue-500/30 text-[9px] sm:text-[10px] font-black px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-md uppercase tracking-widest inline-block hidden">SET</span>
+                                        <span id="ui-player-role" class="bg-zinc-800 text-zinc-300 border border-zinc-700 text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-md uppercase tracking-widest inline-block truncate max-w-[100px] sm:max-w-none">Role</span>
+                                        <span id="ui-player-country" class="bg-zinc-800 text-zinc-300 border border-zinc-700 text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-md uppercase tracking-widest inline-flex items-center gap-1 shrink-0">---</span>
                                     </div>
-                                    <h2 id="ui-player-name" class="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-display font-black text-white leading-tight tracking-tight mb-1 sm:mb-2 drop-shadow-md break-words">Wait...</h2>
+                                    <h2 id="ui-player-name" class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-display font-black text-white leading-tight sm:leading-none tracking-tight mb-1 sm:mb-2 drop-shadow-md break-words">Wait...</h2>
                                 </div>
                                 <div class="text-right shrink-0 ml-2">
-                                    <p class="text-[7px] sm:text-[9px] text-zinc-500 uppercase font-bold tracking-widest mb-0.5 sm:mb-1">Base Price</p>
-                                    <p id="ui-player-base" class="font-display font-bold text-sm sm:text-lg lg:text-xl text-zinc-300 bg-zinc-900 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-zinc-800 shadow-inner whitespace-nowrap">₹ -- Cr</p>
+                                    <p class="text-[8px] sm:text-[9px] text-zinc-500 uppercase font-bold tracking-widest mb-0.5 sm:mb-1">Base Price</p>
+                                    <p id="ui-player-base" class="font-display font-bold text-base sm:text-lg lg:text-xl text-zinc-300 bg-zinc-900 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-zinc-800 shadow-inner whitespace-nowrap">₹ -- Cr</p>
+                                    <button onclick="document.getElementById('stats-overlay').classList.remove('hidden'); document.getElementById('stats-overlay').classList.add('flex');" class="mt-2 w-full flex items-center justify-center gap-1 text-[8px] sm:text-[10px] font-bold bg-cric-accent/10 hover:bg-cric-accent/20 text-cric-accent border border-cric-accent/30 py-1.5 rounded-lg transition-colors uppercase tracking-widest">
+                                        <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                                        Analytics
+                                    </button>
                                 </div>
                             </div>
 
@@ -359,6 +427,7 @@
                                 <button id="btn-host-start" class="bg-white hover:bg-zinc-200 text-zinc-950 font-bold px-2.5 sm:px-5 py-2 sm:py-3 rounded-lg sm:rounded-xl shadow-md flex-1 min-w-[70px] sm:min-w-[100px] transition-colors active:scale-95 text-[9px] sm:text-xs uppercase tracking-wider">Start / Next</button>
                                 <button id="btn-host-pause" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold px-2.5 sm:px-5 py-2 sm:py-3 rounded-lg sm:rounded-xl shadow-md flex-1 min-w-[70px] sm:min-w-[100px] transition-colors active:scale-95 text-[9px] sm:text-xs uppercase tracking-wider border border-zinc-700">Pause</button>
                                 <button id="btn-host-unsold" class="bg-red-500/10 hover:bg-red-500/20 text-red-500 font-bold px-2.5 sm:px-5 py-2 sm:py-3 rounded-lg sm:rounded-xl shadow-md flex-1 min-w-[70px] sm:min-w-[100px] transition-colors disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 text-[9px] sm:text-xs uppercase tracking-wider border border-red-500/20">Mark Unsold</button>
+                                <button id="btn-host-skip" class="bg-orange-500/10 hover:bg-orange-500/20 text-orange-500 font-bold px-2.5 sm:px-5 py-2 sm:py-3 rounded-lg sm:rounded-xl shadow-md flex-1 min-w-[70px] sm:min-w-[100px] transition-colors disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 text-[9px] sm:text-xs uppercase tracking-wider border border-orange-500/20">Skip</button>
                             </div>
 
                             <!-- Bidding Controls -->
@@ -456,7 +525,6 @@
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         
-        // Exact Firebase Config provided by User, with fallback to Immersive Environment config
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
           apiKey: "AIzaSyCAd5OJKmVW2aSWgDogBg3lSpj1uzPxGrk",
           authDomain: "cricbid-839eb.firebaseapp.com",
@@ -498,12 +566,58 @@
         let isMicMuted = true;
         let isVideoMuted = true;
 
+        function getHash(str) { let h=0; for(let i=0;i<str.length;i++) h=(h<<5)-h+str.charCodeAt(i); return Math.abs(h); }
+
+        function generatePlayerAnalytics(player) {
+            const h = getHash(player.name);
+            
+            // Intelligently weight matches based on the category/set
+            let baseMatches = 30;
+            if(player.set === "Marquee") baseMatches = 90;
+            else if(player.set === "Batsmen" || player.set === "Pacers") baseMatches = 50;
+            
+            const matches = baseMatches + (h % 40);
+            const base = player.basePrice;
+
+            // Rating logic dynamically weighted by base price reality
+            let calculatedRating = 6.0;
+            if(base >= 2.0) calculatedRating = 8.5;
+            else if(base >= 1.5) calculatedRating = 7.5;
+            else if(base >= 1.0) calculatedRating = 6.5;
+
+            const aiRating = (calculatedRating + ((h % 15) / 10)).toFixed(1);
+            
+            // Pred logic strictly tied to actual initial base price boundaries
+            const predMin = (base * (1 + (h % 5) * 0.3)).toFixed(2);
+            const predMax = (parseFloat(predMin) + 1.0 + ((h % 5) * 0.5)).toFixed(2);
+            
+            let form = [];
+            let stat1 = { label: 'Runs', val: 0 };
+            let stat2 = { label: 'Strike Rate', val: 0 };
+
+            if(player.role.includes('Batsman') || player.role.includes('Wicketkeeper')) {
+                stat1.val = matches * (20 + (h % 25));
+                stat2.val = (120 + (h % 45)).toFixed(1);
+                for(let i=0;i<5;i++) form.push( (h%(i*10+20)) + (i*15) + (i===2?'*':'') );
+            } else if(player.role.includes('Pacer') || player.role.includes('Spinner')) {
+                stat1 = { label: 'Wickets', val: matches + (h % 40) };
+                stat2 = { label: 'Economy', val: (6.0 + ((h % 30)/10)).toFixed(2) };
+                for(let i=0;i<5;i++) form.push( (h%(i*2+4)) + 'W' );
+            } else { // All-rounder
+                stat1 = { label: 'Runs', val: matches * (15 + (h % 20)) };
+                stat2 = { label: 'Wickets', val: Math.floor(matches * 0.8) + (h % 20) };
+                for(let i=0;i<5;i++) form.push( i%2===0 ? ((h%(i*10+20))*2) : ((h%(i*2+3))+'W') );
+            }
+            
+            return { matches, stat1, stat2, form, aiRating, predMin: parseFloat(predMin), predMax: parseFloat(predMax) };
+        }
+
         const BUDGET_DEFAULT = 120.0;
         const TIMER_SECONDS = 15;
 
-        // Expanded Player List with Sets for all Formats
         const AUCTION_DATABASES = {
             "T20": [
+                // MARQUEE
                 { name: "Virat Kohli", role: "Batsman", country: "IND", base: 2.0, set: "Marquee" },
                 { name: "Jasprit Bumrah", role: "Pacer", country: "IND", base: 2.0, set: "Marquee" },
                 { name: "Jos Buttler", role: "WK Batsman", country: "ENG", base: 2.0, set: "Marquee" },
@@ -514,6 +628,7 @@
                 { name: "Nicholas Pooran", role: "WK Batsman", country: "WI", base: 2.0, set: "Marquee" },
                 { name: "Suryakumar Yadav", role: "Batsman", country: "IND", base: 2.0, set: "Marquee" },
                 { name: "Hardik Pandya", role: "All-Rounder", country: "IND", base: 2.0, set: "Marquee" },
+                // BATSMEN
                 { name: "Shubman Gill", role: "Batsman", country: "IND", base: 1.5, set: "Batsmen" },
                 { name: "Yashasvi Jaiswal", role: "Batsman", country: "IND", base: 1.5, set: "Batsmen" },
                 { name: "Ruturaj Gaikwad", role: "Batsman", country: "IND", base: 1.0, set: "Batsmen" },
@@ -529,16 +644,7 @@
                 { name: "Ryan Rickelton", role: "Batsman", country: "SA", base: 0.75, set: "Batsmen" },
                 { name: "Dewald Brevis", role: "Batsman", country: "SA", base: 0.75, set: "Batsmen" },
                 { name: "Rahul Tripathi", role: "Batsman", country: "IND", base: 0.5, set: "Batsmen" },
-                { name: "KL Rahul", role: "WK Batsman", country: "IND", base: 1.5, set: "Wicketkeepers" },
-                { name: "Rishabh Pant", role: "WK Batsman", country: "IND", base: 2.0, set: "Wicketkeepers" },
-                { name: "Sanju Samson", role: "WK Batsman", country: "IND", base: 1.5, set: "Wicketkeepers" },
-                { name: "Ishan Kishan", role: "WK Batsman", country: "IND", base: 1.0, set: "Wicketkeepers" },
-                { name: "Dhruv Jurel", role: "WK Batsman", country: "IND", base: 0.75, set: "Wicketkeepers" },
-                { name: "Jitesh Sharma", role: "WK Batsman", country: "IND", base: 0.75, set: "Wicketkeepers" },
-                { name: "Quinton de Kock", role: "WK Batsman", country: "SA", base: 1.5, set: "Wicketkeepers" },
-                { name: "Josh Inglis", role: "WK Batsman", country: "AUS", base: 1.0, set: "Wicketkeepers" },
-                { name: "Tom Banton", role: "WK Batsman", country: "ENG", base: 0.75, set: "Wicketkeepers" },
-                { name: "Tim Seifert", role: "WK Batsman", country: "NZ", base: 0.75, set: "Wicketkeepers" },
+                // PACERS
                 { name: "Mohammed Shami", role: "Pacer", country: "IND", base: 1.5, set: "Pacers" },
                 { name: "Mohammed Siraj", role: "Pacer", country: "IND", base: 1.5, set: "Pacers" },
                 { name: "Arshdeep Singh", role: "Pacer", country: "IND", base: 1.5, set: "Pacers" },
@@ -554,16 +660,18 @@
                 { name: "Spencer Johnson", role: "Pacer", country: "AUS", base: 0.75, set: "Pacers" },
                 { name: "Nandre Burger", role: "Pacer", country: "SA", base: 0.75, set: "Pacers" },
                 { name: "Naveen-ul-Haq", role: "Pacer", country: "AFG", base: 0.75, set: "Pacers" },
-                { name: "Kuldeep Yadav", role: "Spinner", country: "IND", base: 1.5, set: "Spinners" },
-                { name: "Yuzvendra Chahal", role: "Spinner", country: "IND", base: 1.5, set: "Spinners" },
-                { name: "Ravi Bishnoi", role: "Spinner", country: "IND", base: 1.0, set: "Spinners" },
-                { name: "Varun Chakravarthy", role: "Spinner", country: "IND", base: 1.0, set: "Spinners" },
-                { name: "Noor Ahmad", role: "Spinner", country: "AFG", base: 1.0, set: "Spinners" },
-                { name: "Wanindu Hasaranga", role: "Spinner", country: "SL", base: 1.5, set: "Spinners" },
-                { name: "Adam Zampa", role: "Spinner", country: "AUS", base: 1.0, set: "Spinners" },
-                { name: "Maheesh Theekshana", role: "Spinner", country: "SL", base: 1.0, set: "Spinners" },
-                { name: "Mujeeb Ur Rahman", role: "Spinner", country: "AFG", base: 0.75, set: "Spinners" },
-                { name: "Akeal Hosein", role: "Spinner", country: "WI", base: 0.75, set: "Spinners" },
+                // WICKETKEEPERS
+                { name: "KL Rahul", role: "WK Batsman", country: "IND", base: 1.5, set: "Wicketkeepers" },
+                { name: "Rishabh Pant", role: "WK Batsman", country: "IND", base: 2.0, set: "Wicketkeepers" },
+                { name: "Sanju Samson", role: "WK Batsman", country: "IND", base: 1.5, set: "Wicketkeepers" },
+                { name: "Ishan Kishan", role: "WK Batsman", country: "IND", base: 1.0, set: "Wicketkeepers" },
+                { name: "Dhruv Jurel", role: "WK Batsman", country: "IND", base: 0.75, set: "Wicketkeepers" },
+                { name: "Jitesh Sharma", role: "WK Batsman", country: "IND", base: 0.75, set: "Wicketkeepers" },
+                { name: "Quinton de Kock", role: "WK Batsman", country: "SA", base: 1.5, set: "Wicketkeepers" },
+                { name: "Josh Inglis", role: "WK Batsman", country: "AUS", base: 1.0, set: "Wicketkeepers" },
+                { name: "Tom Banton", role: "WK Batsman", country: "ENG", base: 0.75, set: "Wicketkeepers" },
+                { name: "Tim Seifert", role: "WK Batsman", country: "NZ", base: 0.75, set: "Wicketkeepers" },
+                // ALL-ROUNDERS
                 { name: "Ravindra Jadeja", role: "All-Rounder", country: "IND", base: 2.0, set: "All-Rounders" },
                 { name: "Axar Patel", role: "All-Rounder", country: "IND", base: 1.5, set: "All-Rounders" },
                 { name: "Washington Sundar", role: "All-Rounder", country: "IND", base: 1.0, set: "All-Rounders" },
@@ -583,9 +691,21 @@
                 { name: "Azmatullah Omarzai", role: "All-Rounder", country: "AFG", base: 1.0, set: "All-Rounders" },
                 { name: "Sikandar Raza", role: "All-Rounder", country: "ZIM", base: 1.0, set: "All-Rounders" },
                 { name: "Michael Bracewell", role: "All-Rounder", country: "NZ", base: 1.0, set: "All-Rounders" },
-                { name: "Rachin Ravindra", role: "All-Rounder", country: "NZ", base: 1.5, set: "All-Rounders" }
+                { name: "Rachin Ravindra", role: "All-Rounder", country: "NZ", base: 1.5, set: "All-Rounders" },
+                // SPINNERS
+                { name: "Kuldeep Yadav", role: "Spinner", country: "IND", base: 1.5, set: "Spinners" },
+                { name: "Yuzvendra Chahal", role: "Spinner", country: "IND", base: 1.5, set: "Spinners" },
+                { name: "Ravi Bishnoi", role: "Spinner", country: "IND", base: 1.0, set: "Spinners" },
+                { name: "Varun Chakravarthy", role: "Spinner", country: "IND", base: 1.0, set: "Spinners" },
+                { name: "Noor Ahmad", role: "Spinner", country: "AFG", base: 1.0, set: "Spinners" },
+                { name: "Wanindu Hasaranga", role: "Spinner", country: "SL", base: 1.5, set: "Spinners" },
+                { name: "Adam Zampa", role: "Spinner", country: "AUS", base: 1.0, set: "Spinners" },
+                { name: "Maheesh Theekshana", role: "Spinner", country: "SL", base: 1.0, set: "Spinners" },
+                { name: "Mujeeb Ur Rahman", role: "Spinner", country: "AFG", base: 0.75, set: "Spinners" },
+                { name: "Akeal Hosein", role: "Spinner", country: "WI", base: 0.75, set: "Spinners" }
             ],
             "ODI": [
+                // MARQUEE
                 { name: "Virat Kohli", role: "Batsman", country: "IND", base: 2.0, set: "Marquee" },
                 { name: "Rohit Sharma", role: "Batsman", country: "IND", base: 2.0, set: "Marquee" },
                 { name: "Jasprit Bumrah", role: "Pacer", country: "IND", base: 2.0, set: "Marquee" },
@@ -596,6 +716,7 @@
                 { name: "Pat Cummins", role: "Pacer", country: "AUS", base: 2.0, set: "Marquee" },
                 { name: "Rashid Khan", role: "Spinner", country: "AFG", base: 2.0, set: "Marquee" },
                 { name: "Heinrich Klaasen", role: "WK Batsman", country: "SA", base: 2.0, set: "Marquee" },
+                // BATSMEN
                 { name: "Yashasvi Jaiswal", role: "Batsman", country: "IND", base: 1.5, set: "Batsmen" },
                 { name: "Ruturaj Gaikwad", role: "Batsman", country: "IND", base: 1.0, set: "Batsmen" },
                 { name: "Sai Sudharsan", role: "Batsman", country: "IND", base: 1.0, set: "Batsmen" },
@@ -611,16 +732,7 @@
                 { name: "Dawid Malan", role: "Batsman", country: "ENG", base: 1.0, set: "Batsmen" },
                 { name: "Tom Latham", role: "Batsman", country: "NZ", base: 0.75, set: "Batsmen" },
                 { name: "Will Young", role: "Batsman", country: "NZ", base: 0.75, set: "Batsmen" },
-                { name: "KL Rahul", role: "WK Batsman", country: "IND", base: 1.5, set: "Wicketkeepers" },
-                { name: "Rishabh Pant", role: "WK Batsman", country: "IND", base: 2.0, set: "Wicketkeepers" },
-                { name: "Sanju Samson", role: "WK Batsman", country: "IND", base: 1.0, set: "Wicketkeepers" },
-                { name: "Ishan Kishan", role: "WK Batsman", country: "IND", base: 1.0, set: "Wicketkeepers" },
-                { name: "Dhruv Jurel", role: "WK Batsman", country: "IND", base: 0.75, set: "Wicketkeepers" },
-                { name: "Quinton de Kock", role: "WK Batsman", country: "SA", base: 1.5, set: "Wicketkeepers" },
-                { name: "Mohammad Rizwan", role: "WK Batsman", country: "PAK", base: 1.5, set: "Wicketkeepers" },
-                { name: "Rahmanullah Gurbaz", role: "WK Batsman", country: "AFG", base: 1.0, set: "Wicketkeepers" },
-                { name: "Kusal Mendis", role: "WK Batsman", country: "SL", base: 1.0, set: "Wicketkeepers" },
-                { name: "Ryan Rickelton", role: "WK Batsman", country: "SA", base: 0.75, set: "Wicketkeepers" },
+                // PACERS
                 { name: "Mohammed Shami", role: "Pacer", country: "IND", base: 1.5, set: "Pacers" },
                 { name: "Mohammed Siraj", role: "Pacer", country: "IND", base: 1.5, set: "Pacers" },
                 { name: "Arshdeep Singh", role: "Pacer", country: "IND", base: 1.0, set: "Pacers" },
@@ -636,16 +748,18 @@
                 { name: "Gerald Coetzee", role: "Pacer", country: "SA", base: 1.0, set: "Pacers" },
                 { name: "Lungi Ngidi", role: "Pacer", country: "SA", base: 0.75, set: "Pacers" },
                 { name: "Taskin Ahmed", role: "Pacer", country: "BAN", base: 0.75, set: "Pacers" },
-                { name: "Kuldeep Yadav", role: "Spinner", country: "IND", base: 1.5, set: "Spinners" },
-                { name: "Yuzvendra Chahal", role: "Spinner", country: "IND", base: 1.0, set: "Spinners" },
-                { name: "Ravi Bishnoi", role: "Spinner", country: "IND", base: 1.0, set: "Spinners" },
-                { name: "Adam Zampa", role: "Spinner", country: "AUS", base: 1.0, set: "Spinners" },
-                { name: "Noor Ahmad", role: "Spinner", country: "AFG", base: 1.0, set: "Spinners" },
-                { name: "Maheesh Theekshana", role: "Spinner", country: "SL", base: 1.0, set: "Spinners" },
-                { name: "Mujeeb Ur Rahman", role: "Spinner", country: "AFG", base: 0.75, set: "Spinners" },
-                { name: "Keshav Maharaj", role: "Spinner", country: "SA", base: 1.0, set: "Spinners" },
-                { name: "Tabraiz Shamsi", role: "Spinner", country: "SA", base: 0.75, set: "Spinners" },
-                { name: "Wanindu Hasaranga", role: "Spinner", country: "SL", base: 1.5, set: "Spinners" },
+                // WICKETKEEPERS
+                { name: "KL Rahul", role: "WK Batsman", country: "IND", base: 1.5, set: "Wicketkeepers" },
+                { name: "Rishabh Pant", role: "WK Batsman", country: "IND", base: 2.0, set: "Wicketkeepers" },
+                { name: "Sanju Samson", role: "WK Batsman", country: "IND", base: 1.0, set: "Wicketkeepers" },
+                { name: "Ishan Kishan", role: "WK Batsman", country: "IND", base: 1.0, set: "Wicketkeepers" },
+                { name: "Dhruv Jurel", role: "WK Batsman", country: "IND", base: 0.75, set: "Wicketkeepers" },
+                { name: "Quinton de Kock", role: "WK Batsman", country: "SA", base: 1.5, set: "Wicketkeepers" },
+                { name: "Mohammad Rizwan", role: "WK Batsman", country: "PAK", base: 1.5, set: "Wicketkeepers" },
+                { name: "Rahmanullah Gurbaz", role: "WK Batsman", country: "AFG", base: 1.0, set: "Wicketkeepers" },
+                { name: "Kusal Mendis", role: "WK Batsman", country: "SL", base: 1.0, set: "Wicketkeepers" },
+                { name: "Ryan Rickelton", role: "WK Batsman", country: "SA", base: 0.75, set: "Wicketkeepers" },
+                // ALL-ROUNDERS
                 { name: "Hardik Pandya", role: "All-Rounder", country: "IND", base: 2.0, set: "All-Rounders" },
                 { name: "Ravindra Jadeja", role: "All-Rounder", country: "IND", base: 2.0, set: "All-Rounders" },
                 { name: "Axar Patel", role: "All-Rounder", country: "IND", base: 1.5, set: "All-Rounders" },
@@ -665,9 +779,21 @@
                 { name: "Shakib Al Hasan", role: "All-Rounder", country: "BAN", base: 1.5, set: "All-Rounders" },
                 { name: "Jason Holder", role: "All-Rounder", country: "WI", base: 1.0, set: "All-Rounders" },
                 { name: "Sam Curran", role: "All-Rounder", country: "ENG", base: 1.5, set: "All-Rounders" },
-                { name: "Angelo Mathews", role: "All-Rounder", country: "SL", base: 1.0, set: "All-Rounders" }
+                { name: "Angelo Mathews", role: "All-Rounder", country: "SL", base: 1.0, set: "All-Rounders" },
+                // SPINNERS
+                { name: "Kuldeep Yadav", role: "Spinner", country: "IND", base: 1.5, set: "Spinners" },
+                { name: "Yuzvendra Chahal", role: "Spinner", country: "IND", base: 1.0, set: "Spinners" },
+                { name: "Ravi Bishnoi", role: "Spinner", country: "IND", base: 1.0, set: "Spinners" },
+                { name: "Adam Zampa", role: "Spinner", country: "AUS", base: 1.0, set: "Spinners" },
+                { name: "Noor Ahmad", role: "Spinner", country: "AFG", base: 1.0, set: "Spinners" },
+                { name: "Maheesh Theekshana", role: "Spinner", country: "SL", base: 1.0, set: "Spinners" },
+                { name: "Mujeeb Ur Rahman", role: "Spinner", country: "AFG", base: 0.75, set: "Spinners" },
+                { name: "Keshav Maharaj", role: "Spinner", country: "SA", base: 1.0, set: "Spinners" },
+                { name: "Tabraiz Shamsi", role: "Spinner", country: "SA", base: 0.75, set: "Spinners" },
+                { name: "Wanindu Hasaranga", role: "Spinner", country: "SL", base: 1.5, set: "Spinners" }
             ],
             "TEST": [
+                // MARQUEE
                 { name: "Sachin Tendulkar", role: "Batsman", country: "IND", base: 2.0, set: "Marquee" },
                 { name: "Rahul Dravid", role: "Batsman", country: "IND", base: 2.0, set: "Marquee" },
                 { name: "Sunil Gavaskar", role: "Batsman", country: "IND", base: 2.0, set: "Marquee" },
@@ -693,6 +819,7 @@
                 { name: "Kane Williamson", role: "Batsman", country: "NZ", base: 2.0, set: "Marquee" },
                 { name: "Jasprit Bumrah", role: "Pacer", country: "IND", base: 2.0, set: "Marquee" },
                 { name: "Ravichandran Ashwin", role: "Spinner", country: "IND", base: 2.0, set: "Marquee" },
+                // BATSMEN
                 { name: "Rohit Sharma", role: "Batsman", country: "IND", base: 1.5, set: "Batsmen" },
                 { name: "Shubman Gill", role: "Batsman", country: "IND", base: 1.5, set: "Batsmen" },
                 { name: "Yashasvi Jaiswal", role: "Batsman", country: "IND", base: 1.5, set: "Batsmen" },
@@ -721,28 +848,12 @@
                 { name: "Devon Conway", role: "Batsman", country: "NZ", base: 1.0, set: "Batsmen" },
                 { name: "Will Young", role: "Batsman", country: "NZ", base: 0.75, set: "Batsmen" },
                 { name: "Dimuth Karunaratne", role: "Batsman", country: "SL", base: 1.0, set: "Batsmen" },
-                { name: "Dhananjaya de Silva", role: "Batsman", country: "SL", base: 1.0, set: "Batsmen" },
                 { name: "Pathum Nissanka", role: "Batsman", country: "SL", base: 0.75, set: "Batsmen" },
                 { name: "Ibrahim Zadran", role: "Batsman", country: "AFG", base: 0.75, set: "Batsmen" },
                 { name: "Litton Das", role: "Batsman", country: "BAN", base: 0.75, set: "Batsmen" },
                 { name: "Najmul Hossain Shanto", role: "Batsman", country: "BAN", base: 0.75, set: "Batsmen" },
                 { name: "Craig Ervine", role: "Batsman", country: "ZIM", base: 0.5, set: "Batsmen" },
-                { name: "Sean Williams", role: "Batsman", country: "ZIM", base: 0.75, set: "Batsmen" },
-                { name: "Rishabh Pant", role: "WK Batsman", country: "IND", base: 2.0, set: "Wicketkeepers" },
-                { name: "Dhruv Jurel", role: "WK Batsman", country: "IND", base: 1.0, set: "Wicketkeepers" },
-                { name: "Wriddhiman Saha", role: "WK Batsman", country: "IND", base: 1.0, set: "Wicketkeepers" },
-                { name: "KS Bharat", role: "WK Batsman", country: "IND", base: 0.75, set: "Wicketkeepers" },
-                { name: "Alex Carey", role: "WK Batsman", country: "AUS", base: 1.0, set: "Wicketkeepers" },
-                { name: "Tim Paine", role: "WK Batsman", country: "AUS", base: 1.0, set: "Wicketkeepers" },
-                { name: "Ben Foakes", role: "WK Batsman", country: "ENG", base: 1.0, set: "Wicketkeepers" },
-                { name: "Jonny Bairstow", role: "WK Batsman", country: "ENG", base: 1.5, set: "Wicketkeepers" },
-                { name: "Jamie Smith", role: "WK Batsman", country: "ENG", base: 0.75, set: "Wicketkeepers" },
-                { name: "Quinton de Kock", role: "WK Batsman", country: "SA", base: 1.5, set: "Wicketkeepers" },
-                { name: "Kyle Verreynne", role: "WK Batsman", country: "SA", base: 1.0, set: "Wicketkeepers" },
-                { name: "Mohammad Rizwan", role: "WK Batsman", country: "PAK", base: 1.5, set: "Wicketkeepers" },
-                { name: "BJ Watling", role: "WK Batsman", country: "NZ", base: 1.0, set: "Wicketkeepers" },
-                { name: "Dinesh Chandimal", role: "WK Batsman", country: "SL", base: 1.0, set: "Wicketkeepers" },
-                { name: "Kusal Mendis", role: "WK Batsman", country: "SL", base: 1.0, set: "Wicketkeepers" },
+                // PACERS
                 { name: "Mohammed Shami", role: "Pacer", country: "IND", base: 1.5, set: "Pacers" },
                 { name: "Mohammed Siraj", role: "Pacer", country: "IND", base: 1.5, set: "Pacers" },
                 { name: "Ishant Sharma", role: "Pacer", country: "IND", base: 1.0, set: "Pacers" },
@@ -772,26 +883,23 @@
                 { name: "Matt Henry", role: "Pacer", country: "NZ", base: 1.0, set: "Pacers" },
                 { name: "Chaminda Vaas", role: "Pacer", country: "SL", base: 1.5, set: "Pacers" },
                 { name: "Lasith Malinga", role: "Pacer", country: "SL", base: 2.0, set: "Pacers" },
-                { name: "Ravindra Jadeja", role: "Spinner", country: "IND", base: 2.0, set: "Spinners" },
-                { name: "Harbhajan Singh", role: "Spinner", country: "IND", base: 1.5, set: "Spinners" },
-                { name: "Anil Kumble", role: "Spinner", country: "IND", base: 2.0, set: "Spinners" },
-                { name: "Kuldeep Yadav", role: "Spinner", country: "IND", base: 1.0, set: "Spinners" },
-                { name: "Pragyan Ojha", role: "Spinner", country: "IND", base: 0.75, set: "Spinners" },
-                { name: "Nathan Lyon", role: "Spinner", country: "AUS", base: 1.5, set: "Spinners" },
-                { name: "Stuart MacGill", role: "Spinner", country: "AUS", base: 1.0, set: "Spinners" },
-                { name: "Rangana Herath", role: "Spinner", country: "SL", base: 1.5, set: "Spinners" },
-                { name: "Graeme Swann", role: "Spinner", country: "ENG", base: 1.5, set: "Spinners" },
-                { name: "Saqlain Mushtaq", role: "Spinner", country: "PAK", base: 1.5, set: "Spinners" },
-                { name: "Mushtaq Ahmed", role: "Spinner", country: "PAK", base: 1.0, set: "Spinners" },
-                { name: "Yasir Shah", role: "Spinner", country: "PAK", base: 1.0, set: "Spinners" },
-                { name: "Daniel Vettori", role: "Spinner", country: "NZ", base: 1.5, set: "Spinners" },
-                { name: "Ajaz Patel", role: "Spinner", country: "NZ", base: 0.75, set: "Spinners" },
-                { name: "Keshav Maharaj", role: "Spinner", country: "SA", base: 1.0, set: "Spinners" },
-                { name: "Taijul Islam", role: "Spinner", country: "BAN", base: 0.75, set: "Spinners" },
-                { name: "Moeen Ali", role: "Spinner", country: "ENG", base: 1.0, set: "Spinners" },
-                { name: "Noman Ali", role: "Spinner", country: "PAK", base: 0.75, set: "Spinners" },
-                { name: "Mehidy Hasan Miraz", role: "Spinner", country: "BAN", base: 1.0, set: "Spinners" },
-                { name: "Ajmal Shahzad", role: "Spinner", country: "PAK", base: 0.5, set: "Spinners" },
+                // WICKETKEEPERS
+                { name: "Rishabh Pant", role: "WK Batsman", country: "IND", base: 2.0, set: "Wicketkeepers" },
+                { name: "Dhruv Jurel", role: "WK Batsman", country: "IND", base: 1.0, set: "Wicketkeepers" },
+                { name: "Wriddhiman Saha", role: "WK Batsman", country: "IND", base: 1.0, set: "Wicketkeepers" },
+                { name: "KS Bharat", role: "WK Batsman", country: "IND", base: 0.75, set: "Wicketkeepers" },
+                { name: "Alex Carey", role: "WK Batsman", country: "AUS", base: 1.0, set: "Wicketkeepers" },
+                { name: "Tim Paine", role: "WK Batsman", country: "AUS", base: 1.0, set: "Wicketkeepers" },
+                { name: "Ben Foakes", role: "WK Batsman", country: "ENG", base: 1.0, set: "Wicketkeepers" },
+                { name: "Jonny Bairstow", role: "WK Batsman", country: "ENG", base: 1.5, set: "Wicketkeepers" },
+                { name: "Jamie Smith", role: "WK Batsman", country: "ENG", base: 0.75, set: "Wicketkeepers" },
+                { name: "Quinton de Kock", role: "WK Batsman", country: "SA", base: 1.5, set: "Wicketkeepers" },
+                { name: "Kyle Verreynne", role: "WK Batsman", country: "SA", base: 1.0, set: "Wicketkeepers" },
+                { name: "Mohammad Rizwan", role: "WK Batsman", country: "PAK", base: 1.5, set: "Wicketkeepers" },
+                { name: "BJ Watling", role: "WK Batsman", country: "NZ", base: 1.0, set: "Wicketkeepers" },
+                { name: "Dinesh Chandimal", role: "WK Batsman", country: "SL", base: 1.0, set: "Wicketkeepers" },
+                { name: "Kusal Mendis", role: "WK Batsman", country: "SL", base: 1.0, set: "Wicketkeepers" },
+                // ALL-ROUNDERS
                 { name: "Kapil Dev", role: "All-Rounder", country: "IND", base: 2.0, set: "All-Rounders" },
                 { name: "Hardik Pandya", role: "All-Rounder", country: "IND", base: 1.5, set: "All-Rounders" },
                 { name: "Axar Patel", role: "All-Rounder", country: "IND", base: 1.5, set: "All-Rounders" },
@@ -816,7 +924,28 @@
                 { name: "Sean Williams", role: "All-Rounder", country: "ZIM", base: 1.0, set: "All-Rounders" },
                 { name: "Azmatullah Omarzai", role: "All-Rounder", country: "AFG", base: 1.0, set: "All-Rounders" },
                 { name: "Mohammad Nabi", role: "All-Rounder", country: "AFG", base: 1.0, set: "All-Rounders" },
-                { name: "Michael Bracewell", role: "All-Rounder", country: "NZ", base: 1.0, set: "All-Rounders" }
+                { name: "Michael Bracewell", role: "All-Rounder", country: "NZ", base: 1.0, set: "All-Rounders" },
+                // SPINNERS
+                { name: "Ravindra Jadeja", role: "Spinner", country: "IND", base: 2.0, set: "Spinners" },
+                { name: "Harbhajan Singh", role: "Spinner", country: "IND", base: 1.5, set: "Spinners" },
+                { name: "Anil Kumble", role: "Spinner", country: "IND", base: 2.0, set: "Spinners" },
+                { name: "Kuldeep Yadav", role: "Spinner", country: "IND", base: 1.0, set: "Spinners" },
+                { name: "Pragyan Ojha", role: "Spinner", country: "IND", base: 0.75, set: "Spinners" },
+                { name: "Nathan Lyon", role: "Spinner", country: "AUS", base: 1.5, set: "Spinners" },
+                { name: "Stuart MacGill", role: "Spinner", country: "AUS", base: 1.0, set: "Spinners" },
+                { name: "Rangana Herath", role: "Spinner", country: "SL", base: 1.5, set: "Spinners" },
+                { name: "Graeme Swann", role: "Spinner", country: "ENG", base: 1.5, set: "Spinners" },
+                { name: "Saqlain Mushtaq", role: "Spinner", country: "PAK", base: 1.5, set: "Spinners" },
+                { name: "Mushtaq Ahmed", role: "Spinner", country: "PAK", base: 1.0, set: "Spinners" },
+                { name: "Yasir Shah", role: "Spinner", country: "PAK", base: 1.0, set: "Spinners" },
+                { name: "Daniel Vettori", role: "Spinner", country: "NZ", base: 1.5, set: "Spinners" },
+                { name: "Ajaz Patel", role: "Spinner", country: "NZ", base: 0.75, set: "Spinners" },
+                { name: "Keshav Maharaj", role: "Spinner", country: "SA", base: 1.0, set: "Spinners" },
+                { name: "Taijul Islam", role: "Spinner", country: "BAN", base: 0.75, set: "Spinners" },
+                { name: "Moeen Ali", role: "Spinner", country: "ENG", base: 1.0, set: "Spinners" },
+                { name: "Noman Ali", role: "Spinner", country: "PAK", base: 0.75, set: "Spinners" },
+                { name: "Mehidy Hasan Miraz", role: "Spinner", country: "BAN", base: 1.0, set: "Spinners" },
+                { name: "Ajmal Shahzad", role: "Spinner", country: "PAK", base: 0.5, set: "Spinners" }
             ]
         };
 
@@ -842,6 +971,7 @@
             biddingControls: document.getElementById('bidding-controls'),
             hostControls: document.getElementById('host-controls'),
             btnHostUnsold: document.getElementById('btn-host-unsold'),
+            btnHostSkip: document.getElementById('btn-host-skip'),
             upcomingList: document.getElementById('upcoming-list'),
             standingsList: document.getElementById('standings-list'),
             soldOverlay: document.getElementById('sold-overlay')
@@ -1354,13 +1484,15 @@
             const isHost = usersData.find(u => u.userId === myUserDocId)?.role === 'admin';
             const currentPlayer = playersData.find(p => p.order === roomData.currentAuctionIndex);
 
-            // Display active Format Badge
+            if (isHost && ui.btnHostUnsold) { 
+                ui.btnHostUnsold.disabled = roomData.currentBidder ? true : false; 
+                if (ui.btnHostSkip) ui.btnHostSkip.disabled = roomData.currentBidder ? true : false;
+            }
+
             if (ui.formatBadge && roomData.format) {
                 ui.formatBadge.innerText = roomData.format + " FORMAT";
                 ui.formatBadge.classList.remove('hidden');
             }
-
-            if (isHost && ui.btnHostUnsold) { ui.btnHostUnsold.disabled = roomData.currentBidder ? true : false; }
 
             if(roomData.status === 'active' && roomData.timerEndTime > 0) {
                 startTimer(roomData.timerEndTime);
@@ -1386,72 +1518,127 @@
             }
 
             if(currentPlayer) {
-                ui.playerName.innerText = currentPlayer.name;
-                ui.playerRole.innerText = currentPlayer.role;
-                ui.playerCountry.innerHTML = `<svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path></svg> ${currentPlayer.country}`;
-                ui.playerBase.innerText = `₹ ${formatMoney(currentPlayer.basePrice)} Cr`;
+                if(ui.playerName) ui.playerName.innerText = currentPlayer.name;
+                if(ui.playerRole) ui.playerRole.innerText = currentPlayer.role;
+                if(ui.playerCountry) ui.playerCountry.innerHTML = `<svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path></svg> ${currentPlayer.country}`;
+                if(ui.playerBase) ui.playerBase.innerText = `₹ ${formatMoney(currentPlayer.basePrice)} Cr`;
 
                 if (currentPlayer.set) {
-                    ui.playerSet.innerText = currentPlayer.set + " SET";
-                    ui.playerSet.classList.remove('hidden');
+                    if(ui.playerSet) {
+                        ui.playerSet.innerText = currentPlayer.set + " SET";
+                        ui.playerSet.classList.remove('hidden');
+                    }
                 } else {
-                    ui.playerSet.classList.add('hidden');
+                    if(ui.playerSet) ui.playerSet.classList.add('hidden');
                 }
                 
+                const analytics = generatePlayerAnalytics(currentPlayer);
+                const statRating = document.getElementById('ui-stat-rating');
+                if (statRating) {
+                    statRating.innerText = analytics.aiRating;
+                    document.getElementById('ui-stat-predicted').innerText = `₹ ${analytics.predMin.toFixed(2)} - ${analytics.predMax.toFixed(2)} Cr`;
+                    document.getElementById('ui-stat-matches').innerText = analytics.matches;
+                    document.getElementById('ui-stat-l1').innerText = analytics.stat1.label;
+                    document.getElementById('ui-stat-v1').innerText = analytics.stat1.val;
+                    document.getElementById('ui-stat-l2').innerText = analytics.stat2.label;
+                    document.getElementById('ui-stat-v2').innerText = analytics.stat2.val;
+                    
+                    let formHtml = '';
+                    analytics.form.forEach(f => {
+                        let color = String(f).includes('W') ? (parseInt(f)>1?'text-cric-green':'text-zinc-400') : (parseInt(f)>40?'text-cric-green':(parseInt(f)===0?'text-red-500':'text-zinc-400'));
+                        formHtml += `<div class="bg-zinc-950 border border-zinc-800 flex-1 py-1.5 sm:py-2 rounded-lg text-center font-bold font-display text-[10px] sm:text-xs ${color} shadow-inner">${f}</div>`;
+                    });
+                    document.getElementById('ui-stat-form').innerHTML = formHtml;
+
+                    // Live Value Verdict Logic
+                    const currentBidVal = roomData.currentBid > 0 ? roomData.currentBid : currentPlayer.basePrice;
+                    const barCurrent = document.getElementById('ui-stat-bar-current');
+                    const barPredicted = document.getElementById('ui-stat-bar-predicted');
+                    const verdict = document.getElementById('ui-stat-verdict');
+                    
+                    const maxScale = analytics.predMax + 2.0;
+                    const predCenter = (analytics.predMin + analytics.predMax) / 2;
+                    
+                    barPredicted.style.width = `${Math.min(100, (predCenter / maxScale) * 100)}%`;
+                    barCurrent.style.width = `${Math.min(100, (currentBidVal / maxScale) * 100)}%`;
+                    
+                    if (currentBidVal < analytics.predMin) {
+                        verdict.innerText = "Steal Deal!"; verdict.className = "text-[9px] sm:text-[11px] font-bold text-emerald-400 uppercase tracking-wider";
+                        barCurrent.className = "absolute top-0 left-0 h-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.8)] transition-all duration-500 z-10";
+                    } else if (currentBidVal > analytics.predMax) {
+                        verdict.innerText = "Overpriced!"; verdict.className = "text-[9px] sm:text-[11px] font-bold text-red-500 uppercase tracking-wider";
+                        barCurrent.className = "absolute top-0 left-0 h-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)] transition-all duration-500 z-10";
+                    } else {
+                        verdict.innerText = "Fair Value"; verdict.className = "text-[9px] sm:text-[11px] font-bold text-yellow-400 uppercase tracking-wider";
+                        barCurrent.className = "absolute top-0 left-0 h-full bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.8)] transition-all duration-500 z-10";
+                    }
+                }
+
                 const displayBid = roomData.currentBid > 0 ? roomData.currentBid : currentPlayer.basePrice;
-                ui.currentBid.innerHTML = `₹ ${formatMoney(displayBid)} <span class="text-lg sm:text-2xl lg:text-3xl text-zinc-500 font-bold tracking-normal">Cr</span>`;
+                if(ui.currentBid) ui.currentBid.innerHTML = `₹ ${formatMoney(displayBid)} <span class="text-xl sm:text-2xl lg:text-3xl text-zinc-500 font-bold tracking-normal">Cr</span>`;
 
                 if(roomData.currentBidder) {
                     const bidder = usersData.find(u => u.userId === roomData.currentBidder);
-                    ui.highestBidder.innerText = bidder ? bidder.username : "Unknown";
-                    ui.highestBidder.className = "font-bold text-cric-gold text-[10px] sm:text-sm lg:text-base truncate max-w-[100px] sm:max-w-[150px] lg:max-w-[200px]";
+                    if(ui.highestBidder) {
+                        ui.highestBidder.innerText = bidder ? bidder.username : "Unknown";
+                        ui.highestBidder.className = "font-bold text-cric-gold text-[10px] sm:text-sm lg:text-base truncate max-w-[100px] sm:max-w-[150px] lg:max-w-[200px]";
+                    }
                     
                     if (lastBidderState !== roomData.currentBidder) {
-                        ui.playerCard.classList.add('glowing-bid'); setTimeout(() => ui.playerCard.classList.remove('glowing-bid'), 1000);
+                        if(ui.playerCard) { ui.playerCard.classList.add('glowing-bid'); setTimeout(() => ui.playerCard.classList.remove('glowing-bid'), 1000); }
                         lastBidderState = roomData.currentBidder;
                     }
                 } else {
-                    ui.highestBidder.innerText = "Be the first!";
-                    ui.highestBidder.className = "font-bold text-zinc-500 text-[10px] sm:text-sm lg:text-base truncate max-w-[100px] sm:max-w-[150px] lg:max-w-[200px]";
+                    if(ui.highestBidder) {
+                        ui.highestBidder.innerText = "Be the first!";
+                        ui.highestBidder.className = "font-bold text-zinc-500 text-[10px] sm:text-sm lg:text-base truncate max-w-[100px] sm:max-w-[150px] lg:max-w-[200px]";
+                    }
                     lastBidderState = null;
                 }
 
                 if(currentPlayer.status === 'sold') {
-                    ui.soldOverlay.classList.remove('hidden'); ui.soldOverlay.classList.add('flex', 'animate-fade-in');
-                    const owner = usersData.find(u => u.userId === currentPlayer.ownerId); const ownerName = owner ? owner.username : "Unknown";
-                    if (!ui.soldOverlay.innerHTML.includes(currentPlayer.name)) {
-                        ui.soldOverlay.innerHTML = `
-                            <span class="hidden">${currentPlayer.name}</span>
-                            <div class="animate-stamp flex flex-col items-center justify-center w-full">
-                                <h3 class="text-3xl sm:text-5xl lg:text-7xl font-display font-black text-cric-green mb-3 sm:mb-6 transform -rotate-12 uppercase tracking-widest drop-shadow-[0_0_30px_rgba(16,185,129,0.8)]">SOLD!</h3>
-                                <div class="bg-zinc-950/95 border border-zinc-800 rounded-xl sm:rounded-[2rem] p-3 sm:p-6 lg:p-8 w-[95%] sm:w-[90%] shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-                                    <p class="text-[8px] sm:text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-0.5 sm:mb-1">Purchased By</p>
-                                    <p class="text-lg sm:text-2xl lg:text-3xl font-black text-cric-gold tracking-tight truncate w-full">${ownerName}</p>
-                                    <div class="w-full h-px bg-zinc-800 my-2 sm:my-4"></div>
-                                    <p class="text-[8px] sm:text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-0.5 sm:mb-1">Final Amount</p>
-                                    <p class="text-2xl sm:text-4xl lg:text-5xl font-display font-black text-white">₹ ${formatMoney(currentPlayer.soldPrice)} <span class="text-base sm:text-xl lg:text-2xl text-zinc-500">Cr</span></p>
+                    if(ui.soldOverlay) {
+                        ui.soldOverlay.classList.remove('hidden'); ui.soldOverlay.classList.add('flex', 'animate-fade-in');
+                        const owner = usersData.find(u => u.userId === currentPlayer.ownerId); const ownerName = owner ? owner.username : "Unknown";
+                        if (!ui.soldOverlay.innerHTML.includes(currentPlayer.name)) {
+                            ui.soldOverlay.innerHTML = `
+                                <span class="hidden">${currentPlayer.name}</span>
+                                <div class="animate-stamp flex flex-col items-center justify-center w-full">
+                                    <h3 class="text-3xl sm:text-5xl lg:text-7xl font-display font-black text-cric-green mb-3 sm:mb-6 transform -rotate-12 uppercase tracking-widest drop-shadow-[0_0_30px_rgba(16,185,129,0.8)]">SOLD!</h3>
+                                    <div class="bg-zinc-950/95 border border-zinc-800 rounded-xl sm:rounded-[2rem] p-3 sm:p-6 lg:p-8 w-[95%] sm:w-[90%] shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+                                        <p class="text-[8px] sm:text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-0.5 sm:mb-1">Purchased By</p>
+                                        <p class="text-lg sm:text-2xl lg:text-3xl font-black text-cric-gold tracking-tight truncate w-full">${ownerName}</p>
+                                        <div class="w-full h-px bg-zinc-800 my-2 sm:my-4"></div>
+                                        <p class="text-[8px] sm:text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-0.5 sm:mb-1">Final Amount</p>
+                                        <p class="text-2xl sm:text-4xl lg:text-5xl font-display font-black text-white">₹ ${formatMoney(currentPlayer.soldPrice)} <span class="text-base sm:text-xl lg:text-2xl text-zinc-500">Cr</span></p>
+                                    </div>
                                 </div>
-                            </div>
-                        `;
+                            `;
+                        }
                     }
                 } else if(currentPlayer.status === 'unsold') {
-                    ui.soldOverlay.classList.remove('hidden'); ui.soldOverlay.classList.add('flex', 'animate-fade-in');
-                    if (!ui.soldOverlay.innerHTML.includes(currentPlayer.name)) {
-                        ui.soldOverlay.innerHTML = `
-                            <span class="hidden">${currentPlayer.name}</span>
-                            <div class="animate-stamp flex flex-col items-center justify-center w-full">
-                                <h3 class="text-3xl sm:text-5xl lg:text-6xl font-display font-black text-zinc-400 mb-2 transform -rotate-12 uppercase tracking-widest drop-shadow-2xl">UNSOLD</h3>
-                            </div>
-                        `;
+                    if(ui.soldOverlay) {
+                        ui.soldOverlay.classList.remove('hidden'); ui.soldOverlay.classList.add('flex', 'animate-fade-in');
+                        if (!ui.soldOverlay.innerHTML.includes(currentPlayer.name)) {
+                            ui.soldOverlay.innerHTML = `
+                                <span class="hidden">${currentPlayer.name}</span>
+                                <div class="animate-stamp flex flex-col items-center justify-center w-full">
+                                    <h3 class="text-3xl sm:text-5xl lg:text-6xl font-display font-black text-zinc-400 mb-2 transform -rotate-12 uppercase tracking-widest drop-shadow-2xl">UNSOLD</h3>
+                                </div>
+                            `;
+                        }
                     }
                 } else {
-                    ui.soldOverlay.classList.add('hidden'); ui.soldOverlay.classList.remove('flex', 'animate-fade-in'); ui.soldOverlay.innerHTML = ''; 
+                    if(ui.soldOverlay) { ui.soldOverlay.classList.add('hidden'); ui.soldOverlay.classList.remove('flex', 'animate-fade-in'); ui.soldOverlay.innerHTML = ''; }
                 }
             } else {
-                ui.playerName.innerText = "Auction Finished"; ui.playerRole.innerText = "---";
-                ui.playerCountry.innerHTML = `---`; ui.playerBase.innerText = "---";
-                ui.currentBid.innerHTML = "₹ 0.00"; ui.highestBidder.innerText = "---";
-                ui.playerSet.classList.add('hidden');
+                if(ui.playerName) ui.playerName.innerText = "Auction Finished"; 
+                if(ui.playerRole) ui.playerRole.innerText = "---";
+                if(ui.playerCountry) ui.playerCountry.innerHTML = `---`; 
+                if(ui.playerBase) ui.playerBase.innerText = "---";
+                if(ui.currentBid) ui.currentBid.innerHTML = "₹ 0.00"; 
+                if(ui.highestBidder) ui.highestBidder.innerText = "---";
+                if(ui.playerSet) ui.playerSet.classList.add('hidden');
             }
         }
 
@@ -1649,8 +1836,8 @@
         document.getElementById('btn-host-start').addEventListener('click', async () => {
             if(!currentUser || !roomData) return;
             
-            // PRIORITY SET ORDER ensures players are drawn in category sequence
-            const SET_ORDER = ["Marquee", "Batsmen", "Wicketkeepers", "All-Rounders", "Pacers", "Spinners"];
+            // PRIORITY SET ORDER
+            const SET_ORDER = ["Marquee", "Batsmen", "Pacers", "Wicketkeepers", "All-Rounders", "Spinners"];
             const currentPlayer = playersData.find(p => p.order === roomData.currentAuctionIndex);
 
             if(currentPlayer && (currentPlayer.status === 'sold' || currentPlayer.status === 'unsold')) {
@@ -1701,6 +1888,23 @@
             if(roomData.currentBidder) return showToast("Cannot mark unsold: Bids exist!");
             const currentPlayer = playersData.find(p => p.order === roomData.currentAuctionIndex);
             if(currentPlayer) await markPlayerUnsold(currentPlayer.playerId);
+        });
+
+        document.getElementById('btn-host-skip').addEventListener('click', async () => {
+            if(!currentUser || !roomData) return;
+            if(roomData.currentBidder) return showToast("Cannot skip: Bids exist!");
+            const currentPlayer = playersData.find(p => p.order === roomData.currentAuctionIndex);
+            if(currentPlayer) {
+                // Immediately set unsold, skip the waiting time
+                await updateDoc(doc(getRoomsRef(), currentRoomId), { status: 'paused', timerEndTime: 0 });
+                await updateDoc(doc(getPlayersRef(), currentPlayer.playerId), { status: 'unsold' });
+                
+                // Instantly advance right after state updates
+                setTimeout(() => {
+                    const me = usersData.find(u => u.userId === myUserDocId);
+                    if(me && me.role === 'admin') { const b = document.getElementById('btn-host-start'); if(b) b.click(); }
+                }, 300); // 300ms visual buffer
+            }
         });
 
         async function markPlayerSold(playerId, price, ownerDocId) {
