@@ -294,110 +294,110 @@
             <section id="auction-panel" class="app-panel desktop-panel-force flex flex-col flex-1 w-full relative z-20 overflow-hidden bg-zinc-950">
                 
                 <!-- Scrollable Content Area -->
-                <div class="flex-1 overflow-y-auto hide-scrollbar flex flex-col relative">
+                <div class="flex-1 overflow-y-auto hide-scrollbar flex flex-col relative w-full h-full">
                     <!-- Background ambient glow -->
                     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cric-green/5 rounded-full blur-[100px] pointer-events-none"></div>
 
                     <!-- Horizontal User Video/Avatar Gallery Strip -->
-                    <div class="w-full bg-zinc-900/40 border-b border-zinc-800/50 p-3 shrink-0 backdrop-blur-sm z-10 relative">
-                        <div id="video-gallery" class="flex flex-nowrap overflow-x-auto gap-4 hide-scrollbar items-center snap-x px-2">
+                    <div class="w-full bg-zinc-900/40 border-b border-zinc-800/50 p-2 sm:p-3 shrink-0 backdrop-blur-sm z-10 relative">
+                        <div id="video-gallery" class="flex flex-nowrap overflow-x-auto gap-3 sm:gap-4 hide-scrollbar items-center snap-x px-2">
                             <!-- Local Video (Self) -->
                             <div class="relative group flex flex-col items-center shrink-0 snap-start">
-                               <div class="p-0.5 rounded-[1.25rem] bg-gradient-to-b from-cric-green to-transparent">
-                                   <video id="local-video" class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover bg-zinc-800 block" autoplay muted playsinline></video>
+                               <div class="p-0.5 rounded-[1rem] sm:rounded-[1.25rem] bg-gradient-to-b from-cric-green to-transparent">
+                                   <video id="local-video" class="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-[0.875rem] sm:rounded-[1rem] object-cover bg-zinc-800 block" autoplay muted playsinline></video>
                                </div>
-                               <span class="absolute -bottom-2 bg-zinc-900 border border-zinc-700 text-white text-[9px] font-bold px-2 py-0.5 rounded-md whitespace-nowrap z-10 shadow-sm uppercase tracking-wider">You</span>
+                               <span class="absolute -bottom-2 bg-zinc-900 border border-zinc-700 text-white text-[8px] sm:text-[9px] font-bold px-2 py-0.5 rounded-md whitespace-nowrap z-10 shadow-sm uppercase tracking-wider">You</span>
                             </div>
                             <!-- Remote Users dynamically injected here -->
                         </div>
                     </div>
 
                     <!-- Auction Board Padding Wrapper -->
-                    <div class="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 min-h-[450px] relative z-10">
+                    <div class="flex-1 flex flex-col items-center justify-center p-3 sm:p-5 lg:p-8 min-h-min relative z-10 w-full mx-auto">
                         
                         <!-- Status/Timer Pill -->
-                        <div class="mb-6 sm:mb-8 shrink-0 transition-all z-20">
-                            <div id="timer-container" class="bg-zinc-900/90 backdrop-blur border border-zinc-800 rounded-full px-5 py-2.5 flex items-center gap-3 shadow-2xl transform hover:scale-105 transition-transform">
-                                <div id="status-indicator" class="w-2.5 h-2.5 rounded-full bg-yellow-500 shadow-[0_0_8px_currentColor]"></div>
-                                <span id="ui-room-status" class="font-bold text-zinc-300 text-xs sm:text-sm tracking-widest uppercase">Waiting...</span>
-                                <div class="w-px h-4 bg-zinc-700 mx-1"></div>
-                                <span id="ui-timer" class="font-display font-black text-2xl text-white w-8 text-center hidden drop-shadow-md">00</span>
+                        <div class="mb-4 sm:mb-6 lg:mb-8 shrink-0 transition-all z-20">
+                            <div id="timer-container" class="bg-zinc-900/90 backdrop-blur border border-zinc-800 rounded-full px-4 sm:px-5 py-2 flex items-center gap-2 sm:gap-3 shadow-2xl transform hover:scale-105 transition-transform">
+                                <div id="status-indicator" class="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-yellow-500 shadow-[0_0_8px_currentColor]"></div>
+                                <span id="ui-room-status" class="font-bold text-zinc-300 text-[10px] sm:text-xs lg:text-sm tracking-widest uppercase">Waiting...</span>
+                                <div class="w-px h-3 sm:h-4 bg-zinc-700 mx-0.5 sm:mx-1"></div>
+                                <span id="ui-timer" class="font-display font-black text-lg sm:text-xl lg:text-2xl text-white w-6 sm:w-8 text-center hidden drop-shadow-md">00</span>
                             </div>
                         </div>
 
                         <!-- Premium Player Card -->
-                        <div id="player-card" class="w-full max-w-[400px] premium-card-bg rounded-[2rem] border border-zinc-700/50 shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden relative transition-all duration-500 shrink-0 transform">
+                        <div id="player-card" class="w-full max-w-[92%] sm:max-w-md lg:max-w-lg xl:max-w-2xl premium-card-bg rounded-[1.5rem] sm:rounded-[2rem] border border-zinc-700/50 shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden relative transition-all duration-500 shrink-0 transform aspect-[4/5] sm:aspect-auto flex flex-col">
                             
                             <!-- Internal subtle grid pattern -->
                             <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wMykiLz48L3N2Zz4=')] opacity-50 pointer-events-none"></div>
 
                             <!-- Sold/Unsold Overlay -->
-                            <div id="sold-overlay" class="absolute inset-0 bg-zinc-950/90 backdrop-blur-lg z-30 hidden flex-col items-center justify-center p-6 text-center">
+                            <div id="sold-overlay" class="absolute inset-0 bg-zinc-950/90 backdrop-blur-lg z-30 hidden flex-col items-center justify-center p-4 sm:p-6 text-center w-full h-full">
                                 <!-- Dynamic Injection -->
                             </div>
 
                             <!-- Card Header Elements -->
-                            <div class="p-6 sm:p-8 flex justify-between items-start relative z-10">
-                                <div>
-                                    <div class="flex items-center gap-2 mb-3">
-                                        <span id="ui-player-role" class="bg-zinc-800 text-zinc-300 border border-zinc-700 text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-widest inline-block">Role</span>
-                                        <span id="ui-player-country" class="bg-zinc-800 text-zinc-300 border border-zinc-700 text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-widest inline-flex items-center gap-1">
+                            <div class="p-5 sm:p-8 flex justify-between items-start relative z-10 flex-1 sm:flex-none">
+                                <div class="flex-1">
+                                    <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
+                                        <span id="ui-player-role" class="bg-zinc-800 text-zinc-300 border border-zinc-700 text-[9px] sm:text-[10px] font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md uppercase tracking-widest inline-block truncate max-w-[100px] sm:max-w-none">Role</span>
+                                        <span id="ui-player-country" class="bg-zinc-800 text-zinc-300 border border-zinc-700 text-[9px] sm:text-[10px] font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md uppercase tracking-widest inline-flex items-center gap-1 shrink-0">
                                             ---
                                         </span>
                                     </div>
-                                    <h2 id="ui-player-name" class="text-3xl sm:text-4xl font-display font-black text-white leading-none tracking-tight mb-2 drop-shadow-md">Wait...</h2>
+                                    <h2 id="ui-player-name" class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-display font-black text-white leading-tight sm:leading-none tracking-tight mb-1 sm:mb-2 drop-shadow-md break-words">Wait...</h2>
                                 </div>
-                                <div class="text-right shrink-0">
-                                    <p class="text-[9px] text-zinc-500 uppercase font-bold tracking-widest mb-1">Base Price</p>
-                                    <p id="ui-player-base" class="font-display font-bold text-lg sm:text-xl text-zinc-300 bg-zinc-900 px-3 py-1.5 rounded-lg border border-zinc-800 shadow-inner">₹ -- Cr</p>
+                                <div class="text-right shrink-0 ml-2">
+                                    <p class="text-[8px] sm:text-[9px] text-zinc-500 uppercase font-bold tracking-widest mb-0.5 sm:mb-1">Base Price</p>
+                                    <p id="ui-player-base" class="font-display font-bold text-base sm:text-lg lg:text-xl text-zinc-300 bg-zinc-900 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-zinc-800 shadow-inner whitespace-nowrap">₹ -- Cr</p>
                                 </div>
                             </div>
 
                             <!-- Divider -->
-                            <div class="w-full h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent opacity-50 relative z-10"></div>
+                            <div class="w-full h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent opacity-50 relative z-10 hidden sm:block"></div>
 
                             <!-- Bid Status Area -->
-                            <div class="px-6 pb-8 pt-6 text-center relative z-10">
-                                <p class="text-cric-green text-xs font-bold uppercase tracking-widest mb-2 flex items-center justify-center gap-2">
+                            <div class="px-5 pb-6 pt-2 sm:px-6 sm:pb-8 sm:pt-6 text-center relative z-10 flex flex-col justify-end sm:justify-start">
+                                <p class="text-cric-green text-[9px] sm:text-xs font-bold uppercase tracking-widest mb-1.5 sm:mb-2 flex items-center justify-center gap-1.5 sm:gap-2">
                                     <span class="w-1 h-1 rounded-full bg-cric-green"></span>
                                     Current Bid
                                     <span class="w-1 h-1 rounded-full bg-cric-green"></span>
                                 </p>
-                                <h3 id="ui-current-bid" class="text-6xl sm:text-7xl font-display font-black text-white mb-6 tracking-tighter drop-shadow-2xl">₹ 0.00 <span class="text-2xl sm:text-3xl text-zinc-500 font-bold tracking-normal">Cr</span></h3>
+                                <h3 id="ui-current-bid" class="text-5xl sm:text-6xl lg:text-7xl font-display font-black text-white mb-4 sm:mb-6 tracking-tighter drop-shadow-2xl">₹ 0.00 <span class="text-xl sm:text-2xl lg:text-3xl text-zinc-500 font-bold tracking-normal">Cr</span></h3>
                                 
-                                <div class="inline-flex items-center justify-center gap-3 bg-zinc-950/80 border border-zinc-800/80 rounded-2xl px-5 py-3 max-w-full backdrop-blur-md shadow-lg">
-                                    <p class="text-sm text-zinc-400 font-medium uppercase tracking-wider text-[10px]">Leader</p>
-                                    <div class="w-px h-4 bg-zinc-800 mx-1"></div>
-                                    <p id="ui-highest-bidder" class="font-bold text-white text-sm sm:text-base truncate max-w-[150px]">None</p>
+                                <div class="inline-flex items-center justify-center gap-2 sm:gap-3 bg-zinc-950/80 border border-zinc-800/80 rounded-[1rem] sm:rounded-2xl px-4 sm:px-5 py-2 sm:py-3 max-w-full backdrop-blur-md shadow-lg mx-auto">
+                                    <p class="text-[9px] sm:text-[10px] text-zinc-400 font-medium uppercase tracking-wider shrink-0">Leader</p>
+                                    <div class="w-px h-3 sm:h-4 bg-zinc-800 mx-0.5 sm:mx-1"></div>
+                                    <p id="ui-highest-bidder" class="font-bold text-white text-xs sm:text-sm lg:text-base truncate max-w-[120px] sm:max-w-[150px] lg:max-w-[200px]">None</p>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Scrolled Controls Container (Moves organically with the board) -->
-                        <div class="w-full max-w-[900px] mx-auto mt-6 sm:mt-8 pb-24 lg:pb-4 z-30 flex flex-col gap-4">
+                        <div class="w-full max-w-[92%] sm:max-w-md lg:max-w-2xl xl:max-w-3xl mx-auto mt-4 sm:mt-6 lg:mt-8 pb-24 lg:pb-4 z-30 flex flex-col gap-3 sm:gap-4 shrink-0">
                             
                             <!-- Host Controls (Only visible to admin) -->
-                            <div id="host-controls" class="hidden flex-wrap gap-2 justify-center p-4 bg-zinc-900/50 border border-zinc-800/80 rounded-[1.5rem] shadow-lg">
-                                <span class="w-full text-center text-[9px] text-zinc-500 uppercase tracking-widest font-bold flex items-center justify-center gap-1.5 mb-1"><span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> Host Desk</span>
-                                <button id="btn-host-start" class="bg-white hover:bg-zinc-200 text-zinc-950 font-bold px-5 py-3 rounded-xl shadow-md flex-1 min-w-[100px] transition-colors active:scale-95 text-xs uppercase tracking-wider">Start / Next</button>
-                                <button id="btn-host-pause" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold px-5 py-3 rounded-xl shadow-md flex-1 min-w-[100px] transition-colors active:scale-95 text-xs uppercase tracking-wider border border-zinc-700">Pause</button>
-                                <button id="btn-host-unsold" class="bg-red-500/10 hover:bg-red-500/20 text-red-500 font-bold px-5 py-3 rounded-xl shadow-md flex-1 min-w-[100px] transition-colors disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 text-xs uppercase tracking-wider border border-red-500/20">Mark Unsold</button>
+                            <div id="host-controls" class="hidden flex-wrap gap-1.5 sm:gap-2 justify-center p-3 sm:p-4 bg-zinc-900/50 border border-zinc-800/80 rounded-[1.25rem] sm:rounded-[1.5rem] shadow-lg w-full">
+                                <span class="w-full text-center text-[8px] sm:text-[9px] text-zinc-500 uppercase tracking-widest font-bold flex items-center justify-center gap-1.5 mb-0.5 sm:mb-1"><span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> Host Desk</span>
+                                <button id="btn-host-start" class="bg-white hover:bg-zinc-200 text-zinc-950 font-bold px-3 sm:px-5 py-2.5 sm:py-3 rounded-lg sm:rounded-xl shadow-md flex-1 min-w-[80px] sm:min-w-[100px] transition-colors active:scale-95 text-[10px] sm:text-xs uppercase tracking-wider">Start / Next</button>
+                                <button id="btn-host-pause" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold px-3 sm:px-5 py-2.5 sm:py-3 rounded-lg sm:rounded-xl shadow-md flex-1 min-w-[80px] sm:min-w-[100px] transition-colors active:scale-95 text-[10px] sm:text-xs uppercase tracking-wider border border-zinc-700">Pause</button>
+                                <button id="btn-host-unsold" class="bg-red-500/10 hover:bg-red-500/20 text-red-500 font-bold px-3 sm:px-5 py-2.5 sm:py-3 rounded-lg sm:rounded-xl shadow-md flex-1 min-w-[80px] sm:min-w-[100px] transition-colors disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 text-[10px] sm:text-xs uppercase tracking-wider border border-red-500/20">Mark Unsold</button>
                             </div>
 
                             <!-- Bidding Controls -->
                             <div id="bidding-controls" class="opacity-50 pointer-events-none transition-opacity duration-300 w-full pb-safe">
-                                <div class="grid grid-cols-3 gap-3 sm:gap-5">
-                                    <button onclick="placeBid(0.20)" class="bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-700 text-white font-bold py-4 sm:py-6 rounded-[1.5rem] transition-all shadow-lg flex flex-col items-center justify-center border border-zinc-800 active:scale-[0.97] group">
-                                        <span class="text-[10px] sm:text-xs text-zinc-500 font-bold mb-1 uppercase tracking-widest group-hover:text-zinc-400 transition-colors">Raise</span>
-                                        <span class="text-xl sm:text-2xl font-display font-black">20 L</span>
+                                <div class="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-5">
+                                    <button onclick="placeBid(0.20)" class="bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-700 text-white font-bold py-3.5 sm:py-5 lg:py-6 rounded-[1rem] sm:rounded-[1.5rem] transition-all shadow-lg flex flex-col items-center justify-center border border-zinc-800 active:scale-[0.97] group aspect-[3/2] sm:aspect-auto">
+                                        <span class="text-[9px] sm:text-[10px] lg:text-xs text-zinc-500 font-bold mb-0.5 sm:mb-1 uppercase tracking-widest group-hover:text-zinc-400 transition-colors">Raise</span>
+                                        <span class="text-lg sm:text-xl lg:text-2xl font-display font-black">20 L</span>
                                     </button>
-                                    <button onclick="placeBid(0.50)" class="bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-700 text-white font-bold py-4 sm:py-6 rounded-[1.5rem] transition-all shadow-lg flex flex-col items-center justify-center border border-zinc-800 active:scale-[0.97] group">
-                                        <span class="text-[10px] sm:text-xs text-zinc-500 font-bold mb-1 uppercase tracking-widest group-hover:text-zinc-400 transition-colors">Raise</span>
-                                        <span class="text-xl sm:text-2xl font-display font-black">50 L</span>
+                                    <button onclick="placeBid(0.50)" class="bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-700 text-white font-bold py-3.5 sm:py-5 lg:py-6 rounded-[1rem] sm:rounded-[1.5rem] transition-all shadow-lg flex flex-col items-center justify-center border border-zinc-800 active:scale-[0.97] group aspect-[3/2] sm:aspect-auto">
+                                        <span class="text-[9px] sm:text-[10px] lg:text-xs text-zinc-500 font-bold mb-0.5 sm:mb-1 uppercase tracking-widest group-hover:text-zinc-400 transition-colors">Raise</span>
+                                        <span class="text-lg sm:text-xl lg:text-2xl font-display font-black">50 L</span>
                                     </button>
-                                    <button onclick="placeBid(1.00)" class="bg-cric-green hover:bg-emerald-400 active:bg-emerald-500 text-zinc-950 font-bold py-4 sm:py-6 rounded-[1.5rem] transition-all shadow-[0_10px_30px_rgba(16,185,129,0.3)] flex flex-col items-center justify-center active:scale-[0.97]">
-                                        <span class="text-[10px] sm:text-xs text-emerald-900/70 font-black mb-1 uppercase tracking-widest">Power Raise</span>
-                                        <span class="text-2xl sm:text-3xl font-display font-black">1 Cr</span>
+                                    <button onclick="placeBid(1.00)" class="bg-cric-green hover:bg-emerald-400 active:bg-emerald-500 text-zinc-950 font-bold py-3.5 sm:py-5 lg:py-6 rounded-[1rem] sm:rounded-[1.5rem] transition-all shadow-[0_10px_30px_rgba(16,185,129,0.3)] flex flex-col items-center justify-center active:scale-[0.97] aspect-[3/2] sm:aspect-auto">
+                                        <span class="text-[9px] sm:text-[10px] lg:text-xs text-emerald-900/70 font-black mb-0.5 sm:mb-1 uppercase tracking-widest">Power Raise</span>
+                                        <span class="text-xl sm:text-2xl lg:text-3xl font-display font-black">1 Cr</span>
                                     </button>
                                 </div>
                             </div>
@@ -1024,25 +1024,25 @@
 
                     if (stream) {
                         const videoWrap = document.createElement('div');
-                        videoWrap.className = "p-0.5 rounded-[1.25rem] bg-gradient-to-b from-zinc-700 to-transparent";
+                        videoWrap.className = "p-0.5 rounded-[1rem] sm:rounded-[1.25rem] bg-gradient-to-b from-zinc-700 to-transparent";
                         
                         const video = document.createElement('video');
                         video.srcObject = stream;
                         video.autoplay = true;
                         video.playsInline = true;
-                        video.className = "w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover bg-zinc-900 block";
+                        video.className = "w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-[0.875rem] sm:rounded-[1rem] object-cover bg-zinc-900 block";
                         
                         videoWrap.appendChild(video);
                         wrapper.appendChild(videoWrap);
                     } else {
                         const avatar = document.createElement('div');
-                        avatar.className = "w-[60px] h-[60px] sm:w-[68px] sm:h-[68px] rounded-[1.25rem] border border-zinc-700 bg-zinc-800 flex items-center justify-center text-xl sm:text-2xl font-bold shadow-md text-zinc-300 font-display uppercase";
+                        avatar.className = "w-[52px] h-[52px] sm:w-[60px] sm:h-[60px] md:w-[68px] md:h-[68px] rounded-[1rem] sm:rounded-[1.25rem] border border-zinc-700 bg-zinc-800 flex items-center justify-center text-lg sm:text-xl md:text-2xl font-bold shadow-md text-zinc-300 font-display uppercase";
                         avatar.innerText = u.username.charAt(0);
                         wrapper.appendChild(avatar);
                     }
                     
                     const nameTag = document.createElement('span');
-                    nameTag.className = "absolute -bottom-2 bg-zinc-900 border border-zinc-700 text-white text-[9px] font-bold px-2 py-0.5 rounded-md whitespace-nowrap z-10 shadow-sm uppercase tracking-wider";
+                    nameTag.className = "absolute -bottom-2 bg-zinc-900 border border-zinc-700 text-white text-[8px] sm:text-[9px] font-bold px-2 py-0.5 rounded-md whitespace-nowrap z-10 shadow-sm uppercase tracking-wider";
                     nameTag.innerText = u.username;
 
                     wrapper.appendChild(nameTag);
@@ -1182,8 +1182,8 @@
             if(roomData.status === 'active' && roomData.timerEndTime > 0) {
                 startTimer(roomData.timerEndTime);
                 ui.roomStatus.innerText = "Live";
-                ui.roomStatus.className = "font-bold text-red-500 text-xs sm:text-sm tracking-widest uppercase";
-                ui.statusIndicator.className = "w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_12px_#ef4444] animate-pulse";
+                ui.roomStatus.className = "font-bold text-red-500 text-[10px] sm:text-xs lg:text-sm tracking-widest uppercase";
+                ui.statusIndicator.className = "w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-red-500 shadow-[0_0_12px_#ef4444] animate-pulse";
                 ui.timer.classList.remove('hidden');
                 
                 if(roomData.currentBidder !== myUserDocId) {
@@ -1198,16 +1198,16 @@
                 
                 if(roomData.status === 'waiting') {
                     ui.roomStatus.innerText = "Waiting...";
-                    ui.roomStatus.className = "font-bold text-yellow-500 text-xs sm:text-sm tracking-widest uppercase";
-                    ui.statusIndicator.className = "w-2.5 h-2.5 rounded-full bg-yellow-500 shadow-[0_0_12px_#eab308]";
+                    ui.roomStatus.className = "font-bold text-yellow-500 text-[10px] sm:text-xs lg:text-sm tracking-widest uppercase";
+                    ui.statusIndicator.className = "w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-yellow-500 shadow-[0_0_12px_#eab308]";
                 } else if(roomData.status === 'paused') {
                     ui.roomStatus.innerText = "Finalizing...";
-                    ui.roomStatus.className = "font-bold text-orange-500 text-xs sm:text-sm tracking-widest uppercase";
-                    ui.statusIndicator.className = "w-2.5 h-2.5 rounded-full bg-orange-500 shadow-[0_0_12px_#f97316]";
+                    ui.roomStatus.className = "font-bold text-orange-500 text-[10px] sm:text-xs lg:text-sm tracking-widest uppercase";
+                    ui.statusIndicator.className = "w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-orange-500 shadow-[0_0_12px_#f97316]";
                 } else if(roomData.status === 'finished') {
                     ui.roomStatus.innerText = "Completed";
-                    ui.roomStatus.className = "font-bold text-emerald-500 text-xs sm:text-sm tracking-widest uppercase";
-                    ui.statusIndicator.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_12px_#10b981]";
+                    ui.roomStatus.className = "font-bold text-emerald-500 text-[10px] sm:text-xs lg:text-sm tracking-widest uppercase";
+                    ui.statusIndicator.className = "w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-emerald-500 shadow-[0_0_12px_#10b981]";
                 }
             }
 
@@ -1218,12 +1218,12 @@
                 ui.playerBase.innerText = `₹ ${formatMoney(currentPlayer.basePrice)} Cr`;
                 
                 const displayBid = roomData.currentBid > 0 ? roomData.currentBid : currentPlayer.basePrice;
-                ui.currentBid.innerHTML = `₹ ${formatMoney(displayBid)} <span class="text-2xl sm:text-3xl text-zinc-500 font-bold tracking-normal">Cr</span>`;
+                ui.currentBid.innerHTML = `₹ ${formatMoney(displayBid)} <span class="text-xl sm:text-2xl lg:text-3xl text-zinc-500 font-bold tracking-normal">Cr</span>`;
 
                 if(roomData.currentBidder) {
                     const bidder = usersData.find(u => u.userId === roomData.currentBidder);
                     ui.highestBidder.innerText = bidder ? bidder.username : "Unknown";
-                    ui.highestBidder.className = "font-bold text-cric-gold text-sm sm:text-base truncate max-w-[150px]";
+                    ui.highestBidder.className = "font-bold text-cric-gold text-xs sm:text-sm lg:text-base truncate max-w-[120px] sm:max-w-[150px] lg:max-w-[200px]";
                     
                     if (lastBidderState !== roomData.currentBidder) {
                         ui.playerCard.classList.add('glowing-bid');
@@ -1232,7 +1232,7 @@
                     }
                 } else {
                     ui.highestBidder.innerText = "Be the first!";
-                    ui.highestBidder.className = "font-bold text-zinc-500 text-sm sm:text-base truncate max-w-[150px]";
+                    ui.highestBidder.className = "font-bold text-zinc-500 text-xs sm:text-sm lg:text-base truncate max-w-[120px] sm:max-w-[150px] lg:max-w-[200px]";
                     lastBidderState = null;
                 }
 
@@ -1244,13 +1244,13 @@
                         ui.soldOverlay.innerHTML = `
                             <span class="hidden">${currentPlayer.name}</span>
                             <div class="animate-stamp flex flex-col items-center justify-center w-full">
-                                <h3 class="text-6xl sm:text-7xl font-display font-black text-cric-green mb-6 transform -rotate-12 uppercase tracking-widest drop-shadow-[0_0_30px_rgba(16,185,129,0.8)]">SOLD!</h3>
-                                <div class="bg-zinc-950/95 border border-zinc-800 rounded-[2rem] p-6 sm:p-8 w-[90%] shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-                                    <p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Purchased By</p>
-                                    <p class="text-2xl sm:text-3xl font-black text-cric-gold tracking-tight">${ownerName}</p>
-                                    <div class="w-full h-px bg-zinc-800 my-4"></div>
-                                    <p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Final Amount</p>
-                                    <p class="text-4xl sm:text-5xl font-display font-black text-white">₹ ${formatMoney(currentPlayer.soldPrice)} <span class="text-xl sm:text-2xl text-zinc-500">Cr</span></p>
+                                <h3 class="text-4xl sm:text-5xl lg:text-7xl font-display font-black text-cric-green mb-4 sm:mb-6 transform -rotate-12 uppercase tracking-widest drop-shadow-[0_0_30px_rgba(16,185,129,0.8)]">SOLD!</h3>
+                                <div class="bg-zinc-950/95 border border-zinc-800 rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 lg:p-8 w-[95%] sm:w-[90%] shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+                                    <p class="text-[9px] sm:text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Purchased By</p>
+                                    <p class="text-xl sm:text-2xl lg:text-3xl font-black text-cric-gold tracking-tight truncate w-full">${ownerName}</p>
+                                    <div class="w-full h-px bg-zinc-800 my-3 sm:my-4"></div>
+                                    <p class="text-[9px] sm:text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Final Amount</p>
+                                    <p class="text-3xl sm:text-4xl lg:text-5xl font-display font-black text-white">₹ ${formatMoney(currentPlayer.soldPrice)} <span class="text-lg sm:text-xl lg:text-2xl text-zinc-500">Cr</span></p>
                                 </div>
                             </div>
                         `;
@@ -1260,8 +1260,8 @@
                     if (!ui.soldOverlay.innerHTML.includes(currentPlayer.name)) {
                         ui.soldOverlay.innerHTML = `
                             <span class="hidden">${currentPlayer.name}</span>
-                            <div class="animate-stamp flex flex-col items-center justify-center">
-                                <h3 class="text-5xl sm:text-6xl font-display font-black text-zinc-400 mb-2 transform -rotate-12 uppercase tracking-widest drop-shadow-2xl">UNSOLD</h3>
+                            <div class="animate-stamp flex flex-col items-center justify-center w-full">
+                                <h3 class="text-4xl sm:text-5xl lg:text-6xl font-display font-black text-zinc-400 mb-2 transform -rotate-12 uppercase tracking-widest drop-shadow-2xl">UNSOLD</h3>
                             </div>
                         `;
                     }
@@ -1400,11 +1400,11 @@
                 if (localVid) localVid.srcObject = localStream;
                 localStream.getAudioTracks().forEach(track => track.enabled = false);
                 localStream.getVideoTracks().forEach(track => track.enabled = false);
-                
+
                 // Initialize PeerJS
                 try {
                     peer = new Peer();
-                    
+
                     peer.on('open', (id) => {
                         myPeerId = id;
                         if (myUserDocId) {
@@ -1416,7 +1416,7 @@
                         call.answer(localStream);
                         handleCallStream(call);
                     });
-                    
+
                     peer.on('error', (err) => {
                         if (err.type === 'network' || String(err).includes('SecurityError') || String(err).includes('WebSocket')) {
                             showToast("Video signaling blocked by local environment. Deploy to test.");
@@ -1428,8 +1428,8 @@
                     console.error("PeerJS init failed:", peerErr);
                 }
 
-            } catch (err) { 
-                console.error("Media err:", err); 
+            } catch (err) {
+                console.error("Media err:", err);
             }
         }
 
@@ -1460,11 +1460,11 @@
             if (!localStream || localStream.getAudioTracks().length === 0) return showToast("Mic unavailable!");
             isMicMuted = !isMicMuted;
             localStream.getAudioTracks().forEach(t => t.enabled = !isMicMuted);
-            
+
             const btn = document.getElementById('btn-mic');
             const iconOn = document.getElementById('icon-mic-on');
             const iconOff = document.getElementById('icon-mic-off');
-            
+
             if (isMicMuted) {
                 iconOn.classList.add('hidden'); iconOff.classList.remove('hidden');
                 btn.classList.add('bg-red-500/10', 'text-red-400'); btn.classList.remove('bg-cric-green/20', 'text-cric-green');
@@ -1484,15 +1484,15 @@
                     if (localVid) localVid.srcObject = localStream;
                 } catch (e) { return showToast("Camera denied!"); }
             }
-            
+
             isVideoMuted = !isVideoMuted;
             localStream.getVideoTracks().forEach(t => t.enabled = !isVideoMuted);
-            
+
             const btn = document.getElementById('btn-video');
             const iconOn = document.getElementById('icon-video-on');
             const iconOff = document.getElementById('icon-video-off');
             const localVid = document.getElementById('local-video');
-            
+
             if (isVideoMuted) {
                 iconOn.classList.add('hidden'); iconOff.classList.remove('hidden');
                 btn.classList.add('bg-red-500/10', 'text-red-400'); btn.classList.remove('bg-cric-green/20', 'text-cric-green');
@@ -1516,9 +1516,9 @@
                 const now = Date.now();
                 const diff = Math.max(0, endTime - now);
                 const seconds = Math.ceil(diff / 1000);
-                
+
                 ui.timer.innerText = seconds.toString().padStart(2, '0');
-                if(seconds <= 5) { ui.timer.classList.add('text-red-500'); ui.timer.classList.remove('text-white'); } 
+                if(seconds <= 5) { ui.timer.classList.add('text-red-500'); ui.timer.classList.remove('text-white'); }
                 else { ui.timer.classList.remove('text-red-500'); ui.timer.classList.add('text-white'); }
 
                 if(diff <= 0) { stopTimer(); handleTimerEnd(); }
@@ -1547,7 +1547,7 @@
 
             const now = Date.now();
             let newEndTime = roomData.timerEndTime;
-            if((newEndTime - now) < 5000) newEndTime = now + 10000; 
+            if((newEndTime - now) < 5000) newEndTime = now + 10000;
 
             try {
                 await updateDoc(doc(getRoomsRef(), currentRoomId), { currentBid: newBid, currentBidder: myUserDocId, timerEndTime: newEndTime });
@@ -1556,9 +1556,9 @@
         };
 
         document.getElementById('btn-host-start').addEventListener('click', async () => {
-            if(!currentUser || !roomData) return; 
+            if(!currentUser || !roomData) return;
             const currentPlayer = playersData.find(p => p.order === roomData.currentAuctionIndex);
-            
+
             if(currentPlayer && (currentPlayer.status === 'sold' || currentPlayer.status === 'unsold')) {
                 const nextIndex = roomData.currentAuctionIndex + 1;
                 const nextPlayer = playersData.find(p => p.order === nextIndex);
@@ -1633,7 +1633,6 @@
 
         // Kickoff
         initAuth();
-
     </script>
 </body>
 </html>
