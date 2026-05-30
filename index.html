@@ -2,20 +2,19 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CricBid - Live Cricket Auction</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>CricBid - Premium Live Auction</title>
     
     <!-- PWA & Mobile Meta Tags -->
-    <meta name="theme-color" content="#0f172a">
+    <meta name="theme-color" content="#020617">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="CricBid">
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <!-- PeerJS for Voice Chat -->
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <!-- REMOVED PEERJS TO COMPLY WITH CANVAS SECURITY POLICIES -->
     
     <script>
         tailwind.config = {
@@ -27,26 +26,33 @@
                     },
                     colors: {
                         cric: {
-                            dark: '#0f172a',
-                            card: '#1e293b',
+                            dark: '#020617', // Slate 950
+                            card: '#0f172a', // Slate 900
+                            panel: '#1e293b', // Slate 800
                             green: '#10b981',
                             glow: '#34d399',
-                            gold: '#fbbf24'
+                            gold: '#f59e0b',
+                            accent: '#6366f1'
                         }
                     },
                     animation: {
                         'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                         'stamp': 'stamp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
-                        'fade-in-bg': 'fadeInBg 0.3s ease forwards'
+                        'fade-in-up': 'fadeInUp 0.4s ease-out forwards',
+                        'fade-in': 'fadeIn 0.3s ease forwards'
                     },
                     keyframes: {
                         stamp: {
-                            '0%': { opacity: '0', transform: 'scale(3) rotate(-20deg)' },
+                            '0%': { opacity: '0', transform: 'scale(2.5) rotate(-20deg)' },
                             '100%': { opacity: '1', transform: 'scale(1) rotate(-12deg)' }
                         },
-                        fadeInBg: {
-                            '0%': { backgroundColor: 'rgba(0, 0, 0, 0)' },
-                            '100%': { backgroundColor: 'rgba(0, 0, 0, 0.8)' }
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
                         }
                     }
                 }
@@ -55,155 +61,137 @@
     </script>
     
     <style>
-        body { background-color: #0f172a; color: white; }
+        body { background-color: #020617; color: #f8fafc; overflow: hidden; overscroll-behavior-y: none; }
+        
         .glass-panel {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
+        
         .glowing-bid {
-            box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.5);
             border-color: #10b981 !important;
             transition: all 0.3s ease;
         }
-        /* Mobile Specific Footer Fixes */
-        .pb-safe { padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px)); }
+
+        /* Safe Areas for iOS/Modern Android */
+        .pt-safe { padding-top: max(1rem, env(safe-area-inset-top)); }
+        .pb-safe { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+        .mb-safe { margin-bottom: env(safe-area-inset-bottom); }
         
         /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
         .toast {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
-            opacity: 0; transition: all 0.3s ease; z-index: 1000;
+            position: fixed; top: max(1rem, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%) translateY(-100px);
+            opacity: 0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 9999;
         }
         .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        /* Desktop Force Display for Hybrid Architecture */
+        @media (min-width: 1024px) {
+            .desktop-panel-force { display: flex !important; }
+            .mobile-tab-nav { display: none !important; }
+        }
+        
+        /* Prevent Input Zoom on iOS by enforcing 16px minimum font size */
+        input, select, textarea { font-size: 16px !important; }
     </style>
 </head>
-<body class="fixed inset-0 w-full flex flex-col font-sans overflow-hidden bg-cric-dark h-[100dvh]">
+<body class="fixed inset-0 w-full flex flex-col font-sans h-[100dvh] antialiased selection:bg-cric-green selection:text-slate-900">
 
-    <!-- Dynamic PWA Installation Script -->
-    <script>
-        const manifestJSON = {
-            "name": "CricBid Live Auction",
-            "short_name": "CricBid",
-            "start_url": ".",
-            "display": "standalone",
-            "background_color": "#0f172a",
-            "theme_color": "#10b981",
-            "icons": [
-                {
-                    "src": "data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2310b981'%3E%3Cpath d='M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z'/%3E%3C/svg%3E",
-                    "sizes": "192x192",
-                    "type": "image/svg+xml"
-                },
-                {
-                    "src": "data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2310b981'%3E%3Cpath d='M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z'/%3E%3C/svg%3E",
-                    "sizes": "512x512",
-                    "type": "image/svg+xml"
-                }
-            ]
-        };
-        const manifestData = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifestJSON));
-        const manifestLink = document.createElement('link');
-        manifestLink.rel = 'manifest';
-        manifestLink.href = manifestData;
-        document.head.appendChild(manifestLink);
-
-        if ('serviceWorker' in navigator) {
-            const swCode = `
-                self.addEventListener('install', (e) => self.skipWaiting());
-                self.addEventListener('activate', (e) => self.clients.claim());
-                self.addEventListener('fetch', (e) => { });
-            `;
-            const blob = new Blob([swCode], {type: 'application/javascript'});
-            const blobUrl = URL.createObjectURL(blob);
-            navigator.serviceWorker.register(blobUrl).catch(() => {});
-        }
-    </script>
-
-    <!-- Toast Notification -->
-    <div id="toast" class="toast bg-cric-card border border-cric-green text-white px-6 py-3 rounded-full shadow-lg font-medium">
-        Notification message
+    <!-- Global Toast Notification -->
+    <div id="toast" class="toast bg-slate-800 border border-cric-green text-white px-6 py-4 rounded-2xl shadow-[0_10px_40px_rgba(16,185,129,0.2)] font-medium flex items-center gap-3 min-w-[280px] max-w-[90vw]">
+        <div class="w-8 h-8 rounded-full bg-cric-green/20 flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4 text-cric-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        </div>
+        <span id="toast-msg" class="flex-1 text-sm leading-tight">Notification message</span>
     </div>
 
-    <!-- Exit Confirmation Modal -->
-    <div id="exit-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex-col items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-        <div class="glass-panel p-6 rounded-2xl max-w-sm w-full text-center border border-slate-600 shadow-2xl transform scale-95 transition-transform duration-300" id="exit-modal-content">
-            <div class="w-16 h-16 bg-red-500/20 rounded-full mx-auto mb-4 flex items-center justify-center text-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)]">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+    <!-- Modals (Exit, Kick, Ban) -->
+    <div id="exit-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[100] hidden flex-col items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="glass-panel bg-slate-900 border border-slate-700 p-8 rounded-3xl max-w-sm w-full text-center shadow-2xl transform scale-95 transition-transform duration-300" id="exit-modal-content">
+            <div class="w-20 h-20 bg-red-500/10 rounded-full mx-auto mb-6 flex items-center justify-center text-red-500 ring-4 ring-red-500/20">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
             </div>
-            <h2 class="text-2xl font-display font-bold text-white mb-2">Want to Exit!?</h2>
-            <p class="text-gray-400 mb-6">Are you sure you want to leave the auction room?</p>
+            <h2 class="text-2xl font-display font-bold text-white mb-2">Leaving Room?</h2>
+            <p class="text-slate-400 mb-8 text-sm">Are you sure you want to disconnect? You can rejoin using the room code.</p>
             <div class="flex gap-3">
-                <button id="btn-cancel-exit" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-xl transition-colors">Cancel</button>
-                <button id="btn-confirm-exit" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-red-500/30">Exit</button>
+                <button id="btn-cancel-exit" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-semibold py-3.5 rounded-xl transition-colors ring-1 ring-slate-700">Cancel</button>
+                <button id="btn-confirm-exit" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-red-500/30">Exit Now</button>
             </div>
         </div>
     </div>
 
-    <!-- Kick Confirmation Modal -->
-    <div id="kick-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex-col items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-        <div class="glass-panel p-6 rounded-2xl max-w-sm w-full text-center border border-slate-600 shadow-2xl transform scale-95 transition-transform duration-300" id="kick-modal-content">
-            <div class="w-16 h-16 bg-orange-500/20 rounded-full mx-auto mb-4 flex items-center justify-center text-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.3)]">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6"></path></svg>
+    <div id="kick-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[100] hidden flex-col items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="glass-panel bg-slate-900 border border-slate-700 p-8 rounded-3xl max-w-sm w-full text-center shadow-2xl transform scale-95 transition-transform duration-300" id="kick-modal-content">
+            <div class="w-20 h-20 bg-orange-500/10 rounded-full mx-auto mb-6 flex items-center justify-center text-orange-500 ring-4 ring-orange-500/20">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6"></path></svg>
             </div>
-            <h2 class="text-2xl font-display font-bold text-white mb-2">Kick Player?</h2>
-            <p class="text-gray-400 mb-6">Are you sure you want to remove <span id="kick-player-name" class="font-bold text-white"></span> from the room?</p>
+            <h2 class="text-2xl font-display font-bold text-white mb-2">Kick Player</h2>
+            <p class="text-slate-400 mb-8 text-sm">Remove <span id="kick-player-name" class="font-bold text-white"></span> from the room?</p>
             <div class="flex gap-3">
-                <button onclick="closeKickModal()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-xl transition-colors">Cancel</button>
-                <button id="btn-confirm-kick" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-orange-500/30">Kick</button>
+                <button onclick="closeKickModal()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-semibold py-3.5 rounded-xl transition-colors ring-1 ring-slate-700">Cancel</button>
+                <button id="btn-confirm-kick" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-orange-500/30">Kick</button>
             </div>
         </div>
     </div>
 
-    <!-- Ban Confirmation Modal -->
-    <div id="ban-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex-col items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-        <div class="glass-panel p-6 rounded-2xl max-w-sm w-full text-center border border-slate-600 shadow-2xl transform scale-95 transition-transform duration-300" id="ban-modal-content">
-            <div class="w-16 h-16 bg-red-500/20 rounded-full mx-auto mb-4 flex items-center justify-center text-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)]">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
+    <div id="ban-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[100] hidden flex-col items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="glass-panel bg-slate-900 border border-slate-700 p-8 rounded-3xl max-w-sm w-full text-center shadow-2xl transform scale-95 transition-transform duration-300" id="ban-modal-content">
+            <div class="w-20 h-20 bg-red-600/10 rounded-full mx-auto mb-6 flex items-center justify-center text-red-500 ring-4 ring-red-600/20">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
             </div>
-            <h2 class="text-2xl font-display font-bold text-white mb-2">Ban Player?</h2>
-            <p class="text-gray-400 mb-6">Are you sure you want to permanently ban <span id="ban-player-name" class="font-bold text-white"></span>? They will not be able to rejoin.</p>
+            <h2 class="text-2xl font-display font-bold text-white mb-2">Permanent Ban</h2>
+            <p class="text-slate-400 mb-8 text-sm">Permanently ban <span id="ban-player-name" class="font-bold text-white"></span>? They will not be able to rejoin this room.</p>
             <div class="flex gap-3">
-                <button onclick="closeBanModal()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-xl transition-colors">Cancel</button>
-                <button id="btn-confirm-ban" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-red-500/30">Ban</button>
+                <button onclick="closeBanModal()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-semibold py-3.5 rounded-xl transition-colors ring-1 ring-slate-700">Cancel</button>
+                <button id="btn-confirm-ban" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-red-600/30">Ban</button>
             </div>
         </div>
     </div>
 
-    <!-- Screen 1: Lobby -->
-    <div id="lobby-screen" class="flex-1 flex flex-col items-center justify-center p-4 overflow-y-auto min-h-0">
-        <div class="glass-panel p-8 rounded-2xl w-full max-w-md text-center">
-            <div class="w-20 h-20 bg-cric-green rounded-full mx-auto mb-6 flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.3)]">
-                <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    <!-- ==================== SCREEN 1: LOBBY ==================== -->
+    <div id="lobby-screen" class="flex-1 flex flex-col items-center justify-center p-4 overflow-y-auto min-h-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-slate-900 via-cric-dark to-slate-950">
+        
+        <div class="glass-panel p-8 sm:p-10 rounded-[2rem] w-full max-w-[440px] text-center shadow-[0_20px_50px_rgba(0,0,0,0.5)] animate-fade-in-up ring-1 ring-white/10 relative overflow-hidden">
+            <div class="absolute -top-24 -right-24 w-48 h-48 bg-cric-green/20 rounded-full blur-[60px] pointer-events-none"></div>
+            
+            <div class="w-24 h-24 bg-gradient-to-br from-cric-green to-emerald-700 rounded-3xl mx-auto mb-8 flex items-center justify-center shadow-[0_0_40px_rgba(16,185,129,0.4)] rotate-3">
+                <svg class="w-12 h-12 text-slate-950 transform -rotate-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
-            <h1 class="text-4xl font-display font-bold text-white mb-2">CricBid Live</h1>
-            <p class="text-gray-400 mb-8">Multiplayer Cricket Auction</p>
+            
+            <h1 class="text-4xl sm:text-5xl font-display font-bold text-white mb-2 tracking-tight">CricBid<span class="text-cric-green">.</span></h1>
+            <p class="text-slate-400 mb-10 font-medium">Multiplayer Live Auction</p>
 
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-left text-sm text-gray-400 mb-1 ml-1">Player Name</label>
-                    <input type="text" id="username-input" placeholder="Enter your name" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cric-green transition-colors">
+            <div class="space-y-6 relative z-10">
+                <div class="text-left">
+                    <label class="block text-sm font-semibold text-slate-300 mb-2 ml-1">Your Alias</label>
+                    <input type="text" id="username-input" placeholder="e.g. Maverick" class="w-full bg-slate-950/50 border border-slate-700 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-cric-green focus:ring-1 focus:ring-cric-green transition-all placeholder:text-slate-600 text-base">
                 </div>
                 
-                <div class="pt-4 border-t border-slate-700 flex flex-col gap-3">
-                    <button id="btn-create-room" class="w-full bg-cric-green hover:bg-emerald-400 text-slate-900 font-bold py-3 rounded-xl transition-all shadow-lg hover:shadow-cric-green/30">
+                <div class="pt-4 flex flex-col gap-4">
+                    <button id="btn-create-room" class="w-full bg-cric-green hover:bg-emerald-400 active:scale-[0.98] text-slate-950 font-bold py-4 rounded-2xl transition-all shadow-lg hover:shadow-cric-green/20 text-lg">
                         Create New Room
                     </button>
                     
                     <div class="relative flex items-center py-2">
-                        <div class="flex-grow border-t border-slate-700"></div>
-                        <span class="flex-shrink-0 mx-4 text-gray-500 text-sm">OR</span>
-                        <div class="flex-grow border-t border-slate-700"></div>
+                        <div class="flex-grow border-t border-slate-800"></div>
+                        <span class="flex-shrink-0 mx-4 text-slate-500 text-xs font-bold uppercase tracking-widest">or join existing</span>
+                        <div class="flex-grow border-t border-slate-800"></div>
                     </div>
 
-                    <div class="flex gap-2">
-                        <input type="text" id="room-code-input" placeholder="Room Code" class="w-2/3 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cric-green uppercase text-center font-display tracking-widest">
-                        <button id="btn-join-room" class="w-1/3 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-xl transition-colors">
-                            Join
+                    <div class="flex gap-3">
+                        <input type="text" id="room-code-input" placeholder="ROOM CODE" class="w-3/5 bg-slate-950/50 border border-slate-700 rounded-2xl px-4 py-4 text-white focus:outline-none focus:border-cric-accent focus:ring-1 focus:ring-cric-accent uppercase text-center font-display tracking-widest font-bold placeholder:text-slate-600 placeholder:font-normal text-base">
+                        <button id="btn-join-room" class="w-2/5 bg-slate-800 hover:bg-slate-700 active:scale-[0.98] text-white font-bold py-4 rounded-2xl transition-colors ring-1 ring-slate-700 text-base">
+                            Enter
                         </button>
                     </div>
                 </div>
@@ -211,177 +199,209 @@
         </div>
     </div>
 
-    <!-- Screen 2: Auction Room -->
-    <div id="auction-screen" class="hidden flex-1 flex-col w-full h-full min-h-0 overflow-hidden">
+    <!-- ==================== SCREEN 2: AUCTION ROOM ==================== -->
+    <div id="auction-screen" class="hidden flex-1 w-full h-full min-h-0 flex-col bg-cric-dark">
         
-        <!-- Header -->
-        <header class="glass-panel border-b border-slate-700/50 p-3 sm:p-4 flex justify-between items-center z-10 relative shrink-0">
-            <div class="flex items-center gap-2 sm:gap-3">
-                <div class="bg-slate-800 px-2 sm:px-3 py-1.5 rounded-lg border border-slate-700 font-display text-xs sm:text-base whitespace-nowrap">
-                    <span class="hidden sm:inline">Room: </span><span id="ui-room-code" class="text-cric-green font-bold tracking-wider">---</span>
+        <!-- Header (Universal) -->
+        <header class="glass-panel border-b border-slate-800 pt-safe flex justify-between items-center px-4 py-3 sm:px-6 z-20 shrink-0 shadow-sm">
+            <div class="flex items-center gap-3 sm:gap-4">
+                <div class="bg-slate-900 px-3 sm:px-4 py-2 rounded-xl border border-slate-700 flex flex-col sm:flex-row sm:items-center sm:gap-2">
+                    <span class="text-[10px] sm:text-xs text-slate-400 font-semibold uppercase tracking-wider leading-none sm:leading-normal">Room</span>
+                    <span id="ui-room-code" class="text-cric-green font-display font-bold tracking-widest leading-none sm:leading-normal">---</span>
                 </div>
-                <div class="text-xs text-gray-400 hidden sm:block whitespace-nowrap">
+                <div class="hidden sm:flex items-center gap-2 text-sm text-slate-400 bg-slate-900/50 px-3 py-2 rounded-xl border border-slate-800/50">
+                    <div class="w-2 h-2 rounded-full bg-cric-green animate-pulse"></div>
                     <span id="ui-online-count" class="text-white font-bold">1</span> Online
                 </div>
             </div>
             
             <div class="flex items-center gap-2 sm:gap-4">
-                <div class="text-right hidden sm:block">
-                    <p class="text-xs text-gray-400 uppercase tracking-wider">My Budget</p>
-                    <p id="ui-my-budget" class="font-display font-bold text-xl text-cric-gold">₹ 120.00 Cr</p>
+                <div class="text-right mr-2 hidden sm:block">
+                    <p class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold">Wallet Budget</p>
+                    <p id="ui-my-budget" class="font-display font-bold text-xl text-cric-gold leading-tight">₹ 0.00 Cr</p>
                 </div>
                 
-                <!-- Voice Chat Toggle -->
-                <button id="btn-mic" class="bg-red-500/20 text-red-400 hover:bg-slate-600/50 p-2 sm:p-2.5 rounded-lg transition-colors border border-slate-700/50 shadow-lg" title="Toggle Microphone">
-                    <svg id="icon-mic-off" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11v1a7 7 0 01-14 0v-1m14 0c0 1.93-.784 3.682-2.05 4.95l-1.414-1.414A5.002 5.002 0 0017 12v-1m-4 8v4m-4-4v4m4-4H8m4-11a3 3 0 00-3 3v2.586L4.293 4.293A1 1 0 002.88 5.707l16.414 16.414a1 1 0 001.414-1.414l-9.121-9.121A3 3 0 0012 8z"></path></svg>
-                    <svg id="icon-mic-on" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
-                </button>
+                <!-- Communication Controls (Local Media Only) -->
+                <div class="flex gap-1.5 sm:gap-2 bg-slate-900/80 p-1.5 rounded-xl border border-slate-800">
+                    <button id="btn-mic" class="bg-red-500/20 text-red-400 hover:bg-slate-700 p-2 sm:p-2.5 rounded-lg transition-colors" title="Microphone">
+                        <svg id="icon-mic-off" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11v1a7 7 0 01-14 0v-1m14 0c0 1.93-.784 3.682-2.05 4.95l-1.414-1.414A5.002 5.002 0 0017 12v-1m-4 8v4m-4-4v4m4-4H8m4-11a3 3 0 00-3 3v2.586L4.293 4.293A1 1 0 002.88 5.707l16.414 16.414a1 1 0 001.414-1.414l-9.121-9.121A3 3 0 0012 8z"></path></svg>
+                        <svg id="icon-mic-on" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+                    </button>
 
-                <!-- Video Chat Toggle -->
-                <button id="btn-video" class="bg-red-500/20 text-red-400 hover:bg-slate-600/50 p-2 sm:p-2.5 rounded-lg transition-colors border border-slate-700/50 shadow-lg" title="Toggle Camera">
-                    <svg id="icon-video-off" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path><line x1="3" y1="3" x2="21" y2="21" stroke-width="2" stroke-linecap="round"></line></svg>
-                    <svg id="icon-video-on" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                </button>
+                    <button id="btn-video" class="bg-red-500/20 text-red-400 hover:bg-slate-700 p-2 sm:p-2.5 rounded-lg transition-colors" title="Camera">
+                        <svg id="icon-video-off" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path><line x1="3" y1="3" x2="21" y2="21" stroke-width="2" stroke-linecap="round"></line></svg>
+                        <svg id="icon-video-on" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                    </button>
+                </div>
 
-                <button id="btn-leave" class="bg-red-500/20 text-red-400 hover:bg-red-500/30 p-2 rounded-lg transition-colors shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                <div class="w-px h-8 bg-slate-800 hidden sm:block"></div>
+
+                <button id="btn-leave" class="bg-red-500 hover:bg-red-600 text-white p-2.5 rounded-xl transition-colors shrink-0 shadow-lg shadow-red-500/20 active:scale-95" title="Leave Room">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                 </button>
             </div>
         </header>
 
-        <!-- Main Content -->
-        <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative min-h-0">
+        <main class="flex-1 flex overflow-hidden relative min-h-0 w-full max-w-[1600px] mx-auto">
             
-            <!-- Left Sidebar: Team & Leaderboard -->
-            <aside id="standings-panel" class="w-full lg:w-1/4 glass-panel border-r border-slate-700/50 overflow-y-auto hidden lg:flex flex-col p-4 z-10">
-                <h2 class="text-lg font-display font-bold mb-4 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-cric-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                    Room Standings
-                </h2>
+            <!-- PANEL: Standings (Left Sidebar Desktop, Tab Mobile) -->
+            <aside id="standings-panel" class="app-panel desktop-panel-force hidden flex-col w-full lg:w-[300px] xl:w-[340px] bg-slate-900/40 border-r border-slate-800/60 overflow-y-auto p-4 z-10 pb-24 lg:pb-4 transition-all">
+                <div class="sticky top-0 bg-cric-dark/90 backdrop-blur-md pb-4 z-10 mb-2 border-b border-slate-800">
+                    <h2 class="text-lg font-display font-bold text-white flex items-center gap-2">
+                        <span class="w-8 h-8 rounded-lg bg-cric-accent/20 text-cric-accent flex items-center justify-center shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        </span>
+                        Leaderboard
+                    </h2>
+                </div>
                 <div id="standings-list" class="space-y-3">
-                    <!-- Standings injected here -->
+                    <!-- Standings JS Injection -->
                 </div>
             </aside>
 
-            <!-- Center: Auction Area -->
-            <section id="auction-panel" class="flex-1 flex flex-col justify-between p-4 sm:p-8 overflow-y-auto relative z-10 lg:flex min-h-0">
+            <!-- PANEL: Main Auction Area (Center) -->
+            <section id="auction-panel" class="app-panel desktop-panel-force flex flex-col flex-1 w-full relative z-10 overflow-hidden bg-cric-dark">
                 
-                <!-- Video Gallery (Mesh Network) -->
-                <div id="video-gallery" class="flex justify-center flex-wrap gap-4 mb-4 shrink-0">
-                    <!-- Local Video -->
-                    <div class="relative group flex flex-col items-center">
-                       <video id="local-video" class="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover border-2 border-slate-600 bg-slate-800 shadow-md" autoplay muted playsinline></video>
-                       <span class="absolute bottom-0 bg-black/70 text-white text-[10px] px-2 py-0.5 rounded-full whitespace-nowrap overflow-hidden text-ellipsis max-w-[70px]">Me</span>
+                <!-- Scrollable Content Area -->
+                <div class="flex-1 overflow-y-auto pb-6 hide-scrollbar flex flex-col">
+                    
+                    <!-- Horizontal User Video/Avatar Gallery Strip -->
+                    <div class="w-full bg-slate-900/30 border-b border-slate-800/50 p-3 shrink-0">
+                        <div id="video-gallery" class="flex flex-nowrap overflow-x-auto gap-4 hide-scrollbar pb-1 items-center snap-x">
+                            <!-- Local Video (Self) -->
+                            <div class="relative group flex flex-col items-center shrink-0 snap-start">
+                               <video id="local-video" class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover border-2 border-slate-600 bg-slate-800 shadow-lg" autoplay muted playsinline></video>
+                               <span class="absolute -bottom-2 bg-slate-900 border border-slate-700 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-md whitespace-nowrap z-10 shadow-sm">You</span>
+                            </div>
+                            <!-- Remote Users dynamically injected here as Avatars -->
+                        </div>
                     </div>
-                </div>
 
-                <!-- Status/Timer -->
-                <div class="flex justify-center mb-6 shrink-0">
-                    <div id="timer-container" class="bg-slate-800/80 border border-slate-700 rounded-full px-6 py-2 flex items-center gap-3 shadow-lg">
-                        <div id="status-indicator" class="w-3 h-3 rounded-full bg-yellow-500"></div>
-                        <span id="ui-room-status" class="font-bold text-gray-300">Waiting for Host</span>
-                        <span id="ui-timer" class="font-display font-bold text-2xl text-white ml-2 hidden">00</span>
-                    </div>
-                </div>
-
-                <!-- Current Player Card -->
-                <div class="flex-1 flex items-center justify-center min-h-[300px] shrink-0">
-                    <div id="player-card" class="glass-panel border-2 border-slate-700 rounded-3xl w-full max-w-lg overflow-hidden transition-all duration-500 relative">
+                    <!-- Auction Board Padding Wrapper -->
+                    <div class="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 min-h-[400px]">
                         
-                        <!-- Sold/Unsold Overlay -->
-                        <div id="sold-overlay" class="absolute inset-0 bg-black/80 backdrop-blur-sm z-20 hidden flex-col items-center justify-center p-6 text-center">
-                            <!-- Dynamic Content Injected Here via JS -->
-                        </div>
-
-                        <!-- Card Header -->
-                        <div class="bg-gradient-to-r from-slate-800 to-slate-900 p-6 flex justify-between items-start">
-                            <div>
-                                <span id="ui-player-role" class="bg-cric-green/20 text-cric-green text-xs font-bold px-2 py-1 rounded uppercase tracking-wider mb-2 inline-block">Batsman</span>
-                                <h2 id="ui-player-name" class="text-3xl font-display font-bold text-white leading-tight">Waiting...</h2>
-                                <p id="ui-player-country" class="text-gray-400 mt-1 flex items-center gap-1">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path></svg>
-                                    ---
-                                </p>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-xs text-gray-400 uppercase">Base Price</p>
-                                <p id="ui-player-base" class="font-display font-bold text-lg text-white">₹ -- Cr</p>
+                        <!-- Status/Timer Pill -->
+                        <div class="mb-6 shrink-0 transition-all">
+                            <div id="timer-container" class="bg-slate-900 border border-slate-700 rounded-full px-5 py-2.5 flex items-center gap-3 shadow-xl transform hover:scale-105 transition-transform">
+                                <div id="status-indicator" class="w-3 h-3 rounded-full bg-yellow-500 shadow-[0_0_10px_currentColor]"></div>
+                                <span id="ui-room-status" class="font-bold text-slate-300 text-sm tracking-wide">Waiting...</span>
+                                <div class="w-px h-4 bg-slate-700 mx-1"></div>
+                                <span id="ui-timer" class="font-display font-bold text-2xl text-white w-8 text-center hidden">00</span>
                             </div>
                         </div>
 
-                        <!-- Bid Status Area -->
-                        <div class="p-8 text-center bg-slate-900/50">
-                            <p class="text-gray-400 text-sm uppercase tracking-wider mb-2">Current Bid</p>
-                            <h3 id="ui-current-bid" class="text-5xl md:text-6xl font-display font-bold text-white mb-4">₹ 0.00 <span class="text-2xl text-gray-400">Cr</span></h3>
+                        <!-- Huge Player Card -->
+                        <div id="player-card" class="w-full max-w-[420px] bg-gradient-to-br from-slate-800 to-slate-900 rounded-[2rem] border-2 border-slate-700 shadow-2xl overflow-hidden relative transition-all duration-500 shrink-0 transform">
                             
-                            <div class="flex items-center justify-center gap-2">
-                                <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center">
-                                    <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                            <!-- Sold/Unsold Overlay -->
+                            <div id="sold-overlay" class="absolute inset-0 bg-slate-950/85 backdrop-blur-md z-20 hidden flex-col items-center justify-center p-6 text-center">
+                                <!-- Dynamic Injection -->
+                            </div>
+
+                            <!-- Card Header Elements -->
+                            <div class="p-6 sm:p-8 flex justify-between items-start relative z-10">
+                                <div>
+                                    <span id="ui-player-role" class="bg-cric-green/10 border border-cric-green/30 text-cric-green text-[10px] sm:text-xs font-bold px-3 py-1.5 rounded-lg uppercase tracking-widest mb-3 inline-block">Role</span>
+                                    <h2 id="ui-player-name" class="text-3xl sm:text-4xl font-display font-extrabold text-white leading-none tracking-tight mb-2">Wait...</h2>
+                                    <p id="ui-player-country" class="text-slate-400 font-medium flex items-center gap-1.5 text-sm sm:text-base">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path></svg>
+                                        ---
+                                    </p>
                                 </div>
-                                <p class="text-lg text-gray-300">Highest Bidder: <span id="ui-highest-bidder" class="font-bold text-cric-gold">None</span></p>
+                                <div class="text-right bg-slate-950/40 p-3 rounded-xl border border-slate-700/50">
+                                    <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Base Price</p>
+                                    <p id="ui-player-base" class="font-display font-bold text-lg sm:text-xl text-white">₹ -- Cr</p>
+                                </div>
+                            </div>
+
+                            <!-- Bid Status Area -->
+                            <div class="px-6 pb-8 pt-4 text-center bg-gradient-to-t from-slate-950/80 to-transparent relative z-10">
+                                <p class="text-slate-400 text-xs sm:text-sm font-bold uppercase tracking-widest mb-2">Current Bid</p>
+                                <h3 id="ui-current-bid" class="text-5xl sm:text-6xl font-display font-black text-white mb-6 tracking-tighter drop-shadow-lg">₹ 0.00 <span class="text-2xl sm:text-3xl text-slate-500 font-medium tracking-normal">Cr</span></h3>
+                                
+                                <div class="inline-flex items-center justify-center gap-3 bg-slate-900 border border-slate-700 rounded-full px-5 py-2.5 max-w-full">
+                                    <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center shrink-0 shadow-inner">
+                                        <svg class="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                    </div>
+                                    <p class="text-sm sm:text-base text-slate-300 truncate font-medium">Top Bidder: <span id="ui-highest-bidder" class="font-bold text-cric-gold ml-1">None</span></p>
+                                </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
 
-                <!-- Bidding Controls -->
-                <div id="bidding-controls" class="mt-6 glass-panel p-4 rounded-2xl opacity-50 pointer-events-none transition-opacity shrink-0">
-                    <div class="grid grid-cols-3 gap-3">
-                        <button onclick="placeBid(0.20)" class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-4 rounded-xl transition-colors shadow-lg flex flex-col items-center">
-                            <span class="text-lg">+ 20 L</span>
-                        </button>
-                        <button onclick="placeBid(0.50)" class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-4 rounded-xl transition-colors shadow-lg flex flex-col items-center">
-                            <span class="text-lg">+ 50 L</span>
-                        </button>
-                        <button onclick="placeBid(1.00)" class="bg-cric-green hover:bg-emerald-400 text-slate-900 font-bold py-4 rounded-xl transition-all shadow-[0_0_15px_rgba(16,185,129,0.4)] flex flex-col items-center">
-                            <span class="text-lg">+ 1 Cr</span>
-                        </button>
+                <!-- Sticky Bottom Controls Container -->
+                <div class="shrink-0 bg-slate-900 border-t border-slate-800 pb-24 lg:pb-0 relative z-20">
+                    
+                    <!-- Host Controls (Only visible to admin) -->
+                    <div id="host-controls" class="hidden flex-wrap gap-2 justify-center p-3 border-b border-slate-800 bg-slate-950/50">
+                        <span class="w-full text-center text-[10px] text-red-400 uppercase tracking-widest font-bold flex items-center justify-center gap-1"><span class="w-1 h-1 rounded-full bg-red-500"></span> Host Privileges</span>
+                        <button id="btn-host-start" class="bg-cric-green hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2.5 rounded-lg shadow-sm flex-1 min-w-[100px] transition-colors active:scale-95 text-sm">Start / Next</button>
+                        <button id="btn-host-pause" class="bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-bold px-4 py-2.5 rounded-lg shadow-sm flex-1 min-w-[100px] transition-colors active:scale-95 text-sm">Pause</button>
+                        <button id="btn-host-unsold" class="bg-slate-700 hover:bg-slate-600 text-white font-bold px-4 py-2.5 rounded-lg shadow-sm flex-1 min-w-[100px] transition-colors disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 text-sm border border-slate-600">Mark Unsold</button>
                     </div>
-                </div>
 
-                <!-- Host Controls (Only visible to admin) -->
-                <div id="host-controls" class="mt-4 mb-4 p-4 border border-red-500/30 bg-red-500/10 rounded-xl hidden flex-wrap gap-2 justify-center transition-all shrink-0">
-                    <p class="w-full text-center text-xs text-red-400 uppercase tracking-widest mb-2">Host Controls (Auto-Advances)</p>
-                    <button id="btn-host-start" class="bg-cric-green text-slate-900 font-bold px-4 py-2 rounded shadow flex-1 min-w-[100px] transition-colors">Start/Next</button>
-                    <button id="btn-host-pause" class="bg-yellow-500 text-slate-900 font-bold px-4 py-2 rounded shadow flex-1 min-w-[100px] transition-colors">Pause</button>
-                    <button id="btn-host-unsold" class="bg-slate-600 text-white font-bold px-4 py-2 rounded shadow flex-1 min-w-[100px] transition-colors disabled:opacity-30 disabled:cursor-not-allowed">Mark Unsold</button>
+                    <!-- Bidding Controls -->
+                    <div id="bidding-controls" class="p-3 sm:p-4 opacity-50 pointer-events-none transition-opacity duration-300 max-w-[800px] mx-auto w-full pb-safe">
+                        <div class="grid grid-cols-3 gap-2 sm:gap-4">
+                            <button onclick="placeBid(0.20)" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-white font-bold py-4 sm:py-5 rounded-2xl transition-all shadow-md flex flex-col items-center justify-center ring-1 ring-slate-700 active:scale-[0.98]">
+                                <span class="text-sm text-slate-400 font-medium mb-0.5">+ Bid</span>
+                                <span class="text-lg sm:text-xl font-display">20 L</span>
+                            </button>
+                            <button onclick="placeBid(0.50)" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-white font-bold py-4 sm:py-5 rounded-2xl transition-all shadow-md flex flex-col items-center justify-center ring-1 ring-slate-700 active:scale-[0.98]">
+                                <span class="text-sm text-slate-400 font-medium mb-0.5">+ Bid</span>
+                                <span class="text-lg sm:text-xl font-display">50 L</span>
+                            </button>
+                            <button onclick="placeBid(1.00)" class="bg-cric-green hover:bg-emerald-400 active:bg-emerald-500 text-slate-950 font-bold py-4 sm:py-5 rounded-2xl transition-all shadow-[0_5px_20px_rgba(16,185,129,0.3)] flex flex-col items-center justify-center ring-1 ring-cric-green active:scale-[0.98]">
+                                <span class="text-sm text-emerald-900/80 font-bold mb-0.5 uppercase tracking-wider">+ Raise</span>
+                                <span class="text-xl sm:text-2xl font-display font-black">1 Cr</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
             </section>
 
-            <!-- Right Sidebar: Upcoming Players -->
-            <aside id="pool-panel" class="w-full lg:w-1/4 glass-panel border-l border-slate-700/50 overflow-y-auto hidden lg:flex flex-col p-4 z-10">
-                <h2 class="text-lg font-display font-bold mb-4 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-cric-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                    Auction Pool
-                </h2>
+            <!-- PANEL: Pool (Right Sidebar Desktop, Tab Mobile) -->
+            <aside id="pool-panel" class="app-panel desktop-panel-force hidden flex-col w-full lg:w-[280px] xl:w-[320px] bg-slate-900/40 border-l border-slate-800/60 overflow-y-auto p-4 z-10 pb-24 lg:pb-4 transition-all">
+                <div class="sticky top-0 bg-cric-dark/90 backdrop-blur-md pb-4 z-10 mb-2 border-b border-slate-800">
+                    <h2 class="text-lg font-display font-bold text-white flex items-center gap-2">
+                        <span class="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                        </span>
+                        Auction Pool
+                    </h2>
+                </div>
                 <div id="upcoming-list" class="space-y-2">
-                    <!-- Pool injected here -->
+                    <!-- Pool JS Injection -->
                 </div>
             </aside>
 
-            <!-- Chat Panel (Mobile Tab / Desktop Floating) -->
-            <aside id="chat-panel" class="w-full flex-1 lg:flex-none lg:fixed lg:bottom-24 lg:right-6 lg:w-[340px] lg:h-[500px] glass-panel border-t lg:border border-slate-700/50 hidden flex-col z-40 lg:rounded-2xl shadow-2xl min-h-0">
-                <div class="p-3 border-b border-slate-700/50 bg-slate-800 flex justify-between items-center lg:rounded-t-2xl shrink-0">
-                    <h3 class="font-display font-bold text-white flex items-center gap-2">
-                        <svg class="w-4 h-4 text-cric-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+            <!-- PANEL: Chat (Desktop Floating, Mobile Tab) -->
+            <aside id="chat-panel" class="app-panel hidden flex-col w-full lg:w-[360px] lg:h-[550px] bg-slate-900 lg:fixed lg:bottom-[100px] lg:right-6 lg:rounded-3xl lg:border border-slate-700 shadow-2xl z-40 overflow-hidden pb-24 lg:pb-0">
+                <div class="p-4 border-b border-slate-800 bg-slate-950 flex justify-between items-center shrink-0 pt-safe lg:pt-4">
+                    <h3 class="font-display font-bold text-white flex items-center gap-2 text-lg">
+                        <div class="w-8 h-8 rounded-lg bg-pink-500/20 text-pink-400 flex items-center justify-center shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                        </div>
                         Room Chat
                     </h3>
-                    <button class="text-gray-400 hover:text-white hidden lg:block transition-colors" onclick="toggleDesktopChat()">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    <button class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white hidden lg:flex items-center justify-center transition-colors" onclick="toggleDesktopChat()">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
                 </div>
-                <div id="chat-messages" class="flex-1 overflow-y-auto p-3 space-y-3 bg-slate-900/40 relative">
-                    <!-- Messages injected here -->
+                <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-900/50 relative hide-scrollbar">
+                    <!-- Messages Injection -->
                 </div>
-                <div class="p-3 border-t border-slate-700/50 bg-slate-800 lg:rounded-b-2xl shrink-0">
-                    <select id="chat-recipient" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 mb-2 text-xs text-gray-300 focus:outline-none focus:border-cric-green">
-                        <option value="all">Everyone</option>
+                <div class="p-3 border-t border-slate-800 bg-slate-950 shrink-0">
+                    <select id="chat-recipient" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 mb-2 text-sm text-slate-300 focus:outline-none focus:border-cric-green focus:ring-1 focus:ring-cric-green appearance-none">
+                        <option value="all">Public (Everyone)</option>
                     </select>
                     <div class="flex gap-2">
-                        <input type="text" id="chat-input" placeholder="Type a message..." class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cric-green">
-                        <button id="btn-send-chat" class="bg-cric-green hover:bg-emerald-400 text-slate-900 px-4 rounded-lg font-bold transition-colors">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                        <input type="text" id="chat-input" placeholder="Message..." class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-base text-white focus:outline-none focus:border-cric-green focus:ring-1 focus:ring-cric-green placeholder:text-slate-500">
+                        <button id="btn-send-chat" class="bg-cric-green hover:bg-emerald-400 text-slate-950 px-4 rounded-xl font-bold transition-all shadow-md active:scale-95 shrink-0 flex items-center justify-center">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
                         </button>
                     </div>
                 </div>
@@ -389,29 +409,42 @@
         </main>
 
         <!-- Desktop Floating Chat Button -->
-        <button onclick="toggleDesktopChat()" id="btn-desktop-chat" class="fixed bottom-6 right-6 w-14 h-14 bg-cric-green hover:bg-emerald-400 text-slate-900 rounded-full shadow-[0_0_20px_rgba(16,185,129,0.4)] items-center justify-center z-[100] hidden lg:flex transition-transform hover:scale-105 shrink-0">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
-            <span id="chat-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center hidden border-2 border-slate-900">0</span>
+        <button onclick="toggleDesktopChat()" id="btn-desktop-chat" class="fixed bottom-8 right-8 w-16 h-16 bg-cric-green hover:bg-emerald-400 text-slate-950 rounded-2xl shadow-[0_10px_25px_rgba(16,185,129,0.3)] items-center justify-center z-[100] hidden lg:flex transition-transform hover:scale-105 active:scale-95 shrink-0">
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+            <span id="chat-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center hidden border-2 border-slate-900 shadow-sm">0</span>
         </button>
 
-        <!-- Mobile Bottom Navigation (FIXED TO BOTTOM) -->
-        <nav class="fixed bottom-0 left-0 right-0 w-full lg:hidden glass-panel bg-slate-900/95 border-t border-slate-700/50 grid grid-cols-4 items-center pt-2 pb-safe z-[100] shadow-[0_-5px_15px_rgba(0,0,0,0.3)]">
-            <button onclick="switchTab('standings')" id="tab-standings" class="flex flex-col items-center p-2 text-gray-400 transition-colors">
-                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                <span class="text-[10px] font-bold uppercase tracking-wider">Standings</span>
+        <!-- ==================== MOBILE BOTTOM NAVIGATION ==================== -->
+        <nav class="mobile-tab-nav fixed bottom-0 left-0 right-0 w-full glass-panel bg-slate-950/90 border-t border-slate-800 grid grid-cols-4 items-center pt-2 pb-safe z-[100]">
+            
+            <button onclick="switchTab('standings')" id="tab-standings" class="flex flex-col items-center p-2 pb-3 text-slate-500 hover:text-slate-300 transition-colors">
+                <div class="relative mb-1">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                </div>
+                <span class="text-[10px] font-bold uppercase tracking-wider">Scores</span>
             </button>
-            <button onclick="switchTab('auction')" id="tab-auction" class="flex flex-col items-center p-2 text-cric-green transition-colors">
-                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
+            
+            <button onclick="switchTab('auction')" id="tab-auction" class="flex flex-col items-center p-2 pb-3 text-cric-green transition-colors">
+                <div class="relative mb-1">
+                    <div class="absolute inset-0 bg-cric-green/20 blur-md rounded-full"></div>
+                    <svg class="w-6 h-6 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
+                </div>
                 <span class="text-[10px] font-bold uppercase tracking-wider">Auction</span>
             </button>
-            <button onclick="switchTab('pool')" id="tab-pool" class="flex flex-col items-center p-2 text-gray-400 transition-colors">
-                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+            
+            <button onclick="switchTab('pool')" id="tab-pool" class="flex flex-col items-center p-2 pb-3 text-slate-500 hover:text-slate-300 transition-colors">
+                <div class="relative mb-1">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                </div>
                 <span class="text-[10px] font-bold uppercase tracking-wider">Pool</span>
             </button>
-            <button onclick="switchTab('chat')" id="tab-chat" class="flex flex-col items-center p-2 text-gray-400 transition-colors relative">
-                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+            
+            <button onclick="switchTab('chat')" id="tab-chat" class="flex flex-col items-center p-2 pb-3 text-slate-500 hover:text-slate-300 transition-colors relative">
+                <div class="relative mb-1">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                    <span id="mobile-chat-badge" class="absolute -top-1.5 -right-2 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center hidden border border-slate-950">0</span>
+                </div>
                 <span class="text-[10px] font-bold uppercase tracking-wider">Chat</span>
-                <span id="mobile-chat-badge" class="absolute top-1 right-2 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center hidden border border-slate-900">0</span>
             </button>
         </nav>
     </div>
@@ -422,14 +455,12 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
         import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, onSnapshot, writeBatch, serverTimestamp, deleteDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-        // Fetch Environment variables for robust multi-tenant operation
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         let firebaseConfig;
         
         if (typeof __firebase_config !== 'undefined') {
             firebaseConfig = JSON.parse(__firebase_config);
         } else {
-            // Fallback for isolated testing
             firebaseConfig = {
                 apiKey: "AIzaSyCAd5OJKmVW2aSWgDogBg3lSpj1uzPxGrk",
                 authDomain: "cricbid-839eb.firebaseapp.com",
@@ -445,40 +476,34 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Strict Paths corresponding to App Environment
+        // Strict Paths
         const getRoomsRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'rooms');
         const getUsersRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'users');
         const getPlayersRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'players');
         const getChatRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'messages');
 
-        // State
         let currentUser = null;
         let currentRoomId = null;
-        let myUserDocId = null; // userId
+        let myUserDocId = null;
         let roomData = null;
         let usersData = [];
         let playersData = [];
         let chatMessages = [];
         let lastViewedMessageCount = 0;
         let timerInterval = null;
-        let failoverTimer = null; // Timer to prevent local-cache race condition for host assignment
-        let playerToKick = null; // Stores target id for the kick modal
-        let playerToBan = null; // Stores target id for the ban modal
-        let heartbeatInterval = null; // Timer for connection pinging
+        let failoverTimer = null;
+        let playerToKick = null;
+        let playerToBan = null;
+        let heartbeatInterval = null;
 
-        // Media Chat State
-        let peer = null;
-        let myPeerId = null;
+        // Media State (Local Only, NO PeerJS)
         let localStream = null;
-        let connectedPeers = new Set();
         let isMicMuted = true;
         let isVideoMuted = true;
 
-        // Constants
         const BUDGET_DEFAULT = 120.0;
         const TIMER_SECONDS = 10;
 
-        // Base Data Seed
         const DUMMY_PLAYERS = [
             { name: "Virat K.", role: "Batsman", country: "IND", base: 2.0 },
             { name: "Pat C.", role: "Bowler", country: "AUS", base: 2.0 },
@@ -492,7 +517,6 @@
             { name: "Jasprit B.", role: "Bowler", country: "IND", base: 2.0 }
         ];
 
-        // UI Elements
         const screens = { lobby: document.getElementById('lobby-screen'), auction: document.getElementById('auction-screen') };
         const inputs = { username: document.getElementById('username-input'), roomCode: document.getElementById('room-code-input') };
         const buttons = { create: document.getElementById('btn-create-room'), join: document.getElementById('btn-join-room'), leave: document.getElementById('btn-leave') };
@@ -524,18 +548,13 @@
             confirm: document.getElementById('btn-confirm-exit')
         };
 
-        // UI toggles
         window.toggleDesktopChat = () => {
             const panel = document.getElementById('chat-panel');
             if(panel.classList.contains('hidden')) {
                 panel.classList.remove('hidden');
                 panel.classList.add('flex');
-                
                 const badge = document.getElementById('chat-badge');
-                if(badge) {
-                    badge.classList.add('hidden');
-                    badge.classList.remove('flex');
-                }
+                if(badge) { badge.classList.add('hidden'); badge.classList.remove('flex'); }
                 lastViewedMessageCount = chatMessages.length;
                 setTimeout(scrollToBottomChat, 100);
             } else {
@@ -544,8 +563,9 @@
             }
         };
 
-        // Mobile Tab Navigation Logic
         window.switchTab = (activeTab) => {
+            if (window.innerWidth >= 1024) return; // Handled via CSS on Desktop
+            
             const panels = {
                 standings: document.getElementById('standings-panel'),
                 auction: document.getElementById('auction-panel'),
@@ -559,63 +579,47 @@
                 chat: document.getElementById('tab-chat')
             };
 
-            if(!panels.standings || !tabs.standings) return;
-
-            Object.values(panels).forEach(panel => {
-                if(panel) {
-                    panel.classList.remove('flex');
-                    panel.classList.add('hidden');
-                }
-            });
-            Object.values(tabs).forEach(tab => {
-                if(tab) {
-                    tab.classList.remove('text-cric-green');
-                    tab.classList.add('text-gray-400');
-                }
+            Object.values(panels).forEach(p => { if(p) { p.classList.remove('flex'); p.classList.add('hidden'); } });
+            Object.values(tabs).forEach(t => { 
+                if(t) { 
+                    t.classList.remove('text-cric-green'); 
+                    t.classList.add('text-slate-500'); 
+                    const glow = t.querySelector('.blur-md');
+                    if(glow) glow.classList.add('hidden');
+                } 
             });
 
-            if(panels[activeTab]) {
-                panels[activeTab].classList.remove('hidden');
-                panels[activeTab].classList.add('flex');
-            }
-            if(tabs[activeTab]) {
-                tabs[activeTab].classList.remove('text-gray-400');
-                tabs[activeTab].classList.add('text-cric-green');
+            if(panels[activeTab]) { panels[activeTab].classList.remove('hidden'); panels[activeTab].classList.add('flex'); }
+            if(tabs[activeTab]) { 
+                tabs[activeTab].classList.remove('text-slate-500'); 
+                tabs[activeTab].classList.add('text-cric-green'); 
+                const glow = tabs[activeTab].querySelector('.blur-md');
+                if(glow) glow.classList.remove('hidden');
             }
 
             if(activeTab === 'chat') {
                 const mBadge = document.getElementById('mobile-chat-badge');
-                if(mBadge) {
-                    mBadge.classList.add('hidden');
-                    mBadge.classList.remove('flex');
-                }
+                if(mBadge) { mBadge.classList.add('hidden'); mBadge.classList.remove('flex'); }
                 lastViewedMessageCount = chatMessages.length;
                 setTimeout(scrollToBottomChat, 100);
             }
         };
 
-        // Utility: Show Toast
         window.showToast = (msg) => {
             const toast = document.getElementById('toast');
-            toast.innerText = msg;
+            document.getElementById('toast-msg').innerText = msg;
             toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
+            setTimeout(() => toast.classList.remove('show'), 3500);
         };
 
-        // Utility: Format Currency
         const formatMoney = (val) => val.toFixed(2);
-
-        // Utility: Generate Room Code (Updated to avoid ambiguous chars like O, 0, I, 1)
         const generateRoomCode = () => {
             const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
             let result = '';
-            for (let i = 0; i < 6; i++) {
-                result += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
+            for (let i = 0; i < 6; i++) { result += chars.charAt(Math.floor(Math.random() * chars.length)); }
             return result;
         };
 
-        // Initialize Authentication (Strictly follows RULE 3)
         async function initAuth() {
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -628,63 +632,39 @@
                 showToast("Connection failed. Try refreshing.");
             }
         }
+        onAuthStateChanged(auth, (user) => { currentUser = user; });
 
-        onAuthStateChanged(auth, (user) => {
-            currentUser = user;
-            if (user) {
-                console.log("Authenticated:", user.uid);
-            }
-        });
-
-        // Event Listeners for Login
         buttons.create.addEventListener('click', async () => {
             const name = inputs.username.value.trim();
-            if(!name) return showToast("Enter your name first!");
+            if(!name) return showToast("Enter your alias first!");
             if(!currentUser) return showToast("Authenticating... wait a moment.");
-            
-            const newRoomId = generateRoomCode();
-            await createRoom(newRoomId, name);
+            await createRoom(generateRoomCode(), name);
         });
 
         buttons.join.addEventListener('click', async () => {
             const name = inputs.username.value.trim();
             const code = inputs.roomCode.value.trim().toUpperCase();
-            if(!name) return showToast("Enter your name!");
+            if(!name) return showToast("Enter your alias!");
             if(!code) return showToast("Enter a room code!");
             if(!currentUser) return showToast("Authenticating... wait a moment.");
-
             await joinRoom(code, name);
         });
 
-        // ---------------- MODALS (Exit & Kick) ----------------
-
         buttons.leave.addEventListener('click', () => {
             modalElements.modal.classList.remove('hidden');
-            setTimeout(() => {
-                modalElements.modal.classList.remove('opacity-0');
-                modalElements.content.classList.remove('scale-95');
-                modalElements.content.classList.add('scale-100');
-            }, 10);
+            setTimeout(() => { modalElements.modal.classList.remove('opacity-0'); modalElements.content.classList.remove('scale-95'); modalElements.content.classList.add('scale-100'); }, 10);
         });
-
         modalElements.cancel.addEventListener('click', () => {
             modalElements.modal.classList.add('opacity-0');
-            modalElements.content.classList.remove('scale-100');
-            modalElements.content.classList.add('scale-95');
-            setTimeout(() => {
-                modalElements.modal.classList.add('hidden');
-            }, 300);
+            modalElements.content.classList.remove('scale-100'); modalElements.content.classList.add('scale-95');
+            setTimeout(() => { modalElements.modal.classList.add('hidden'); }, 300);
         });
-
         modalElements.confirm.addEventListener('click', async () => {
             if (myUserDocId) {
                 try {
-                    await transferHostRole(); // Transfer host privileges securely
-                    // Soft exit: mark as offline instead of deleting to preserve budget and bought players
+                    await transferHostRole();
                     await updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: false });
-                } catch (e) {
-                    console.error("Error on exit:", e);
-                }
+                } catch (e) { console.error("Exit err:", e); }
             }
             window.location.reload();
         });
@@ -692,38 +672,21 @@
         window.openKickModal = (userId, username) => {
             playerToKick = userId;
             document.getElementById('kick-player-name').innerText = username;
-            
             const modal = document.getElementById('kick-modal');
             const content = document.getElementById('kick-modal-content');
             modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                content.classList.remove('scale-95');
-                content.classList.add('scale-100');
-            }, 10);
+            setTimeout(() => { modal.classList.remove('opacity-0'); content.classList.remove('scale-95'); content.classList.add('scale-100'); }, 10);
         };
-
         window.closeKickModal = () => {
             const modal = document.getElementById('kick-modal');
             const content = document.getElementById('kick-modal-content');
-            modal.classList.add('opacity-0');
-            content.classList.remove('scale-100');
-            content.classList.add('scale-95');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                playerToKick = null;
-            }, 300);
+            modal.classList.add('opacity-0'); content.classList.remove('scale-100'); content.classList.add('scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); playerToKick = null; }, 300);
         };
-
         document.getElementById('btn-confirm-kick').addEventListener('click', async () => {
             if(playerToKick) {
-                try {
-                    // Soft kick prevents breaking auction history
-                    await updateDoc(doc(getUsersRef(), playerToKick), { isOnline: false, kicked: true });
-                    showToast("Player has been kicked.");
-                } catch(e) {
-                    console.error("Error kicking player:", e);
-                }
+                try { await updateDoc(doc(getUsersRef(), playerToKick), { isOnline: false, kicked: true }); showToast("Player kicked."); } 
+                catch(e) { console.error(e); }
             }
             closeKickModal();
         });
@@ -731,104 +694,58 @@
         window.openBanModal = (userId, username) => {
             playerToBan = userId;
             document.getElementById('ban-player-name').innerText = username;
-            
             const modal = document.getElementById('ban-modal');
             const content = document.getElementById('ban-modal-content');
             modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                content.classList.remove('scale-95');
-                content.classList.add('scale-100');
-            }, 10);
+            setTimeout(() => { modal.classList.remove('opacity-0'); content.classList.remove('scale-95'); content.classList.add('scale-100'); }, 10);
         };
-
         window.closeBanModal = () => {
             const modal = document.getElementById('ban-modal');
             const content = document.getElementById('ban-modal-content');
-            modal.classList.add('opacity-0');
-            content.classList.remove('scale-100');
-            content.classList.add('scale-95');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                playerToBan = null;
-            }, 300);
+            modal.classList.add('opacity-0'); content.classList.remove('scale-100'); content.classList.add('scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); playerToBan = null; }, 300);
         };
-
         document.getElementById('btn-confirm-ban').addEventListener('click', async () => {
             if(playerToBan) {
-                try {
-                    await updateDoc(doc(getUsersRef(), playerToBan), { isOnline: false, banned: true });
-                    showToast("Player has been permanently banned.");
-                } catch(e) {
-                    console.error("Error banning player:", e);
-                }
+                try { await updateDoc(doc(getUsersRef(), playerToBan), { isOnline: false, banned: true }); showToast("Player permanently banned."); } 
+                catch(e) { console.error(e); }
             }
             closeBanModal();
         });
 
-        // Clean up user on tab close/page refresh
         window.addEventListener('beforeunload', () => {
-            if (myUserDocId) {
-                transferHostRole();
-                // Best effort offline marking on unexpected exits
-                updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: false }).catch(() => {});
-            }
+            if (myUserDocId) { transferHostRole(); updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: false }).catch(() => {}); }
         });
-
-        // Handle tab switching, app minimizing, and mobile force closes
         document.addEventListener('visibilitychange', () => {
             if (myUserDocId) {
                 const isVisible = document.visibilityState === 'visible';
-                updateDoc(doc(getUsersRef(), myUserDocId), { 
-                    isOnline: isVisible,
-                    lastActive: Date.now()
-                }).catch(() => {});
+                updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: isVisible, lastActive: Date.now() }).catch(() => {});
             }
         });
+        window.addEventListener('offline', () => { if (myUserDocId) updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: false }).catch(() => {}); });
+        window.addEventListener('online', () => { if (myUserDocId) updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: true, lastActive: Date.now() }).catch(() => {}); });
 
-        // Handle network disconnections
-        window.addEventListener('offline', () => {
-            if (myUserDocId) updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: false }).catch(() => {});
-        });
-
-        // Handle network reconnections
-        window.addEventListener('online', () => {
-            if (myUserDocId) updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: true, lastActive: Date.now() }).catch(() => {});
-        });
-
-        // ---------------- FIREBASE OPERATIONS ----------------
-        
-        // Host migration logic
         async function transferHostRole() {
             if (!usersData || !myUserDocId) return;
             const me = usersData.find(u => u.userId === myUserDocId);
-            
             if (me && me.role === 'admin') {
-                // Find others who are actually online
                 const others = usersData.filter(u => u.userId !== myUserDocId && u._computedOnline);
                 if (others.length > 0) {
-                    // Sort ascending by joinedAt to find the least recently joined (oldest) player
                     others.sort((a, b) => {
-                        const timeA = a.joinedAt || 0;
-                        const timeB = b.joinedAt || 0;
-                        if (timeA === timeB) return a.userId.localeCompare(b.userId);
-                        return timeA - timeB;
+                        const timeA = a.joinedAt || 0; const timeB = b.joinedAt || 0;
+                        if (timeA === timeB) return a.userId.localeCompare(b.userId); return timeA - timeB;
                     });
-                    
                     const nextHost = others[0];
                     try {
                         const batch = writeBatch(db);
-                        batch.update(doc(getUsersRef(), myUserDocId), { role: 'player' }); // Surrender role
+                        batch.update(doc(getUsersRef(), myUserDocId), { role: 'player' }); 
                         batch.update(doc(getUsersRef(), nextHost.userId), { role: 'admin' });
                         batch.update(doc(getRoomsRef(), currentRoomId), { hostId: nextHost.authId });
                         await batch.commit();
-                    } catch (e) {
-                        console.error("Failed to transfer host role:", e);
-                    }
+                    } catch (e) { console.error(e); }
                 }
             }
         }
-
         window.transferHostTo = async (targetUserId) => {
             if (!myUserDocId || !usersData) return;
             const me = usersData.find(u => u.userId === myUserDocId);
@@ -837,170 +754,83 @@
                 if (targetUser) {
                     try {
                         const batch = writeBatch(db);
-                        batch.update(doc(getUsersRef(), myUserDocId), { role: 'player' }); // give up role
-                        batch.update(doc(getUsersRef(), targetUser.userId), { role: 'admin' }); // grant role
+                        batch.update(doc(getUsersRef(), myUserDocId), { role: 'player' });
+                        batch.update(doc(getUsersRef(), targetUser.userId), { role: 'admin' });
                         batch.update(doc(getRoomsRef(), currentRoomId), { hostId: targetUser.authId });
                         await batch.commit();
-                        showToast(`Made ${targetUser.username} the new host!`);
-                    } catch (e) {
-                        console.error("Failed to manual transfer host:", e);
-                        showToast("Failed to transfer host.");
-                    }
+                        showToast(`Transferred host to ${targetUser.username}`);
+                    } catch (e) { console.error(e); showToast("Failed to transfer host."); }
                 }
             }
         };
 
         async function createRoom(roomId, username) {
-            if(!currentUser) return; // Guard
+            if(!currentUser) return;
             try {
-                buttons.create.disabled = true;
-                buttons.create.innerText = "Creating...";
-
-                const roomRef = doc(getRoomsRef(), roomId);
-                await setDoc(roomRef, {
-                    roomId: roomId,
-                    hostId: currentUser.uid,
-                    status: 'waiting', 
-                    currentAuctionIndex: 0,
-                    timerEndTime: 0,
-                    currentBid: 0,
-                    currentBidder: null,
-                    createdAt: serverTimestamp()
+                buttons.create.disabled = true; buttons.create.innerText = "Creating...";
+                await setDoc(doc(getRoomsRef(), roomId), {
+                    roomId: roomId, hostId: currentUser.uid, status: 'waiting', 
+                    currentAuctionIndex: 0, timerEndTime: 0, currentBid: 0, currentBidder: null, createdAt: serverTimestamp()
                 });
 
-                // Generate a local session ID so multiple tabs can act as different users even if sharing Auth ID
                 let localSessionId = sessionStorage.getItem('cricbid_session');
-                if (!localSessionId) {
-                    localSessionId = Math.random().toString(36).substring(2, 9);
-                    sessionStorage.setItem('cricbid_session', localSessionId);
-                }
-
+                if (!localSessionId) { localSessionId = Math.random().toString(36).substring(2, 9); sessionStorage.setItem('cricbid_session', localSessionId); }
                 myUserDocId = currentUser.uid + "_" + localSessionId + "_" + roomId; 
+                
                 await setDoc(doc(getUsersRef(), myUserDocId), {
-                    userId: myUserDocId,
-                    authId: currentUser.uid,
-                    roomId: roomId,
-                    username: username,
-                    budget: BUDGET_DEFAULT,
-                    role: 'admin',
-                    joinedAt: Date.now(),
-                    isOnline: true,
-                    kicked: false,
-                    banned: false,
-                    peerId: null,
-                    lastActive: Date.now()
+                    userId: myUserDocId, authId: currentUser.uid, roomId: roomId, username: username,
+                    budget: BUDGET_DEFAULT, role: 'admin', joinedAt: Date.now(), isOnline: true,
+                    kicked: false, banned: false, lastActive: Date.now()
                 });
 
                 const batch = writeBatch(db);
                 DUMMY_PLAYERS.forEach((p, idx) => {
                     const pRef = doc(getPlayersRef());
-                    batch.set(pRef, {
-                        playerId: pRef.id,
-                        roomId: roomId,
-                        name: p.name,
-                        role: p.role,
-                        country: p.country,
-                        basePrice: p.base,
-                        soldPrice: null,
-                        ownerId: null,
-                        status: 'upcoming',
-                        order: idx
-                    });
+                    batch.set(pRef, { playerId: pRef.id, roomId: roomId, name: p.name, role: p.role, country: p.country, basePrice: p.base, soldPrice: null, ownerId: null, status: 'upcoming', order: idx });
                 });
                 await batch.commit();
-
                 enterRoom(roomId);
-            } catch(e) {
-                console.error(e);
-                showToast("Error creating room.");
-                buttons.create.disabled = false;
-                buttons.create.innerText = "Create New Room";
-            }
+            } catch(e) { console.error(e); showToast("Error creating room."); buttons.create.disabled = false; buttons.create.innerText = "Create New Room"; }
         }
 
         async function joinRoom(roomId, username) {
-            if(!currentUser) return; // Guard
+            if(!currentUser) return;
             try {
                 buttons.join.disabled = true;
-                
-                // Robust verification: Fetch collection and check data to avoid direct ID read quirks
                 const roomsSnap = await getDocs(getRoomsRef());
                 let foundRoomId = null;
-                
                 roomsSnap.forEach(docSnap => {
                     const data = docSnap.data();
-                    if (data.roomId && data.roomId.toUpperCase() === roomId.toUpperCase()) {
-                        foundRoomId = data.roomId;
-                    }
+                    if (data.roomId && data.roomId.toUpperCase() === roomId.toUpperCase()) foundRoomId = data.roomId;
                 });
+                if (!foundRoomId) { showToast("Invalid Room Code."); buttons.join.disabled = false; return; }
+                roomId = foundRoomId;
 
-                if (!foundRoomId) {
-                    showToast("Room not found! Check the code.");
-                    buttons.join.disabled = false;
-                    return;
-                }
-
-                roomId = foundRoomId; // Normalize to exact room ID
-
-                // Security check to prevent banned players from re-entering using new tabs/sessions
                 const usersSnap = await getDocs(getUsersRef());
                 let isBanned = false;
                 usersSnap.forEach(docSnap => {
                     const data = docSnap.data();
-                    if (data.roomId === roomId && data.authId === currentUser.uid && data.banned) {
-                        isBanned = true;
-                    }
+                    if (data.roomId === roomId && data.authId === currentUser.uid && data.banned) isBanned = true;
                 });
+                if (isBanned) { showToast("You are permanently banned."); buttons.join.disabled = false; return; }
 
-                if (isBanned) {
-                    showToast("You have been banned from this room!");
-                    buttons.join.disabled = false;
-                    return;
-                }
-
-                // Use session storage so different tabs can act as different players
                 let localSessionId = sessionStorage.getItem('cricbid_session');
-                if (!localSessionId) {
-                    localSessionId = Math.random().toString(36).substring(2, 9);
-                    sessionStorage.setItem('cricbid_session', localSessionId);
-                }
-
+                if (!localSessionId) { localSessionId = Math.random().toString(36).substring(2, 9); sessionStorage.setItem('cricbid_session', localSessionId); }
                 myUserDocId = currentUser.uid + "_" + localSessionId + "_" + roomId;
+                
                 const userRef = doc(getUsersRef(), myUserDocId);
                 const userSnap = await getDoc(userRef);
-
                 if (userSnap.exists()) {
-                    // Rejoining user: keep their budget and bought players intact, erase kicks.
-                    await updateDoc(userRef, {
-                        username: username,
-                        isOnline: true,
-                        kicked: false,
-                        peerId: null
-                    });
+                    await updateDoc(userRef, { username: username, isOnline: true, kicked: false });
                 } else {
-                    // Brand new user
                     await setDoc(userRef, {
-                        userId: myUserDocId,
-                        authId: currentUser.uid,
-                        roomId: roomId,
-                        username: username,
-                        budget: BUDGET_DEFAULT,
-                        role: 'player',
-                        joinedAt: Date.now(),
-                        isOnline: true,
-                        kicked: false,
-                        banned: false,
-                        peerId: null,
-                        lastActive: Date.now()
+                        userId: myUserDocId, authId: currentUser.uid, roomId: roomId, username: username,
+                        budget: BUDGET_DEFAULT, role: 'player', joinedAt: Date.now(), isOnline: true,
+                        kicked: false, banned: false, lastActive: Date.now()
                     });
                 }
-
                 enterRoom(roomId);
-            } catch(e) {
-                console.error(e);
-                showToast("Error joining room.");
-                buttons.join.disabled = false;
-            }
+            } catch(e) { console.error(e); showToast("Error joining room."); buttons.join.disabled = false; }
         }
 
         function enterRoom(roomId) {
@@ -1008,7 +838,6 @@
             screens.lobby.classList.add('hidden');
             screens.auction.classList.remove('hidden');
             ui.roomCode.innerText = roomId;
-            
             setupListeners();
             initVoiceChat();
             startHeartbeat();
@@ -1017,29 +846,21 @@
         function startHeartbeat() {
             if (heartbeatInterval) clearInterval(heartbeatInterval);
             heartbeatInterval = setInterval(() => {
-                // Ping the server every 10 seconds to confirm we are still alive
                 if (myUserDocId && document.visibilityState === 'visible') {
                     updateDoc(doc(getUsersRef(), myUserDocId), { lastActive: Date.now() }).catch(()=>{});
                 }
             }, 10000); 
         }
 
-        // ---------------- LISTENERS ----------------
-
         let unsubscribeRooms, unsubscribeUsers, unsubscribePlayers, unsubscribeChat;
-
         function setupListeners() {
             if(!currentUser) return;
-
             unsubscribeRooms = onSnapshot(getRoomsRef(), (snapshot) => {
                 snapshot.forEach(docSnap => {
                     const data = docSnap.data();
-                    if(data.roomId === currentRoomId) {
-                        roomData = data;
-                        updateRoomUI();
-                    }
+                    if(data.roomId === currentRoomId) { roomData = data; updateRoomUI(); }
                 });
-            }, (error) => console.error("Rooms listener error:", error));
+            });
 
             unsubscribeUsers = onSnapshot(getUsersRef(), (snapshot) => {
                 const tempUsers = [];
@@ -1047,7 +868,6 @@
                 snapshot.forEach(docSnap => {
                     const data = docSnap.data();
                     if(data.roomId === currentRoomId) {
-                        // Heartbeat threshold: 35 seconds. Honors explicit offline status too.
                         const isHeartbeatAlive = data.lastActive ? (now - data.lastActive < 35000) : true;
                         data._computedOnline = data.isOnline !== false && isHeartbeatAlive;
                         tempUsers.push(data);
@@ -1056,105 +876,53 @@
                 usersData = tempUsers;
                 
                 const me = usersData.find(u => u.userId === myUserDocId);
-                
-                // Enforce Kick Action if I am targeted
-                if (me && me.kicked) {
-                    showToast("You have been kicked by the host.");
-                    sessionStorage.removeItem('cricbid_session'); // Clear session
-                    setTimeout(() => window.location.reload(), 2000);
-                    return; // Stop processing further UI updates
-                }
+                if (me && me.kicked) { showToast("You were kicked."); sessionStorage.removeItem('cricbid_session'); setTimeout(() => window.location.reload(), 2000); return; }
+                if (me && me.banned) { showToast("You are banned."); sessionStorage.removeItem('cricbid_session'); setTimeout(() => window.location.reload(), 2000); return; }
 
-                // Enforce Ban Action if I am targeted
-                if (me && me.banned) {
-                    showToast("You have been permanently banned.");
-                    sessionStorage.removeItem('cricbid_session'); // Clear session
-                    setTimeout(() => window.location.reload(), 2000);
-                    return; // Stop processing further UI updates
-                }
-
-                // Fallback Auto-Failover: Debounced to prevent local-cache race condition
                 const onlineUsers = usersData.filter(u => u._computedOnline);
                 if (onlineUsers.length > 0) {
                     const hasAdmin = onlineUsers.some(u => u.role === 'admin');
-                    
-                    if (!hasAdmin) {
-                        // Wait 2 seconds before claiming host incase of temporary disconnects or cache issues
-                        if (!failoverTimer) {
-                            failoverTimer = setTimeout(() => {
-                                const currentOnline = usersData.filter(u => u._computedOnline);
-                                if (!currentOnline.some(u => u.role === 'admin') && currentOnline.length > 0) {
-                                    const sortedUsers = [...currentOnline].sort((a, b) => {
-                                        const timeA = a.joinedAt || 0;
-                                        const timeB = b.joinedAt || 0;
-                                        if (timeA === timeB) return a.userId.localeCompare(b.userId);
-                                        return timeA - timeB;
-                                    });
-                                    
-                                    if (sortedUsers[0].userId === myUserDocId) {
-                                        const myIndex = usersData.findIndex(u => u.userId === myUserDocId);
-                                        if (myIndex > -1) usersData[myIndex].role = 'admin'; // Assume role instantly locally
-                                        
-                                        updateDoc(doc(getUsersRef(), myUserDocId), { role: 'admin' }).catch(console.error);
-                                        updateDoc(doc(getRoomsRef(), currentRoomId), { hostId: currentUser.uid }).catch(console.error);
-                                    }
+                    if (!hasAdmin && !failoverTimer) {
+                        failoverTimer = setTimeout(() => {
+                            const currentOnline = usersData.filter(u => u._computedOnline);
+                            if (!currentOnline.some(u => u.role === 'admin') && currentOnline.length > 0) {
+                                const sortedUsers = [...currentOnline].sort((a, b) => {
+                                    const timeA = a.joinedAt || 0; const timeB = b.joinedAt || 0;
+                                    if (timeA === timeB) return a.userId.localeCompare(b.userId); return timeA - timeB;
+                                });
+                                if (sortedUsers[0].userId === myUserDocId) {
+                                    const myIndex = usersData.findIndex(u => u.userId === myUserDocId);
+                                    if (myIndex > -1) usersData[myIndex].role = 'admin';
+                                    updateDoc(doc(getUsersRef(), myUserDocId), { role: 'admin' }).catch(console.error);
+                                    updateDoc(doc(getRoomsRef(), currentRoomId), { hostId: currentUser.uid }).catch(console.error);
                                 }
-                                failoverTimer = null;
-                            }, 2000);
-                        }
-                    } else {
-                        // Server fully synced and we have an admin. Cancel any pending false-alarms.
-                        if (failoverTimer) {
-                            clearTimeout(failoverTimer);
+                            }
                             failoverTimer = null;
-                        }
+                        }, 2000);
+                    } else if (hasAdmin && failoverTimer) {
+                        clearTimeout(failoverTimer); failoverTimer = null;
                     }
                 }
 
-                // --- Voice Chat Mesh Network Logic ---
-                if (peer && myPeerId) {
-                    usersData.forEach(u => {
-                        // Connect to new users
-                        if (u.userId !== myUserDocId && u._computedOnline && u.peerId && !connectedPeers.has(u.peerId)) {
-                            const me = usersData.find(m => m.userId === myUserDocId);
-                            // To prevent duplicate connections, only the newer user calls the older users
-                            if (me && (me.joinedAt > u.joinedAt || (me.joinedAt === u.joinedAt && myUserDocId > u.userId))) {
-                                makeCall(u.peerId);
-                            }
-                        }
-                        
-                        // Disconnect offline users
-                        if (!u._computedOnline && u.peerId && connectedPeers.has(u.peerId)) {
-                            const wrapper = document.getElementById('video-wrapper-' + u.peerId);
-                            if (wrapper) wrapper.remove();
-                            connectedPeers.delete(u.peerId);
-                        }
-                    });
-                }
-                // --- End Voice Chat Logic ---
-
                 updateUsersUI();
-            }, (error) => console.error("Users listener error:", error));
+                updateVideoGallery();
+            });
 
             unsubscribePlayers = onSnapshot(getPlayersRef(), (snapshot) => {
                 const tempPlayers = [];
                 snapshot.forEach(docSnap => {
                     const data = docSnap.data();
-                    if(data.roomId === currentRoomId) {
-                        tempPlayers.push(data);
-                    }
+                    if(data.roomId === currentRoomId) tempPlayers.push(data);
                 });
                 playersData = tempPlayers.sort((a, b) => a.order - b.order);
                 updatePlayersUI();
-            }, (error) => console.error("Players listener error:", error));
+            });
 
-            // Setup Chat Listener
             unsubscribeChat = onSnapshot(getChatRef(), (snapshot) => {
                 const msgs = [];
                 snapshot.forEach(docSnap => {
                     const data = docSnap.data();
                     if(data.roomId === currentRoomId) {
-                        // In memory filter: public message OR I am sender OR I am receiver
                         if (data.receiverId === 'all' || data.senderId === myUserDocId || data.receiverId === myUserDocId) {
                             msgs.push(data);
                         }
@@ -1162,29 +930,48 @@
                 });
                 chatMessages = msgs.sort((a,b) => a.timestamp - b.timestamp);
                 updateChatUI();
-            }, (error) => console.error("Chat listener error:", error));
+            });
         }
 
-        // ---------------- UI UPDATES ----------------
+        function updateVideoGallery() {
+            const gallery = document.getElementById('video-gallery');
+            if (!gallery) return;
+
+            // Keep only the local video, remove dynamically injected remote avatars
+            Array.from(gallery.children).forEach(child => {
+                if (!child.querySelector('#local-video')) child.remove();
+            });
+
+            // Generate Avatars for online remote users instead of WebRTC Video (To fix Canvas WebSocket Block)
+            usersData.forEach(u => {
+                if (u.userId !== myUserDocId && u._computedOnline) {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = "relative group flex flex-col items-center animate-fade-in shrink-0 snap-start";
+                    
+                    const avatar = document.createElement('div');
+                    avatar.className = "w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border-2 border-slate-600 bg-slate-700 flex items-center justify-center text-xl sm:text-2xl font-bold shadow-lg text-white font-display uppercase";
+                    avatar.innerText = u.username.charAt(0);
+                    
+                    const nameTag = document.createElement('span');
+                    nameTag.className = "absolute -bottom-2 bg-slate-900 border border-slate-700 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-md whitespace-nowrap z-10 shadow-sm";
+                    nameTag.innerText = u.username;
+
+                    wrapper.appendChild(avatar);
+                    wrapper.appendChild(nameTag);
+                    gallery.appendChild(wrapper);
+                }
+            });
+        }
 
         function updateUsersUI() {
-            const onlineUsersCount = usersData.filter(u => u._computedOnline).length;
-            ui.onlineCount.innerText = onlineUsersCount;
-            
+            ui.onlineCount.innerText = usersData.filter(u => u._computedOnline).length;
             const amIHost = usersData.find(u => u.userId === myUserDocId)?.role === 'admin';
-
-            if(amIHost) {
-                ui.hostControls.classList.remove('hidden');
-                ui.hostControls.classList.add('flex');
-            } else {
-                ui.hostControls.classList.add('hidden');
-                ui.hostControls.classList.remove('flex');
-            }
+            
+            if(amIHost) { ui.hostControls.classList.remove('hidden'); ui.hostControls.classList.add('flex'); } 
+            else { ui.hostControls.classList.add('hidden'); ui.hostControls.classList.remove('flex'); }
 
             const me = usersData.find(u => u.userId === myUserDocId);
-            if(me) {
-                ui.myBudget.innerText = `₹ ${formatMoney(me.budget)} Cr`;
-            }
+            if(me) ui.myBudget.innerText = `₹ ${formatMoney(me.budget)} Cr`;
 
             ui.standingsList.innerHTML = '';
             const sortedUsers = [...usersData].sort((a,b) => b.budget - a.budget);
@@ -1196,9 +983,9 @@
 
                 let badgesHtml = '';
                 if (boughtPlayers.length > 0) {
-                    badgesHtml = '<div class="mt-2 flex flex-wrap gap-1">';
+                    badgesHtml = '<div class="mt-3 flex flex-wrap gap-1.5">';
                     boughtPlayers.forEach(bp => {
-                        badgesHtml += `<span class="bg-cric-card border border-cric-green/30 text-[10px] px-1.5 py-0.5 rounded text-gray-300 shadow-sm">${bp.name} <span class="text-cric-gold">₹${formatMoney(bp.soldPrice)}</span></span>`;
+                        badgesHtml += `<span class="bg-slate-900 border border-slate-700 text-[10px] px-2 py-1 rounded text-slate-300 shadow-sm whitespace-nowrap">${bp.name} <span class="text-cric-gold font-bold">₹${formatMoney(bp.soldPrice)}</span></span>`;
                     });
                     badgesHtml += '</div>';
                 }
@@ -1206,46 +993,35 @@
                 let adminControlsHtml = '';
                 if (amIHost && !isMe) {
                     const safeName = u.username.replace(/'/g, "\\'");
-                    
                     let hostBtnHtml = '';
                     if (!isOffline) {
-                        hostBtnHtml = `
-                            <button onclick="transferHostTo('${u.userId}')" class="flex-1 text-[10px] font-bold bg-blue-500/20 text-blue-400 hover:bg-blue-500/40 py-1.5 rounded transition-colors flex items-center justify-center gap-1" title="Make Host">
-                                <svg class="w-3 h-3 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg> 
-                                Host
-                            </button>
-                        `;
+                        hostBtnHtml = `<button onclick="transferHostTo('${u.userId}')" class="flex-1 text-[10px] font-bold bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 py-2 rounded-lg transition-colors ring-1 ring-blue-500/30">Make Host</button>`;
                     }
-
                     adminControlsHtml = `
-                        <div class="flex gap-1 mt-3 pt-2 border-t border-slate-700/50">
+                        <div class="flex gap-1.5 mt-3 pt-3 border-t border-slate-800">
                             ${hostBtnHtml}
-                            <button onclick="openKickModal('${u.userId}', '${safeName}')" class="flex-1 text-[10px] font-bold bg-orange-500/20 text-orange-400 hover:bg-orange-500/40 py-1.5 rounded transition-colors flex items-center justify-center gap-1" title="Kick Player">
-                                <svg class="w-3 h-3 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6"></path></svg> 
-                                Kick
-                            </button>
-                            <button onclick="openBanModal('${u.userId}', '${safeName}')" class="flex-1 text-[10px] font-bold bg-red-500/20 text-red-400 hover:bg-red-500/40 py-1.5 rounded transition-colors flex items-center justify-center gap-1" title="Ban Player">
-                                <svg class="w-3 h-3 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg> 
-                                Ban
-                            </button>
+                            <button onclick="openKickModal('${u.userId}', '${safeName}')" class="flex-1 text-[10px] font-bold bg-orange-500/10 text-orange-400 hover:bg-orange-500/20 py-2 rounded-lg transition-colors ring-1 ring-orange-500/30">Kick</button>
+                            <button onclick="openBanModal('${u.userId}', '${safeName}')" class="flex-1 text-[10px] font-bold bg-red-500/10 text-red-400 hover:bg-red-500/20 py-2 rounded-lg transition-colors ring-1 ring-red-500/30">Ban</button>
                         </div>
                     `;
                 }
 
                 const div = document.createElement('div');
-                div.className = `p-3 rounded-lg border ${isMe ? 'border-cric-green bg-cric-green/10' : 'border-slate-700 bg-slate-800'} flex flex-col justify-center ${isOffline ? 'opacity-40 grayscale' : ''}`;
+                div.className = `p-4 rounded-2xl border ${isMe ? 'border-cric-green bg-cric-green/10 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'border-slate-800 bg-slate-900'} flex flex-col justify-center ${isOffline ? 'opacity-50 grayscale' : ''}`;
                 div.innerHTML = `
-                    <div class="flex justify-between items-center w-full">
+                    <div class="flex justify-between items-start w-full">
                         <div>
-                            <p class="font-bold text-white text-sm flex items-center gap-1">
+                            <p class="font-bold text-white text-base flex flex-col sm:flex-row sm:items-center gap-1.5 leading-tight">
                                 ${u.username} 
-                                ${u.role === 'admin' ? '<span class="text-[10px] bg-red-500/20 text-red-400 px-1 rounded">HOST</span>' : ''}
-                                ${isOffline ? '<span class="text-[10px] bg-slate-500/20 text-slate-400 px-1 rounded">OFFLINE</span>' : ''}
+                                <span class="flex gap-1">
+                                    ${u.role === 'admin' ? '<span class="text-[9px] bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded uppercase tracking-widest border border-red-500/30">Host</span>' : ''}
+                                    ${isOffline ? '<span class="text-[9px] bg-slate-500/20 text-slate-400 px-1.5 py-0.5 rounded uppercase tracking-widest border border-slate-500/30">Offline</span>' : ''}
+                                </span>
                             </p>
-                            <p class="text-xs text-gray-400">${boughtPlayers.length} Players</p>
+                            <p class="text-[11px] text-slate-400 mt-1 uppercase tracking-widest font-semibold">${boughtPlayers.length} Players</p>
                         </div>
-                        <div class="text-right">
-                            <p class="font-display font-bold text-cric-gold">₹ ${formatMoney(u.budget)}</p>
+                        <div class="text-right bg-slate-950/50 px-2.5 py-1.5 rounded-lg border border-slate-800">
+                            <p class="font-display font-bold text-cric-gold text-lg leading-none">₹${formatMoney(u.budget)}</p>
                         </div>
                     </div>
                     ${badgesHtml}
@@ -1253,57 +1029,52 @@
                 `;
                 ui.standingsList.appendChild(div);
             });
-
             updateChatRecipients();
         }
 
         function updatePlayersUI() {
             ui.upcomingList.innerHTML = '';
-            
             const upcoming = playersData.filter(p => p.status === 'upcoming');
             const sold = playersData.filter(p => p.status === 'sold');
             const unsold = playersData.filter(p => p.status === 'unsold');
             
-            // Upcoming Block
-            ui.upcomingList.innerHTML += `<div class="text-xs text-gray-400 uppercase tracking-widest mt-2 mb-1">Upcoming (${upcoming.length})</div>`;
-            upcoming.slice(0, 3).forEach(p => {
+            ui.upcomingList.innerHTML += `<div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-2 mb-2 px-1">Upcoming (${upcoming.length})</div>`;
+            upcoming.slice(0, 4).forEach(p => {
                 ui.upcomingList.innerHTML += `
-                    <div class="p-2 border border-slate-700/50 bg-slate-800/50 rounded flex justify-between items-center mb-1">
+                    <div class="p-3 border border-slate-800 bg-slate-900 rounded-xl flex justify-between items-center shadow-sm">
                         <div>
-                            <p class="text-sm font-bold text-gray-200">${p.name}</p>
-                            <p class="text-[10px] text-gray-500 uppercase">${p.role}</p>
+                            <p class="text-sm font-bold text-slate-200">${p.name}</p>
+                            <p class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">${p.role}</p>
                         </div>
-                        <span class="text-xs font-display text-gray-400">₹${p.base}</span>
+                        <span class="text-xs font-display text-slate-400 font-bold bg-slate-950 px-2 py-1 rounded-md">₹${p.base}</span>
                     </div>
                 `;
             });
 
-            // Sold Block
             if (sold.length > 0) {
-                ui.upcomingList.innerHTML += `<div class="text-xs text-cric-green uppercase tracking-widest mt-4 mb-1 border-t border-slate-700 pt-2">Sold (${sold.length})</div>`;
+                ui.upcomingList.innerHTML += `<div class="text-[10px] text-cric-green font-bold uppercase tracking-widest mt-6 mb-2 px-1 border-t border-slate-800 pt-4">Recently Sold (${sold.length})</div>`;
                 [...sold].reverse().slice(0, 3).forEach(p => {
                     const owner = usersData.find(u => u.userId === p.ownerId);
                     const ownerName = owner ? owner.username : 'Unknown';
                     ui.upcomingList.innerHTML += `
-                        <div class="p-2 border border-cric-green/20 bg-cric-green/10 rounded flex flex-col mb-1">
-                            <div class="flex justify-between items-center">
+                        <div class="p-3 border border-cric-green/20 bg-cric-green/10 rounded-xl flex flex-col shadow-sm">
+                            <div class="flex justify-between items-center mb-1">
                                 <p class="text-sm font-bold text-white">${p.name}</p>
-                                <span class="text-xs font-display font-bold text-cric-gold">₹${formatMoney(p.soldPrice)}</span>
+                                <span class="text-xs font-display font-bold text-cric-gold bg-slate-950/50 px-2 py-1 rounded-md border border-slate-800">₹${formatMoney(p.soldPrice)}</span>
                             </div>
-                            <p class="text-[10px] text-gray-400 mt-1">To: <span class="text-gray-200 font-bold">${ownerName}</span></p>
+                            <p class="text-[10px] text-slate-400 font-medium">To: <span class="text-slate-200 font-bold">${ownerName}</span></p>
                         </div>
                     `;
                 });
             }
 
-            // Unsold Block
             if (unsold.length > 0) {
-                ui.upcomingList.innerHTML += `<div class="text-xs text-gray-500 uppercase tracking-widest mt-4 mb-1 border-t border-slate-700 pt-2">Unsold (${unsold.length})</div>`;
-                [...unsold].reverse().slice(0, 3).forEach(p => {
+                ui.upcomingList.innerHTML += `<div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-6 mb-2 px-1 border-t border-slate-800 pt-4">Unsold (${unsold.length})</div>`;
+                [...unsold].reverse().slice(0, 2).forEach(p => {
                     ui.upcomingList.innerHTML += `
-                        <div class="p-2 border border-slate-600/50 bg-slate-800/80 rounded flex justify-between items-center mb-1 opacity-70">
-                            <p class="text-sm font-bold text-gray-400 line-through">${p.name}</p>
-                            <span class="text-[10px] text-gray-500">Unsold</span>
+                        <div class="p-3 border border-slate-800 bg-slate-900/50 rounded-xl flex justify-between items-center opacity-60">
+                            <p class="text-sm font-bold text-slate-400 line-through">${p.name}</p>
+                            <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Unsold</span>
                         </div>
                     `;
                 });
@@ -1311,30 +1082,21 @@
         }
 
         let lastBidderState = null;
-
         function updateRoomUI() {
             if(!roomData) return;
-
             const isHost = usersData.find(u => u.userId === myUserDocId)?.role === 'admin';
             const currentPlayer = playersData.find(p => p.order === roomData.currentAuctionIndex);
 
-            // Handle Unsold Button State for Host
             if (isHost && ui.btnHostUnsold) {
-                if (roomData.currentBidder) {
-                    ui.btnHostUnsold.disabled = true;
-                } else {
-                    ui.btnHostUnsold.disabled = false;
-                }
+                ui.btnHostUnsold.disabled = roomData.currentBidder ? true : false;
             }
 
-            // Handle timer visually
             if(roomData.status === 'active' && roomData.timerEndTime > 0) {
                 startTimer(roomData.timerEndTime);
                 ui.roomStatus.innerText = "Auction Live";
-                ui.statusIndicator.className = "w-3 h-3 rounded-full bg-red-500 animate-pulse";
+                ui.statusIndicator.className = "w-3 h-3 rounded-full bg-red-500 shadow-[0_0_12px_#ef4444] animate-pulse";
                 ui.timer.classList.remove('hidden');
                 
-                // Enable bidding if I am not the current highest bidder
                 if(roomData.currentBidder !== myUserDocId) {
                     ui.biddingControls.classList.remove('opacity-50', 'pointer-events-none');
                 } else {
@@ -1346,82 +1108,76 @@
                 ui.biddingControls.classList.add('opacity-50', 'pointer-events-none');
                 
                 if(roomData.status === 'waiting') {
-                    ui.roomStatus.innerText = "Waiting...";
-                    ui.statusIndicator.className = "w-3 h-3 rounded-full bg-yellow-500";
+                    ui.roomStatus.innerText = "Waiting for Host...";
+                    ui.statusIndicator.className = "w-3 h-3 rounded-full bg-yellow-500 shadow-[0_0_12px_#eab308]";
                 } else if(roomData.status === 'paused') {
                     ui.roomStatus.innerText = "Finalizing...";
-                    ui.statusIndicator.className = "w-3 h-3 rounded-full bg-orange-500";
+                    ui.statusIndicator.className = "w-3 h-3 rounded-full bg-orange-500 shadow-[0_0_12px_#f97316]";
                 } else if(roomData.status === 'finished') {
                     ui.roomStatus.innerText = "Auction Completed";
-                    ui.statusIndicator.className = "w-3 h-3 rounded-full bg-green-500";
+                    ui.statusIndicator.className = "w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_12px_#10b981]";
                 }
             }
 
-            // Update Current Player Card
             if(currentPlayer) {
                 ui.playerName.innerText = currentPlayer.name;
                 ui.playerRole.innerText = currentPlayer.role;
-                ui.playerCountry.innerHTML = getFlagEmoji(currentPlayer.country) + " " + currentPlayer.country;
+                ui.playerCountry.innerHTML = `<svg class="w-4 h-4 sm:w-5 sm:h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path></svg> ${currentPlayer.country}`;
                 ui.playerBase.innerText = `₹ ${formatMoney(currentPlayer.basePrice)} Cr`;
                 
                 const displayBid = roomData.currentBid > 0 ? roomData.currentBid : currentPlayer.basePrice;
-                ui.currentBid.innerHTML = `₹ ${formatMoney(displayBid)} <span class="text-2xl text-gray-400">Cr</span>`;
+                ui.currentBid.innerHTML = `₹ ${formatMoney(displayBid)} <span class="text-2xl sm:text-3xl text-slate-500 font-medium tracking-normal">Cr</span>`;
 
                 if(roomData.currentBidder) {
                     const bidder = usersData.find(u => u.userId === roomData.currentBidder);
                     ui.highestBidder.innerText = bidder ? bidder.username : "Unknown";
+                    ui.highestBidder.className = "font-bold text-cric-gold ml-1 text-base sm:text-lg";
                     
-                    // Add glowing effect if bid changed
                     if (lastBidderState !== roomData.currentBidder) {
                         ui.playerCard.classList.add('glowing-bid');
                         setTimeout(() => ui.playerCard.classList.remove('glowing-bid'), 1000);
                         lastBidderState = roomData.currentBidder;
                     }
                 } else {
-                    ui.highestBidder.innerText = "None";
+                    ui.highestBidder.innerText = "Be the first!";
+                    ui.highestBidder.className = "font-bold text-slate-400 ml-1";
                     lastBidderState = null;
                 }
 
-                // Handle Sold Overlay efficiently
                 if(currentPlayer.status === 'sold') {
-                    ui.soldOverlay.classList.remove('hidden');
-                    ui.soldOverlay.classList.add('flex', 'animate-fade-in-bg');
-                    
+                    ui.soldOverlay.classList.remove('hidden'); ui.soldOverlay.classList.add('flex', 'animate-fade-in');
                     const owner = usersData.find(u => u.userId === currentPlayer.ownerId);
                     const ownerName = owner ? owner.username : "Unknown";
-                    
                     if (!ui.soldOverlay.innerHTML.includes(currentPlayer.name)) {
                         ui.soldOverlay.innerHTML = `
                             <span class="hidden">${currentPlayer.name}</span>
                             <div class="animate-stamp flex flex-col items-center justify-center">
-                                <h3 class="text-5xl md:text-6xl font-display font-black text-cric-green mb-4 transform -rotate-12 uppercase tracking-widest border-8 border-cric-green px-6 py-2 shadow-[0_0_30px_rgba(16,185,129,0.5)] bg-cric-card/80">SOLD!</h3>
-                                <div class="bg-slate-900/90 border border-cric-green rounded-xl p-4 mt-4 shadow-xl">
-                                    <p class="text-lg text-gray-300">To <span class="font-bold text-cric-gold text-2xl ml-2">${ownerName}</span></p>
-                                    <p class="text-4xl font-display font-bold text-white mt-2">₹ ${formatMoney(currentPlayer.soldPrice)} <span class="text-xl text-gray-400">Cr</span></p>
+                                <h3 class="text-6xl sm:text-7xl font-display font-black text-cric-green mb-4 transform -rotate-12 uppercase tracking-widest border-8 border-cric-green px-8 py-3 shadow-[0_0_50px_rgba(16,185,129,0.5)] bg-slate-900/90 rounded-2xl">SOLD!</h3>
+                                <div class="bg-slate-900/95 border border-cric-green rounded-2xl p-5 mt-6 shadow-2xl">
+                                    <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">Bought By</p>
+                                    <p class="text-2xl font-bold text-cric-gold mt-1">${ownerName}</p>
+                                    <div class="w-full h-px bg-slate-800 my-3"></div>
+                                    <p class="text-4xl font-display font-black text-white">₹ ${formatMoney(currentPlayer.soldPrice)} <span class="text-xl text-slate-500">Cr</span></p>
                                 </div>
                             </div>
                         `;
                     }
                 } else if(currentPlayer.status === 'unsold') {
-                    ui.soldOverlay.classList.remove('hidden');
-                    ui.soldOverlay.classList.add('flex', 'animate-fade-in-bg');
-                    
+                    ui.soldOverlay.classList.remove('hidden'); ui.soldOverlay.classList.add('flex', 'animate-fade-in');
                     if (!ui.soldOverlay.innerHTML.includes(currentPlayer.name)) {
                         ui.soldOverlay.innerHTML = `
                             <span class="hidden">${currentPlayer.name}</span>
                             <div class="animate-stamp flex flex-col items-center justify-center">
-                                <h3 class="text-5xl md:text-6xl font-display font-black text-gray-400 mb-2 transform -rotate-12 uppercase tracking-widest border-8 border-gray-400 px-6 py-2 bg-slate-900/80 shadow-2xl">UNSOLD</h3>
+                                <h3 class="text-5xl sm:text-6xl font-display font-black text-slate-400 mb-2 transform -rotate-12 uppercase tracking-widest border-8 border-slate-500 px-8 py-3 bg-slate-900/90 rounded-2xl shadow-2xl">UNSOLD</h3>
                             </div>
                         `;
                     }
                 } else {
-                    ui.soldOverlay.classList.add('hidden');
-                    ui.soldOverlay.classList.remove('flex', 'animate-fade-in-bg');
-                    ui.soldOverlay.innerHTML = ''; 
+                    ui.soldOverlay.classList.add('hidden'); ui.soldOverlay.classList.remove('flex', 'animate-fade-in'); ui.soldOverlay.innerHTML = ''; 
                 }
 
             } else {
-                ui.playerName.innerText = "No More Players";
+                ui.playerName.innerText = "Auction Over";
                 ui.playerRole.innerText = "---";
                 ui.playerCountry.innerText = "---";
                 ui.playerBase.innerText = "---";
@@ -1430,27 +1186,18 @@
             }
         }
 
-        // ---------------- CHAT LOGIC ----------------
-        
         function updateChatRecipients() {
             const select = document.getElementById('chat-recipient');
             if(!select) return;
             const currentVal = select.value;
-            select.innerHTML = '<option value="all">Everyone</option>';
-            
+            select.innerHTML = '<option value="all">Public (Everyone)</option>';
             usersData.forEach(u => {
                 if(u.userId !== myUserDocId && u._computedOnline) {
                     const opt = document.createElement('option');
-                    opt.value = u.userId;
-                    opt.innerText = `Whisper: ${u.username}`;
-                    select.appendChild(opt);
+                    opt.value = u.userId; opt.innerText = `Whisper: ${u.username}`; select.appendChild(opt);
                 }
             });
-            
-            // Restore selection if player still exists
-            if([...select.options].some(o => o.value === currentVal)) {
-                select.value = currentVal;
-            }
+            if([...select.options].some(o => o.value === currentVal)) select.value = currentVal;
         }
 
         function updateChatUI() {
@@ -1458,76 +1205,50 @@
             if (!container) return;
             
             const chatPanel = document.getElementById('chat-panel');
-            const isHidden = chatPanel.classList.contains('hidden');
+            const isHiddenDesktop = window.innerWidth >= 1024 && chatPanel.classList.contains('hidden');
+            const isHiddenMobile = window.innerWidth < 1024 && chatPanel.classList.contains('hidden');
             
-            // Notification Badge Logic
             if (chatMessages.length > lastViewedMessageCount) {
-                if (isHidden) {
+                if (isHiddenDesktop || isHiddenMobile) {
                     const unread = chatMessages.length - lastViewedMessageCount;
                     const badge = document.getElementById('chat-badge');
                     const mobileBadge = document.getElementById('mobile-chat-badge'); 
-                    
-                    if(badge) {
-                        badge.innerText = unread > 9 ? '9+' : unread;
-                        badge.classList.remove('hidden');
-                        badge.classList.add('flex');
-                    }
-                    if(mobileBadge) {
-                        mobileBadge.innerText = unread > 9 ? '9+' : unread;
-                        mobileBadge.classList.remove('hidden');
-                        mobileBadge.classList.add('flex');
-                    }
-                } else {
-                    lastViewedMessageCount = chatMessages.length;
-                }
+                    if(badge && isHiddenDesktop) { badge.innerText = unread > 9 ? '9+' : unread; badge.classList.remove('hidden'); badge.classList.add('flex'); }
+                    if(mobileBadge && isHiddenMobile) { mobileBadge.innerText = unread > 9 ? '9+' : unread; mobileBadge.classList.remove('hidden'); mobileBadge.classList.add('flex'); }
+                } else { lastViewedMessageCount = chatMessages.length; }
             }
             
             container.innerHTML = '';
-            
             chatMessages.forEach(msg => {
                 const isMe = msg.senderId === myUserDocId;
                 const isWhisper = msg.receiverId !== 'all';
                 const isWhisperToMe = isWhisper && msg.receiverId === myUserDocId;
                 
                 const div = document.createElement('div');
-                div.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} w-full mb-3`;
+                div.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} w-full mb-4`;
                 
                 let labelText = isMe ? 'Me' : msg.senderName;
-                if (isWhisper) {
-                    if (isWhisperToMe) {
-                        labelText = `Whisper from ${msg.senderName}`;
-                    } else {
-                        labelText = `Whisper to ${msg.receiverName}`;
-                    }
-                }
+                if (isWhisper) { labelText = isWhisperToMe ? `Whisper from ${msg.senderName}` : `Whisper to ${msg.receiverName}`; }
                 
-                let bubbleClasses = isMe 
-                    ? 'bg-cric-green text-slate-900 rounded-lg rounded-tr-none' 
-                    : 'bg-slate-700 text-white rounded-lg rounded-tl-none';
-                    
+                let bubbleClasses = isMe ? 'bg-cric-green text-slate-950 rounded-2xl rounded-tr-sm font-medium shadow-md' : 'bg-slate-800 text-slate-100 rounded-2xl rounded-tl-sm border border-slate-700 shadow-sm';
                 if (isWhisper) {
-                    bubbleClasses = isMe
-                        ? 'bg-purple-500 text-white rounded-lg rounded-tr-none border border-purple-400 shadow-[0_0_10px_rgba(168,85,247,0.3)]'
-                        : 'bg-purple-900/80 text-purple-100 rounded-lg rounded-tl-none border border-purple-500/50 shadow-[0_0_10px_rgba(168,85,247,0.3)]';
+                    bubbleClasses = isMe ? 'bg-indigo-500 text-white rounded-2xl rounded-tr-sm border border-indigo-400 shadow-[0_4px_15px_rgba(99,102,241,0.3)]' : 'bg-indigo-900/80 text-indigo-100 rounded-2xl rounded-tl-sm border border-indigo-500/50 shadow-[0_4px_15px_rgba(99,102,241,0.3)]';
                 }
                 
                 div.innerHTML = `
-                    <span class="text-[10px] ${isWhisper ? 'text-purple-400 font-bold' : 'text-gray-400'} mb-0.5 ml-1 mr-1">${labelText}</span>
-                    <div class="px-3 py-2 text-sm shadow-sm inline-block max-w-[85%] break-words ${bubbleClasses}">
+                    <span class="text-[10px] ${isWhisper ? 'text-indigo-400 font-bold' : 'text-slate-500'} mb-1 ml-1 mr-1 uppercase tracking-wider">${labelText}</span>
+                    <div class="px-4 py-2.5 text-[15px] inline-block max-w-[85%] break-words ${bubbleClasses} leading-relaxed">
                         ${msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
                     </div>
                 `;
                 container.appendChild(div);
             });
-            
             scrollToBottomChat();
         }
 
         function scrollToBottomChat() {
             const container = document.getElementById('chat-messages');
-            if(container) {
-                container.scrollTop = container.scrollHeight;
-            }
+            if(container) container.scrollTop = container.scrollHeight;
         }
 
         window.sendChatMessage = async () => {
@@ -1543,181 +1264,69 @@
             if(!me) return;
             
             try {
-                input.value = ''; // clear early for responsive feel
+                input.value = ''; 
                 const msgRef = doc(getChatRef());
-                await setDoc(msgRef, {
-                    id: msgRef.id,
-                    roomId: currentRoomId,
-                    senderId: myUserDocId,
-                    senderName: me.username,
-                    receiverId: receiverId,
-                    receiverName: receiverName,
-                    text: text,
-                    timestamp: Date.now()
-                });
-            } catch(e) {
-                console.error("Chat send error:", e);
-                showToast("Failed to send message");
-            }
+                await setDoc(msgRef, { id: msgRef.id, roomId: currentRoomId, senderId: myUserDocId, senderName: me.username, receiverId: receiverId, receiverName: receiverName, text: text, timestamp: Date.now() });
+            } catch(e) { console.error("Chat send error:", e); showToast("Failed to send message"); }
         };
 
-        // Init Chat Inputs
         setTimeout(() => {
             const chatInput = document.getElementById('chat-input');
             const sendBtn = document.getElementById('btn-send-chat');
             if(chatInput && sendBtn) {
-                chatInput.addEventListener('keypress', (e) => {
-                    if(e.key === 'Enter') sendChatMessage();
-                });
+                chatInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') sendChatMessage(); });
                 sendBtn.addEventListener('click', sendChatMessage);
             }
         }, 1000);
 
-        function getFlagEmoji(countryCode) {
-            const flags = { 'IND': '🇮🇳', 'AUS': '🇦🇺', 'ENG': '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'AFG': '🇦🇫', 'RSA': '🇿🇦', 'NZ': '🇳🇿', 'PAK': '🇵🇰' };
-            return flags[countryCode] || '🏳️';
-        }
-
-        // ---------------- MEDIA CHAT LOGIC ----------------
-
         async function initVoiceChat() {
             try {
-                // Try requesting both camera and mic first (forces front-camera mapping on iOS/Android)
                 try {
-                    localStream = await navigator.mediaDevices.getUserMedia({ 
-                        audio: true, 
-                        video: { facingMode: "user" } 
-                    });
+                    localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: { facingMode: "user" } });
                 } catch (camErr) {
-                    console.warn("Camera failed/denied, falling back to audio only.", camErr);
+                    console.warn("Camera failed/denied, falling back to audio only.");
                     localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
                 }
-                
-                // Attach to local video preview
                 const localVid = document.getElementById('local-video');
-                if (localVid) {
-                    localVid.srcObject = localStream;
-                }
-                
-                // Start muted & camera off
+                if (localVid) localVid.srcObject = localStream;
                 localStream.getAudioTracks().forEach(track => track.enabled = false);
                 localStream.getVideoTracks().forEach(track => track.enabled = false);
                 
-                peer = new Peer(); // Creates a connection to the public PeerJS server
-                
-                peer.on('open', (id) => {
-                    myPeerId = id;
-                    // Save my Peer ID to Firestore so others can call me
-                    updateDoc(doc(getUsersRef(), myUserDocId), { peerId: myPeerId }).catch(console.error);
-                });
-
-                peer.on('call', (call) => {
-                    // Answer incoming calls automatically
-                    call.answer(localStream);
-                    handleCallStream(call);
-                });
-                
-                peer.on('error', (err) => {
-                    console.error("PeerJS Error:", err);
-                });
-                
-            } catch (err) {
-                console.error("Media access denied or error:", err);
-                showToast("Media access denied. Voice/Video chat disabled.");
-            }
-        }
-
-        function makeCall(remotePeerId) {
-            if (!localStream || !peer) return;
-            const call = peer.call(remotePeerId, localStream);
-            handleCallStream(call);
-        }
-
-        function handleCallStream(call) {
-            connectedPeers.add(call.peer);
-            call.on('stream', (remoteStream) => {
-                if (!document.getElementById('video-wrapper-' + call.peer)) {
-                    const user = usersData.find(u => u.peerId === call.peer);
-                    const userName = user ? user.username : 'Player';
-
-                    const wrapper = document.createElement('div');
-                    wrapper.id = 'video-wrapper-' + call.peer;
-                    wrapper.className = "relative group flex flex-col items-center animate-fade-in-bg";
-                    
-                    const video = document.createElement('video');
-                    video.id = 'video-' + call.peer;
-                    video.srcObject = remoteStream;
-                    video.autoplay = true;
-                    video.playsInline = true;
-                    // Note: No 'muted' attribute on remote streams so you can hear them
-                    video.className = "w-16 h-16 md:w-20 md:h-20 rounded-full object-cover border-2 border-cric-green bg-slate-800 shadow-md transition-colors";
-                    
-                    const nameTag = document.createElement('span');
-                    nameTag.className = "absolute bottom-0 bg-black/70 text-white text-[10px] px-2 py-0.5 rounded-full whitespace-nowrap overflow-hidden text-ellipsis max-w-[70px]";
-                    nameTag.innerText = userName;
-
-                    wrapper.appendChild(video);
-                    wrapper.appendChild(nameTag);
-                    
-                    document.getElementById('video-gallery').appendChild(wrapper);
-                }
-            });
-
-            call.on('close', () => {
-                const wrapper = document.getElementById('video-wrapper-' + call.peer);
-                if (wrapper) wrapper.remove();
-                connectedPeers.delete(call.peer);
-            });
+            } catch (err) { console.error("Media err:", err); showToast("Camera denied or not found."); }
         }
 
         document.getElementById('btn-mic').addEventListener('click', () => {
-            if (!localStream || localStream.getAudioTracks().length === 0) {
-                showToast("Microphone is not connected!");
-                return;
-            }
-            
+            if (!localStream || localStream.getAudioTracks().length === 0) return showToast("Mic unavailable!");
             isMicMuted = !isMicMuted;
-            localStream.getAudioTracks().forEach(track => track.enabled = !isMicMuted);
+            localStream.getAudioTracks().forEach(t => t.enabled = !isMicMuted);
             
             const btn = document.getElementById('btn-mic');
             const iconOn = document.getElementById('icon-mic-on');
             const iconOff = document.getElementById('icon-mic-off');
             
             if (isMicMuted) {
-                iconOn.classList.add('hidden');
-                iconOff.classList.remove('hidden');
-                btn.classList.add('bg-red-500/20', 'text-red-400');
-                btn.classList.remove('bg-cric-green/20', 'text-cric-green');
+                iconOn.classList.add('hidden'); iconOff.classList.remove('hidden');
+                btn.classList.add('bg-red-500/20', 'text-red-400'); btn.classList.remove('bg-cric-green/20', 'text-cric-green');
             } else {
-                iconOn.classList.remove('hidden');
-                iconOff.classList.add('hidden');
-                btn.classList.remove('bg-red-500/20', 'text-red-400');
-                btn.classList.add('bg-cric-green/20', 'text-cric-green');
+                iconOn.classList.remove('hidden'); iconOff.classList.add('hidden');
+                btn.classList.remove('bg-red-500/20', 'text-red-400'); btn.classList.add('bg-cric-green/20', 'text-cric-green');
             }
         });
 
         document.getElementById('btn-video').addEventListener('click', async () => {
             if (!localStream) return;
-
-            // Dynamically request video if it was initially dropped or denied
             if (localStream.getVideoTracks().length === 0) {
                 try {
                     const vidStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
-                    const vidTrack = vidStream.getVideoTracks()[0];
-                    localStream.addTrack(vidTrack);
-                    
+                    localStream.addTrack(vidStream.getVideoTracks()[0]);
                     const localVid = document.getElementById('local-video');
                     if (localVid) localVid.srcObject = localStream;
-                    
-                    showToast("Camera granted! New users joining will see your video.");
-                } catch (e) {
-                    showToast("Camera is not connected or permission denied!");
-                    return;
-                }
+                    showToast("Camera active!");
+                } catch (e) { return showToast("Camera denied!"); }
             }
             
             isVideoMuted = !isVideoMuted;
-            localStream.getVideoTracks().forEach(track => track.enabled = !isVideoMuted);
+            localStream.getVideoTracks().forEach(t => t.enabled = !isVideoMuted);
             
             const btn = document.getElementById('btn-video');
             const iconOn = document.getElementById('icon-video-on');
@@ -1725,21 +1334,15 @@
             const localVid = document.getElementById('local-video');
             
             if (isVideoMuted) {
-                iconOn.classList.add('hidden');
-                iconOff.classList.remove('hidden');
-                btn.classList.add('bg-red-500/20', 'text-red-400');
-                btn.classList.remove('bg-cric-green/20', 'text-cric-green');
+                iconOn.classList.add('hidden'); iconOff.classList.remove('hidden');
+                btn.classList.add('bg-red-500/20', 'text-red-400'); btn.classList.remove('bg-cric-green/20', 'text-cric-green');
                 if(localVid) localVid.classList.replace('border-cric-green', 'border-slate-600');
             } else {
-                iconOn.classList.remove('hidden');
-                iconOff.classList.add('hidden');
-                btn.classList.remove('bg-red-500/20', 'text-red-400');
-                btn.classList.add('bg-cric-green/20', 'text-cric-green');
+                iconOn.classList.remove('hidden'); iconOff.classList.add('hidden');
+                btn.classList.remove('bg-red-500/20', 'text-red-400'); btn.classList.add('bg-cric-green/20', 'text-cric-green');
                 if(localVid) localVid.classList.replace('border-slate-600', 'border-cric-green');
             }
         });
-
-        // ---------------- TIMER LOGIC ----------------
 
         function startTimer(endTime) {
             stopTimer();
@@ -1749,222 +1352,113 @@
                 const seconds = Math.ceil(diff / 1000);
                 
                 ui.timer.innerText = seconds.toString().padStart(2, '0');
-                
-                if(seconds <= 5) {
-                    ui.timer.classList.add('text-red-500');
-                    ui.timer.classList.remove('text-white');
-                } else {
-                    ui.timer.classList.remove('text-red-500');
-                    ui.timer.classList.add('text-white');
-                }
+                if(seconds <= 5) { ui.timer.classList.add('text-red-500'); ui.timer.classList.remove('text-white'); } 
+                else { ui.timer.classList.remove('text-red-500'); ui.timer.classList.add('text-white'); }
 
-                if(diff <= 0) {
-                    stopTimer();
-                    handleTimerEnd();
-                }
+                if(diff <= 0) { stopTimer(); handleTimerEnd(); }
             }, 100);
         }
-
-        function stopTimer() {
-            if(timerInterval) clearInterval(timerInterval);
-        }
-
+        function stopTimer() { if(timerInterval) clearInterval(timerInterval); }
         async function handleTimerEnd() {
             const me = usersData.find(u => u.userId === myUserDocId);
-            if(me && me.role === 'admin') {
-                if(roomData.status !== 'active') return; 
-                
+            if(me && me.role === 'admin' && roomData.status === 'active') {
                 const currentPlayer = playersData.find(p => p.order === roomData.currentAuctionIndex);
                 if(!currentPlayer || currentPlayer.status !== 'auctioning') return;
 
-                if(roomData.currentBidder) {
-                    await markPlayerSold(currentPlayer.playerId, roomData.currentBid, roomData.currentBidder);
-                } else {
-                    await markPlayerUnsold(currentPlayer.playerId);
-                }
+                if(roomData.currentBidder) await markPlayerSold(currentPlayer.playerId, roomData.currentBid, roomData.currentBidder);
+                else await markPlayerUnsold(currentPlayer.playerId);
             }
         }
-
-        // ---------------- ACTIONS (BIDDING, ADMIN) ----------------
 
         window.placeBid = async (amount) => {
             if(!currentUser || !roomData) return;
             const me = usersData.find(u => u.userId === myUserDocId);
-            if(!me) return;
-
             const currentPlayer = playersData.find(p => p.order === roomData.currentAuctionIndex);
-            if(!currentPlayer || currentPlayer.status !== 'auctioning' || roomData.status !== 'active') return;
+            if(!me || !currentPlayer || currentPlayer.status !== 'auctioning' || roomData.status !== 'active') return;
 
-            let newBid = 0;
-            if(roomData.currentBid === 0) {
-                newBid = currentPlayer.basePrice;
-            } else {
-                newBid = parseFloat((roomData.currentBid + amount).toFixed(2));
-            }
-
-            if(newBid > me.budget) {
-                showToast("Insufficient Budget!");
-                return;
-            }
+            let newBid = roomData.currentBid === 0 ? currentPlayer.basePrice : parseFloat((roomData.currentBid + amount).toFixed(2));
+            if(newBid > me.budget) return showToast("Insufficient Budget!");
 
             const now = Date.now();
             let newEndTime = roomData.timerEndTime;
-            const remaining = newEndTime - now;
-            if(remaining < 5000) {
-                newEndTime = now + 10000; 
-            }
+            if((newEndTime - now) < 5000) newEndTime = now + 10000; 
 
             try {
-                await updateDoc(doc(getRoomsRef(), currentRoomId), {
-                    currentBid: newBid,
-                    currentBidder: myUserDocId,
-                    timerEndTime: newEndTime
-                });
-                
-                const btnPanel = document.getElementById('bidding-controls');
-                btnPanel.classList.add('opacity-50', 'pointer-events-none');
-            } catch(e) {
-                console.error("Bid error", e);
-            }
+                await updateDoc(doc(getRoomsRef(), currentRoomId), { currentBid: newBid, currentBidder: myUserDocId, timerEndTime: newEndTime });
+                document.getElementById('bidding-controls').classList.add('opacity-50', 'pointer-events-none');
+            } catch(e) { console.error("Bid err", e); }
         };
 
-        // Admin Actions
         document.getElementById('btn-host-start').addEventListener('click', async () => {
-            if(!currentUser || !roomData) return; // Guard
-            
+            if(!currentUser || !roomData) return; 
             const currentPlayer = playersData.find(p => p.order === roomData.currentAuctionIndex);
             
             if(currentPlayer && (currentPlayer.status === 'sold' || currentPlayer.status === 'unsold')) {
                 const nextIndex = roomData.currentAuctionIndex + 1;
                 const nextPlayer = playersData.find(p => p.order === nextIndex);
-                
                 if(nextPlayer) {
-                    await updateDoc(doc(getRoomsRef(), currentRoomId), {
-                        currentAuctionIndex: nextIndex,
-                        status: 'active',
-                        currentBid: 0,
-                        currentBidder: null,
-                        timerEndTime: Date.now() + (TIMER_SECONDS * 1000)
-                    });
-                    await updateDoc(doc(getPlayersRef(), nextPlayer.playerId), {
-                        status: 'auctioning'
-                    });
+                    await updateDoc(doc(getRoomsRef(), currentRoomId), { currentAuctionIndex: nextIndex, status: 'active', currentBid: 0, currentBidder: null, timerEndTime: Date.now() + (TIMER_SECONDS * 1000) });
+                    await updateDoc(doc(getPlayersRef(), nextPlayer.playerId), { status: 'auctioning' });
                 } else {
                     await updateDoc(doc(getRoomsRef(), currentRoomId), { status: 'finished' });
                     showToast("Auction Finished!");
                 }
             } else if (currentPlayer && currentPlayer.status === 'upcoming') {
-                await updateDoc(doc(getRoomsRef(), currentRoomId), {
-                    status: 'active',
-                    currentBid: 0,
-                    currentBidder: null,
-                    timerEndTime: Date.now() + (TIMER_SECONDS * 1000)
-                });
-                await updateDoc(doc(getPlayersRef(), currentPlayer.playerId), {
-                    status: 'auctioning'
-                });
+                await updateDoc(doc(getRoomsRef(), currentRoomId), { status: 'active', currentBid: 0, currentBidder: null, timerEndTime: Date.now() + (TIMER_SECONDS * 1000) });
+                await updateDoc(doc(getPlayersRef(), currentPlayer.playerId), { status: 'auctioning' });
             } else if (roomData.status === 'paused') {
-                await updateDoc(doc(getRoomsRef(), currentRoomId), {
-                    status: 'active',
-                    timerEndTime: Date.now() + (TIMER_SECONDS * 1000) 
-                });
+                await updateDoc(doc(getRoomsRef(), currentRoomId), { status: 'active', timerEndTime: Date.now() + (TIMER_SECONDS * 1000) });
             }
         });
 
         document.getElementById('btn-host-pause').addEventListener('click', async () => {
-            if(!currentUser || !roomData) return; // Guard
-            await updateDoc(doc(getRoomsRef(), currentRoomId), {
-                status: 'paused',
-                timerEndTime: 0
-            });
+            if(!currentUser || !roomData) return;
+            await updateDoc(doc(getRoomsRef(), currentRoomId), { status: 'paused', timerEndTime: 0 });
         });
 
         document.getElementById('btn-host-unsold').addEventListener('click', async () => {
-            if(!currentUser || !roomData) return; // Guard
-            
-            if(roomData.currentBidder) {
-                showToast("Cannot mark unsold: Bids exist!");
-                return;
-            }
-
+            if(!currentUser || !roomData) return;
+            if(roomData.currentBidder) return showToast("Cannot mark unsold: Bids exist!");
             const currentPlayer = playersData.find(p => p.order === roomData.currentAuctionIndex);
-            if(currentPlayer) {
-                await markPlayerUnsold(currentPlayer.playerId);
-            }
+            if(currentPlayer) await markPlayerUnsold(currentPlayer.playerId);
         });
 
         async function markPlayerSold(playerId, price, ownerDocId) {
-            if(!currentUser) return; // Guard
+            if(!currentUser) return;
             try {
-                await updateDoc(doc(getRoomsRef(), currentRoomId), {
-                    status: 'paused',
-                    timerEndTime: 0
-                });
-
-                await updateDoc(doc(getPlayersRef(), playerId), {
-                    status: 'sold',
-                    soldPrice: price,
-                    ownerId: ownerDocId
-                });
+                await updateDoc(doc(getRoomsRef(), currentRoomId), { status: 'paused', timerEndTime: 0 });
+                await updateDoc(doc(getPlayersRef(), playerId), { status: 'sold', soldPrice: price, ownerId: ownerDocId });
 
                 const ownerData = usersData.find(u => u.userId === ownerDocId);
-                if(ownerData) {
-                    const newBudget = ownerData.budget - price;
-                    await updateDoc(doc(getUsersRef(), ownerDocId), {
-                        budget: newBudget
-                    });
-                }
+                if(ownerData) await updateDoc(doc(getUsersRef(), ownerDocId), { budget: ownerData.budget - price });
 
                 triggerConfetti();
-
                 setTimeout(() => {
                     const me = usersData.find(u => u.userId === myUserDocId);
-                    if(me && me.role === 'admin') {
-                        const startBtn = document.getElementById('btn-host-start');
-                        if(startBtn) startBtn.click();
-                    }
+                    if(me && me.role === 'admin') { const b = document.getElementById('btn-host-start'); if(b) b.click(); }
                 }, 5000);
-
-            } catch(e) { console.error("Error selling:", e); }
+            } catch(e) { console.error("Sold err:", e); }
         }
 
         async function markPlayerUnsold(playerId) {
-            if(!currentUser) return; // Guard
+            if(!currentUser) return;
             try {
-                await updateDoc(doc(getRoomsRef(), currentRoomId), {
-                    status: 'paused',
-                    timerEndTime: 0
-                });
-                await updateDoc(doc(getPlayersRef(), playerId), {
-                    status: 'unsold'
-                });
-
+                await updateDoc(doc(getRoomsRef(), currentRoomId), { status: 'paused', timerEndTime: 0 });
+                await updateDoc(doc(getPlayersRef(), playerId), { status: 'unsold' });
                 setTimeout(() => {
                     const me = usersData.find(u => u.userId === myUserDocId);
-                    if(me && me.role === 'admin') {
-                        const startBtn = document.getElementById('btn-host-start');
-                        if(startBtn) startBtn.click();
-                    }
+                    if(me && me.role === 'admin') { const b = document.getElementById('btn-host-start'); if(b) b.click(); }
                 }, 3500);
-            } catch(e) { console.error("Error marking unsold:", e); }
+            } catch(e) { console.error("Unsold err:", e); }
         }
 
         function triggerConfetti() {
-            var duration = 3 * 1000;
-            var animationEnd = Date.now() + duration;
+            var duration = 3 * 1000; var animationEnd = Date.now() + duration;
             var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100 };
-
-            function randomInRange(min, max) {
-                return Math.random() * (max - min) + min;
-            }
-
+            function randomInRange(min, max) { return Math.random() * (max - min) + min; }
             var interval = setInterval(function() {
                 var timeLeft = animationEnd - Date.now();
-
-                if (timeLeft <= 0) {
-                    return clearInterval(interval);
-                }
-
+                if (timeLeft <= 0) return clearInterval(interval);
                 var particleCount = 50 * (timeLeft / duration);
                 confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
                 confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
