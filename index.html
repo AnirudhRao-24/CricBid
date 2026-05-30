@@ -14,7 +14,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <!-- PeerJS for WebRTC Video/Audio Chat -->
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     
     <script>
@@ -27,13 +26,13 @@
                     },
                     colors: {
                         cric: {
-                            dark: '#09090b',    // Zinc 950
-                            card: '#18181b',    // Zinc 900
-                            panel: '#27272a',   // Zinc 800
-                            green: '#10b981',   // Emerald 500
-                            glow: '#059669',    // Emerald 600
-                            gold: '#fbbf24',    // Amber 400
-                            accent: '#3b82f6'   // Blue 500
+                            dark: '#09090b',
+                            card: '#18181b',
+                            panel: '#27272a',
+                            green: '#10b981',
+                            glow: '#059669',
+                            gold: '#fbbf24',
+                            accent: '#3b82f6'
                         }
                     },
                     animation: {
@@ -96,12 +95,10 @@
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        /* Safe Areas for iOS/Modern Android */
         .pt-safe { padding-top: max(1rem, env(safe-area-inset-top)); }
         .pb-safe { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
         .mb-safe { margin-bottom: env(safe-area-inset-bottom); }
         
-        /* Custom scrollbar - Minimalist */
         ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 10px; }
@@ -115,16 +112,13 @@
         }
         .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
-        /* Desktop Force Display for Hybrid Architecture */
         @media (min-width: 1024px) {
             .desktop-panel-force { display: flex !important; }
             .mobile-tab-nav { display: none !important; }
         }
         
-        /* Prevent Input Zoom on iOS by enforcing 16px minimum font size */
         input, select, textarea { font-size: 16px !important; }
         
-        /* Mesh background for Lobby */
         .mesh-bg {
             background-color: #09090b;
             background-image: 
@@ -136,7 +130,6 @@
 </head>
 <body class="fixed inset-0 w-full flex flex-col font-sans h-[100dvh] antialiased selection:bg-cric-green selection:text-white">
 
-    <!-- Global Toast Notification -->
     <div id="toast" class="toast bg-zinc-900/95 backdrop-blur-md border border-zinc-800 text-zinc-100 px-5 py-4 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] font-medium flex items-center gap-3 min-w-[300px] max-w-[90vw] ring-1 ring-white/5">
         <div class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
             <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -144,7 +137,7 @@
         <span id="toast-msg" class="flex-1 text-sm leading-relaxed font-semibold">Notification message</span>
     </div>
 
-    <!-- Modals (Exit, Kick, Ban) -->
+    <!-- Modals -->
     <div id="exit-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden flex-col items-center justify-center p-4 opacity-0 transition-opacity duration-300">
         <div class="glass-panel bg-zinc-900 p-8 rounded-3xl max-w-sm w-full text-center shadow-2xl transform scale-95 transition-transform duration-300" id="exit-modal-content">
             <div class="w-20 h-20 bg-red-500/10 rounded-3xl mx-auto mb-6 flex items-center justify-center text-red-500 shadow-inner">
@@ -189,9 +182,7 @@
 
     <!-- ==================== SCREEN 1: LOBBY ==================== -->
     <div id="lobby-screen" class="flex-1 flex flex-col items-center justify-center p-5 overflow-y-auto min-h-0 mesh-bg">
-        
         <div class="glass-panel p-8 sm:p-12 rounded-[2.5rem] w-full max-w-[460px] text-center shadow-[0_30px_60px_rgba(0,0,0,0.6)] animate-fade-in-up relative overflow-hidden">
-            <!-- Decorative Background Elements inside card -->
             <div class="absolute -top-32 -right-32 w-64 h-64 bg-cric-green/10 rounded-full blur-[80px] pointer-events-none"></div>
             <div class="absolute -bottom-32 -left-32 w-64 h-64 bg-cric-accent/10 rounded-full blur-[80px] pointer-events-none"></div>
             
@@ -233,7 +224,7 @@
     <!-- ==================== SCREEN 2: AUCTION ROOM ==================== -->
     <div id="auction-screen" class="hidden flex-1 w-full h-full min-h-0 flex-col bg-zinc-950">
         
-        <!-- Header (Universal) -->
+        <!-- Header -->
         <header class="bg-zinc-950/80 backdrop-blur-xl border-b border-zinc-800/80 pt-safe flex justify-between items-center px-4 py-3 sm:px-6 z-30 shrink-0">
             <div class="flex items-center gap-3 sm:gap-5">
                 <div class="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-2">
@@ -256,13 +247,11 @@
                     <p id="ui-my-budget" class="font-display font-black text-xl text-cric-gold leading-none">₹ 0.00 Cr</p>
                 </div>
                 
-                <!-- Communication Controls -->
                 <div class="flex gap-1.5 bg-zinc-900/50 p-1 rounded-xl border border-zinc-800">
                     <button id="btn-mic" class="bg-red-500/10 text-red-400 hover:bg-zinc-800 p-2 sm:p-2.5 rounded-lg transition-colors" title="Microphone">
                         <svg id="icon-mic-off" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11v1a7 7 0 01-14 0v-1m14 0c0 1.93-.784 3.682-2.05 4.95l-1.414-1.414A5.002 5.002 0 0017 12v-1m-4 8v4m-4-4v4m4-4H8m4-11a3 3 0 00-3 3v2.586L4.293 4.293A1 1 0 002.88 5.707l16.414 16.414a1 1 0 001.414-1.414l-9.121-9.121A3 3 0 0012 8z"></path></svg>
                         <svg id="icon-mic-on" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
                     </button>
-
                     <button id="btn-video" class="bg-red-500/10 text-red-400 hover:bg-zinc-800 p-2 sm:p-2.5 rounded-lg transition-colors" title="Camera">
                         <svg id="icon-video-off" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path><line x1="3" y1="3" x2="21" y2="21" stroke-width="2" stroke-linecap="round"></line></svg>
                         <svg id="icon-video-on" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
@@ -276,8 +265,7 @@
         </header>
 
         <main class="flex-1 flex overflow-hidden relative min-h-0 w-full mx-auto">
-            
-            <!-- PANEL: Standings (Left Sidebar Desktop, Tab Mobile) -->
+            <!-- PANEL: Standings -->
             <aside id="standings-panel" class="app-panel desktop-panel-force hidden flex-col w-full lg:w-[320px] xl:w-[360px] bg-zinc-950/80 border-r border-zinc-800/80 overflow-y-auto p-4 z-10 pb-24 lg:pb-4 transition-all hide-scrollbar">
                 <div class="sticky top-0 bg-zinc-950/95 backdrop-blur-xl pb-4 pt-2 z-10 mb-2">
                     <h2 class="text-base font-display font-bold text-white flex items-center gap-2 tracking-wide uppercase">
@@ -286,36 +274,30 @@
                     </h2>
                 </div>
                 <div id="standings-list" class="space-y-3">
-                    <!-- Standings JS Injection -->
+                    <!-- Injection -->
                 </div>
             </aside>
 
-            <!-- PANEL: Main Auction Area (Center) -->
+            <!-- PANEL: Main Auction Area -->
             <section id="auction-panel" class="app-panel desktop-panel-force flex flex-col flex-1 w-full relative z-20 overflow-hidden bg-zinc-950">
-                
-                <!-- Scrollable Content Area -->
                 <div class="flex-1 overflow-y-auto hide-scrollbar flex flex-col relative w-full h-full">
-                    <!-- Background ambient glow -->
                     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cric-green/5 rounded-full blur-[100px] pointer-events-none"></div>
 
-                    <!-- Horizontal User Video/Avatar Gallery Strip -->
+                    <!-- Video Gallery -->
                     <div class="w-full bg-zinc-900/40 border-b border-zinc-800/50 p-2 sm:p-3 shrink-0 backdrop-blur-sm z-10 relative">
                         <div id="video-gallery" class="flex flex-nowrap overflow-x-auto gap-3 sm:gap-4 hide-scrollbar items-center snap-x px-2">
-                            <!-- Local Video (Self) -->
                             <div class="relative group flex flex-col items-center shrink-0 snap-start">
                                <div class="p-0.5 rounded-[1rem] sm:rounded-[1.25rem] bg-gradient-to-b from-cric-green to-transparent">
                                    <video id="local-video" class="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-[0.875rem] sm:rounded-[1rem] object-cover bg-zinc-800 block" autoplay muted playsinline></video>
                                </div>
                                <span class="absolute -bottom-2 bg-zinc-900 border border-zinc-700 text-white text-[8px] sm:text-[9px] font-bold px-2 py-0.5 rounded-md whitespace-nowrap z-10 shadow-sm uppercase tracking-wider">You</span>
                             </div>
-                            <!-- Remote Users dynamically injected here -->
                         </div>
                     </div>
 
                     <!-- Auction Board Padding Wrapper -->
                     <div class="flex-1 flex flex-col items-center justify-center p-3 sm:p-5 lg:p-8 min-h-min relative z-10 w-full mx-auto">
                         
-                        <!-- Status/Timer Pill -->
                         <div class="mb-4 sm:mb-6 lg:mb-8 shrink-0 transition-all z-20">
                             <div id="timer-container" class="bg-zinc-900/90 backdrop-blur border border-zinc-800 rounded-full px-4 sm:px-5 py-2 flex items-center gap-2 sm:gap-3 shadow-2xl transform hover:scale-105 transition-transform">
                                 <div id="status-indicator" class="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-yellow-500 shadow-[0_0_8px_currentColor]"></div>
@@ -325,25 +307,20 @@
                             </div>
                         </div>
 
-                        <!-- Premium Player Card -->
+                        <!-- Player Card -->
                         <div id="player-card" class="w-full max-w-[92%] sm:max-w-md lg:max-w-lg xl:max-w-2xl premium-card-bg rounded-[1.5rem] sm:rounded-[2rem] border border-zinc-700/50 shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden relative transition-all duration-500 shrink-0 transform aspect-[4/5] sm:aspect-auto flex flex-col">
                             
-                            <!-- Internal subtle grid pattern -->
                             <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wMykiLz48L3N2Zz4=')] opacity-50 pointer-events-none"></div>
 
-                            <!-- Sold/Unsold Overlay -->
-                            <div id="sold-overlay" class="absolute inset-0 bg-zinc-950/90 backdrop-blur-lg z-30 hidden flex-col items-center justify-center p-4 sm:p-6 text-center w-full h-full">
-                                <!-- Dynamic Injection -->
-                            </div>
+                            <div id="sold-overlay" class="absolute inset-0 bg-zinc-950/90 backdrop-blur-lg z-30 hidden flex-col items-center justify-center p-4 sm:p-6 text-center w-full h-full"></div>
 
-                            <!-- Card Header Elements -->
                             <div class="p-5 sm:p-8 flex justify-between items-start relative z-10 flex-1 sm:flex-none">
                                 <div class="flex-1">
                                     <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
+                                        <!-- UI Updates for SET identifier -->
+                                        <span id="ui-player-set" class="bg-blue-600/20 text-blue-400 border border-blue-500/30 text-[9px] sm:text-[10px] font-black px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md uppercase tracking-widest inline-block hidden">SET</span>
                                         <span id="ui-player-role" class="bg-zinc-800 text-zinc-300 border border-zinc-700 text-[9px] sm:text-[10px] font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md uppercase tracking-widest inline-block truncate max-w-[100px] sm:max-w-none">Role</span>
-                                        <span id="ui-player-country" class="bg-zinc-800 text-zinc-300 border border-zinc-700 text-[9px] sm:text-[10px] font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md uppercase tracking-widest inline-flex items-center gap-1 shrink-0">
-                                            ---
-                                        </span>
+                                        <span id="ui-player-country" class="bg-zinc-800 text-zinc-300 border border-zinc-700 text-[9px] sm:text-[10px] font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md uppercase tracking-widest inline-flex items-center gap-1 shrink-0">---</span>
                                     </div>
                                     <h2 id="ui-player-name" class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-display font-black text-white leading-tight sm:leading-none tracking-tight mb-1 sm:mb-2 drop-shadow-md break-words">Wait...</h2>
                                 </div>
@@ -353,10 +330,8 @@
                                 </div>
                             </div>
 
-                            <!-- Divider -->
                             <div class="w-full h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent opacity-50 relative z-10 hidden sm:block"></div>
 
-                            <!-- Bid Status Area -->
                             <div class="px-5 pb-6 pt-2 sm:px-6 sm:pb-8 sm:pt-6 text-center relative z-10 flex flex-col justify-end sm:justify-start">
                                 <p class="text-cric-green text-[9px] sm:text-xs font-bold uppercase tracking-widest mb-1.5 sm:mb-2 flex items-center justify-center gap-1.5 sm:gap-2">
                                     <span class="w-1 h-1 rounded-full bg-cric-green"></span>
@@ -373,10 +348,8 @@
                             </div>
                         </div>
 
-                        <!-- Scrolled Controls Container (Moves organically with the board) -->
                         <div class="w-full max-w-[92%] sm:max-w-md lg:max-w-2xl xl:max-w-3xl mx-auto mt-4 sm:mt-6 lg:mt-8 pb-24 lg:pb-4 z-30 flex flex-col gap-3 sm:gap-4 shrink-0">
-                            
-                            <!-- Host Controls (Only visible to admin) -->
+                            <!-- Host Controls -->
                             <div id="host-controls" class="hidden flex-wrap gap-1.5 sm:gap-2 justify-center p-3 sm:p-4 bg-zinc-900/50 border border-zinc-800/80 rounded-[1.25rem] sm:rounded-[1.5rem] shadow-lg w-full">
                                 <span class="w-full text-center text-[8px] sm:text-[9px] text-zinc-500 uppercase tracking-widest font-bold flex items-center justify-center gap-1.5 mb-0.5 sm:mb-1"><span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> Host Desk</span>
                                 <button id="btn-host-start" class="bg-white hover:bg-zinc-200 text-zinc-950 font-bold px-3 sm:px-5 py-2.5 sm:py-3 rounded-lg sm:rounded-xl shadow-md flex-1 min-w-[80px] sm:min-w-[100px] transition-colors active:scale-95 text-[10px] sm:text-xs uppercase tracking-wider">Start / Next</button>
@@ -402,13 +375,11 @@
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
-
             </section>
 
-            <!-- PANEL: Pool (Right Sidebar Desktop, Tab Mobile) -->
+            <!-- PANEL: Pool -->
             <aside id="pool-panel" class="app-panel desktop-panel-force hidden flex-col w-full lg:w-[300px] xl:w-[340px] bg-zinc-950/80 border-l border-zinc-800/80 overflow-y-auto p-4 z-10 pb-24 lg:pb-4 transition-all hide-scrollbar">
                 <div class="sticky top-0 bg-zinc-950/95 backdrop-blur-xl pb-4 pt-2 z-10 mb-2">
                     <h2 class="text-base font-display font-bold text-white flex items-center gap-2 tracking-wide uppercase">
@@ -417,11 +388,11 @@
                     </h2>
                 </div>
                 <div id="upcoming-list" class="space-y-2.5">
-                    <!-- Pool JS Injection -->
+                    <!-- Injection -->
                 </div>
             </aside>
 
-            <!-- PANEL: Chat (Desktop Floating, Mobile Tab) -->
+            <!-- PANEL: Chat -->
             <aside id="chat-panel" class="app-panel hidden flex-col w-full lg:w-[380px] lg:h-[600px] bg-zinc-950 lg:fixed lg:bottom-[100px] lg:right-8 lg:rounded-[2rem] lg:border border-zinc-800 shadow-[0_30px_60px_rgba(0,0,0,0.6)] z-50 overflow-hidden pb-24 lg:pb-0">
                 <div class="p-4 sm:p-5 border-b border-zinc-800 bg-zinc-900/50 flex justify-between items-center shrink-0 pt-safe lg:pt-5">
                     <h3 class="font-display font-bold text-white flex items-center gap-2.5 text-base uppercase tracking-wider">
@@ -432,39 +403,40 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
                 </div>
-                <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4 bg-zinc-950 relative hide-scrollbar">
-                    <!-- Messages Injection -->
-                </div>
+                <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4 bg-zinc-950 relative hide-scrollbar"></div>
                 <div class="p-4 border-t border-zinc-800 bg-zinc-900/80 shrink-0">
                     <select id="chat-recipient" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 mb-3 text-xs font-bold uppercase tracking-wider text-zinc-400 focus:outline-none focus:border-zinc-600 appearance-none shadow-inner">
                         <option value="all">Public (Everyone)</option>
                     </select>
-                    <div class="flex gap-2">
+                    <div class="flex gap-2 relative">
+                        <button id="btn-emoji-toggle" class="bg-zinc-950 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white px-3 rounded-xl transition-colors flex items-center justify-center shrink-0 active:scale-95" title="Emojis">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </button>
                         <input type="text" id="chat-input" placeholder="Type a message..." class="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-zinc-600 placeholder:text-zinc-600 shadow-inner">
                         <button id="btn-send-chat" class="bg-white hover:bg-zinc-200 text-zinc-950 px-5 rounded-xl font-bold transition-all shadow-md active:scale-95 shrink-0 flex items-center justify-center">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
                         </button>
+                        <div id="emoji-picker" class="hidden absolute bottom-full left-0 mb-2 bg-zinc-900 border border-zinc-700 rounded-xl p-3 shadow-2xl w-64 z-50">
+                            <div class="grid grid-cols-6 gap-1.5 text-xl max-h-40 overflow-y-auto hide-scrollbar" id="emoji-grid"></div>
+                        </div>
                     </div>
                 </div>
             </aside>
         </main>
 
-        <!-- Desktop Floating Chat Button -->
         <button onclick="toggleDesktopChat()" id="btn-desktop-chat" class="fixed bottom-8 right-8 w-16 h-16 bg-white hover:bg-zinc-200 text-zinc-950 rounded-[1.5rem] shadow-[0_15px_30px_rgba(255,255,255,0.15)] items-center justify-center z-[100] hidden lg:flex transition-all hover:scale-105 active:scale-95 shrink-0 border border-zinc-200">
             <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
             <span id="chat-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-black w-6 h-6 rounded-full flex items-center justify-center hidden shadow-md ring-4 ring-zinc-950">0</span>
         </button>
 
-        <!-- ==================== MOBILE BOTTOM NAVIGATION ==================== -->
+        <!-- MOBILE BOTTOM NAVIGATION -->
         <nav class="mobile-tab-nav fixed bottom-0 left-0 right-0 w-full bg-zinc-950/95 backdrop-blur-xl border-t border-zinc-800 grid grid-cols-4 items-center pt-1 pb-safe z-[100]">
-            
             <button onclick="switchTab('standings')" id="tab-standings" class="flex flex-col items-center p-2 pb-3 text-zinc-500 hover:text-zinc-300 transition-colors group">
                 <div class="relative mb-1 p-1.5 rounded-xl group-hover:bg-zinc-900 transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                 </div>
                 <span class="text-[9px] font-bold uppercase tracking-widest">Teams</span>
             </button>
-            
             <button onclick="switchTab('auction')" id="tab-auction" class="flex flex-col items-center p-2 pb-3 text-white transition-colors group">
                 <div class="relative mb-1 p-1.5 rounded-xl bg-zinc-900">
                     <div class="absolute inset-0 bg-white/20 blur-md rounded-xl"></div>
@@ -472,14 +444,12 @@
                 </div>
                 <span class="text-[9px] font-bold uppercase tracking-widest">Live</span>
             </button>
-            
             <button onclick="switchTab('pool')" id="tab-pool" class="flex flex-col items-center p-2 pb-3 text-zinc-500 hover:text-zinc-300 transition-colors group">
                 <div class="relative mb-1 p-1.5 rounded-xl group-hover:bg-zinc-900 transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                 </div>
                 <span class="text-[9px] font-bold uppercase tracking-widest">Pool</span>
             </button>
-            
             <button onclick="switchTab('chat')" id="tab-chat" class="flex flex-col items-center p-2 pb-3 text-zinc-500 hover:text-zinc-300 transition-colors relative group">
                 <div class="relative mb-1 p-1.5 rounded-xl group-hover:bg-zinc-900 transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
@@ -490,34 +460,28 @@
         </nav>
     </div>
 
-    <!-- Firebase SDK Imports (Version 11.6.1 as strictly required) -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
         import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, onSnapshot, writeBatch, serverTimestamp, deleteDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        let firebaseConfig;
         
-        if (typeof __firebase_config !== 'undefined') {
-            firebaseConfig = JSON.parse(__firebase_config);
-        } else {
-            firebaseConfig = {
-                apiKey: "AIzaSyCAd5OJKmVW2aSWgDogBg3lSpj1uzPxGrk",
-                authDomain: "cricbid-839eb.firebaseapp.com",
-                projectId: "cricbid-839eb",
-                storageBucket: "cricbid-839eb.firebasestorage.app",
-                messagingSenderId: "521652177425",
-                appId: "1:521652177425:web:c33adfb7ea97360d6affb0",
-                measurementId: "G-7WHCC3VSTW"
-            };
-        }
+        // Exact Firebase Config provided by User
+        const firebaseConfig = {
+          apiKey: "AIzaSyCAd5OJKmVW2aSWgDogBg3lSpj1uzPxGrk",
+          authDomain: "cricbid-839eb.firebaseapp.com",
+          projectId: "cricbid-839eb",
+          storageBucket: "cricbid-839eb.firebasestorage.app",
+          messagingSenderId: "521652177425",
+          appId: "1:521652177425:web:c33adfb7ea97360d6affb0",
+          measurementId: "G-7WHCC3VSTW"
+        };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Strict Paths
         const getRoomsRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'rooms');
         const getUsersRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'users');
         const getPlayersRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'players');
@@ -537,7 +501,6 @@
         let playerToBan = null;
         let heartbeatInterval = null;
 
-        // Media State (With PeerJS WebRTC)
         let peer = null;
         let myPeerId = null;
         let connectedPeers = new Set();
@@ -547,19 +510,90 @@
         let isVideoMuted = true;
 
         const BUDGET_DEFAULT = 120.0;
-        const TIMER_SECONDS = 10;
+        const TIMER_SECONDS = 15;
 
-        const DUMMY_PLAYERS = [
-            { name: "Virat K.", role: "Batsman", country: "IND", base: 2.0 },
-            { name: "Pat C.", role: "Bowler", country: "AUS", base: 2.0 },
-            { name: "Ben S.", role: "All-Rounder", country: "ENG", base: 2.0 },
-            { name: "Rashid K.", role: "Bowler", country: "AFG", base: 1.5 },
-            { name: "MS D.", role: "Wicketkeeper", country: "IND", base: 1.5 },
-            { name: "Glenn M.", role: "All-Rounder", country: "AUS", base: 1.5 },
-            { name: "Trent B.", role: "Bowler", country: "NZ", base: 1.0 },
-            { name: "Suryakumar Y.", role: "Batsman", country: "IND", base: 1.5 },
-            { name: "Quinton de K.", role: "Wicketkeeper", country: "RSA", base: 1.0 },
-            { name: "Jasprit B.", role: "Bowler", country: "IND", base: 2.0 }
+        // Expanded Player List with Sets
+        const AUCTION_PLAYERS = [
+            // Marquee Players
+            { name: "Virat Kohli", role: "Batsman", country: "IND", base: 2.0, set: "Marquee" },
+            { name: "Rohit Sharma", role: "Batsman", country: "IND", base: 2.0, set: "Marquee" },
+            { name: "Jasprit Bumrah", role: "Pacer", country: "IND", base: 2.0, set: "Marquee" },
+            { name: "Rishabh Pant", role: "WK Batsman", country: "IND", base: 2.0, set: "Marquee" },
+            { name: "Hardik Pandya", role: "All-Rounder", country: "IND", base: 2.0, set: "Marquee" },
+            { name: "Pat Cummins", role: "Pacer", country: "AUS", base: 2.0, set: "Marquee" },
+            { name: "Mitchell Starc", role: "Pacer", country: "AUS", base: 2.0, set: "Marquee" },
+            { name: "Jos Buttler", role: "WK Batsman", country: "ENG", base: 2.0, set: "Marquee" },
+            { name: "Rashid Khan", role: "Spinner", country: "AFG", base: 2.0, set: "Marquee" },
+            { name: "Nicholas Pooran", role: "WK Batsman", country: "WI", base: 2.0, set: "Marquee" },
+            { name: "Heinrich Klaasen", role: "WK Batsman", country: "RSA", base: 2.0, set: "Marquee" },
+            { name: "Travis Head", role: "Batsman", country: "AUS", base: 2.0, set: "Marquee" },
+            // Batsmen
+            { name: "Shubman Gill", role: "Batsman", country: "IND", base: 1.5, set: "Batsmen" },
+            { name: "Yashasvi Jaiswal", role: "Batsman", country: "IND", base: 1.5, set: "Batsmen" },
+            { name: "Suryakumar Yadav", role: "Batsman", country: "IND", base: 2.0, set: "Batsmen" },
+            { name: "Shreyas Iyer", role: "Batsman", country: "IND", base: 1.5, set: "Batsmen" },
+            { name: "Ruturaj Gaikwad", role: "Batsman", country: "IND", base: 1.5, set: "Batsmen" },
+            { name: "Tilak Varma", role: "Batsman", country: "IND", base: 1.0, set: "Batsmen" },
+            { name: "Abhishek Sharma", role: "Batsman", country: "IND", base: 1.0, set: "Batsmen" },
+            { name: "Rajat Patidar", role: "Batsman", country: "IND", base: 1.0, set: "Batsmen" },
+            { name: "Devdutt Padikkal", role: "Batsman", country: "IND", base: 1.0, set: "Batsmen" },
+            { name: "Nitish Rana", role: "Batsman", country: "IND", base: 1.0, set: "Batsmen" },
+            { name: "Harry Brook", role: "Batsman", country: "ENG", base: 1.5, set: "Batsmen" },
+            { name: "David Miller", role: "Batsman", country: "RSA", base: 1.5, set: "Batsmen" },
+            { name: "Kane Williamson", role: "Batsman", country: "NZ", base: 1.5, set: "Batsmen" },
+            { name: "Aiden Markram", role: "Batsman", country: "RSA", base: 1.5, set: "Batsmen" },
+            { name: "Jake Fraser-McGurk", role: "Batsman", country: "AUS", base: 1.0, set: "Batsmen" },
+            // Wicketkeeper-Batsmen
+            { name: "KL Rahul", role: "WK Batsman", country: "IND", base: 2.0, set: "Wicketkeepers" },
+            { name: "Sanju Samson", role: "WK Batsman", country: "IND", base: 1.5, set: "Wicketkeepers" },
+            { name: "Ishan Kishan", role: "WK Batsman", country: "IND", base: 1.5, set: "Wicketkeepers" },
+            { name: "Phil Salt", role: "WK Batsman", country: "ENG", base: 1.5, set: "Wicketkeepers" },
+            { name: "Devon Conway", role: "WK Batsman", country: "NZ", base: 1.5, set: "Wicketkeepers" },
+            { name: "Rahmanullah Gurbaz", role: "WK Batsman", country: "AFG", base: 1.0, set: "Wicketkeepers" },
+            { name: "Josh Inglis", role: "WK Batsman", country: "AUS", base: 1.0, set: "Wicketkeepers" },
+            { name: "Tristan Stubbs", role: "WK Batsman", country: "RSA", base: 1.0, set: "Wicketkeepers" },
+            { name: "Robin Minz", role: "WK Batsman", country: "IND", base: 0.5, set: "Wicketkeepers" },
+            { name: "Abishek Porel", role: "WK Batsman", country: "IND", base: 0.5, set: "Wicketkeepers" },
+            // Pacers
+            { name: "Mohammed Shami", role: "Pacer", country: "IND", base: 2.0, set: "Pacers" },
+            { name: "Mohammed Siraj", role: "Pacer", country: "IND", base: 2.0, set: "Pacers" },
+            { name: "Arshdeep Singh", role: "Pacer", country: "IND", base: 1.5, set: "Pacers" },
+            { name: "Harshit Rana", role: "Pacer", country: "IND", base: 1.0, set: "Pacers" },
+            { name: "Mayank Yadav", role: "Pacer", country: "IND", base: 1.0, set: "Pacers" },
+            { name: "Prasidh Krishna", role: "Pacer", country: "IND", base: 1.0, set: "Pacers" },
+            { name: "Avesh Khan", role: "Pacer", country: "IND", base: 1.0, set: "Pacers" },
+            { name: "Khaleel Ahmed", role: "Pacer", country: "IND", base: 1.0, set: "Pacers" },
+            { name: "T Natarajan", role: "Pacer", country: "IND", base: 1.0, set: "Pacers" },
+            { name: "Kagiso Rabada", role: "Pacer", country: "RSA", base: 2.0, set: "Pacers" },
+            { name: "Josh Hazlewood", role: "Pacer", country: "AUS", base: 2.0, set: "Pacers" },
+            { name: "Jofra Archer", role: "Pacer", country: "ENG", base: 2.0, set: "Pacers" },
+            { name: "Marco Jansen", role: "Pacer", country: "RSA", base: 1.5, set: "Pacers" },
+            // Spinners
+            { name: "Kuldeep Yadav", role: "Spinner", country: "IND", base: 2.0, set: "Spinners" },
+            { name: "Yuzvendra Chahal", role: "Spinner", country: "IND", base: 1.5, set: "Spinners" },
+            { name: "Varun Chakravarthy", role: "Spinner", country: "IND", base: 1.5, set: "Spinners" },
+            { name: "Ravi Bishnoi", role: "Spinner", country: "IND", base: 1.5, set: "Spinners" },
+            { name: "Washington Sundar", role: "Spinner", country: "IND", base: 1.5, set: "Spinners" },
+            { name: "Adam Zampa", role: "Spinner", country: "AUS", base: 1.5, set: "Spinners" },
+            { name: "Mitchell Santner", role: "Spinner", country: "NZ", base: 1.0, set: "Spinners" },
+            { name: "Suyash Sharma", role: "Spinner", country: "IND", base: 0.5, set: "Spinners" },
+            { name: "Manav Suthar", role: "Spinner", country: "IND", base: 0.5, set: "Spinners" },
+            // All-Rounders
+            { name: "Ravindra Jadeja", role: "All-Rounder", country: "IND", base: 2.0, set: "All-Rounders" },
+            { name: "Axar Patel", role: "All-Rounder", country: "IND", base: 2.0, set: "All-Rounders" },
+            { name: "Nitish Kumar Reddy", role: "All-Rounder", country: "IND", base: 1.0, set: "All-Rounders" },
+            { name: "Shivam Dube", role: "All-Rounder", country: "IND", base: 1.5, set: "All-Rounders" },
+            { name: "Venkatesh Iyer", role: "All-Rounder", country: "IND", base: 1.5, set: "All-Rounders" },
+            { name: "Riyan Parag", role: "All-Rounder", country: "IND", base: 1.5, set: "All-Rounders" },
+            { name: "Krunal Pandya", role: "All-Rounder", country: "IND", base: 1.5, set: "All-Rounders" },
+            { name: "Glenn Maxwell", role: "All-Rounder", country: "AUS", base: 2.0, set: "All-Rounders" },
+            { name: "Marcus Stoinis", role: "All-Rounder", country: "AUS", base: 2.0, set: "All-Rounders" },
+            { name: "Liam Livingstone", role: "All-Rounder", country: "ENG", base: 2.0, set: "All-Rounders" },
+            { name: "Sam Curran", role: "All-Rounder", country: "ENG", base: 2.0, set: "All-Rounders" },
+            { name: "Sunil Narine", role: "All-Rounder", country: "WI", base: 2.0, set: "All-Rounders" },
+            { name: "Andre Russell", role: "All-Rounder", country: "WI", base: 2.0, set: "All-Rounders" },
+            { name: "Rachin Ravindra", role: "All-Rounder", country: "NZ", base: 1.5, set: "All-Rounders" },
+            { name: "Azmatullah Omarzai", role: "All-Rounder", country: "AFG", base: 1.0, set: "All-Rounders" }
         ];
 
         const screens = { lobby: document.getElementById('lobby-screen'), auction: document.getElementById('auction-screen') };
@@ -573,6 +607,7 @@
             timer: document.getElementById('ui-timer'),
             statusIndicator: document.getElementById('status-indicator'),
             playerCard: document.getElementById('player-card'),
+            playerSet: document.getElementById('ui-player-set'),
             playerName: document.getElementById('ui-player-name'),
             playerRole: document.getElementById('ui-player-role'),
             playerCountry: document.getElementById('ui-player-country'),
@@ -596,67 +631,43 @@
         window.toggleDesktopChat = () => {
             const panel = document.getElementById('chat-panel');
             if(panel.classList.contains('hidden')) {
-                panel.classList.remove('hidden');
-                panel.classList.add('flex');
+                panel.classList.remove('hidden'); panel.classList.add('flex');
                 const badge = document.getElementById('chat-badge');
                 if(badge) { badge.classList.add('hidden'); badge.classList.remove('flex'); }
                 lastViewedMessageCount = chatMessages.length;
                 setTimeout(scrollToBottomChat, 100);
             } else {
-                panel.classList.add('hidden');
-                panel.classList.remove('flex');
+                panel.classList.add('hidden'); panel.classList.remove('flex');
             }
         };
 
         window.switchTab = (activeTab) => {
-            if (window.innerWidth >= 1024) return; // Handled via CSS on Desktop
-            
-            const panels = {
-                standings: document.getElementById('standings-panel'),
-                auction: document.getElementById('auction-panel'),
-                pool: document.getElementById('pool-panel'),
-                chat: document.getElementById('chat-panel')
-            };
-            const tabs = {
-                standings: document.getElementById('tab-standings'),
-                auction: document.getElementById('tab-auction'),
-                pool: document.getElementById('tab-pool'),
-                chat: document.getElementById('tab-chat')
-            };
+            if (window.innerWidth >= 1024) return;
+            const panels = { standings: document.getElementById('standings-panel'), auction: document.getElementById('auction-panel'), pool: document.getElementById('pool-panel'), chat: document.getElementById('chat-panel') };
+            const tabs = { standings: document.getElementById('tab-standings'), auction: document.getElementById('tab-auction'), pool: document.getElementById('tab-pool'), chat: document.getElementById('tab-chat') };
 
             Object.values(panels).forEach(p => { if(p) { p.classList.remove('flex'); p.classList.add('hidden'); } });
             Object.values(tabs).forEach(t => { 
                 if(t) { 
-                    t.classList.remove('text-white'); 
-                    t.classList.add('text-zinc-500'); 
+                    t.classList.remove('text-white'); t.classList.add('text-zinc-500'); 
                     const wrapper = t.querySelector('.rounded-xl');
-                    if(wrapper) {
-                        wrapper.classList.remove('bg-zinc-900');
-                        wrapper.classList.add('group-hover:bg-zinc-900');
-                    }
-                    const glow = t.querySelector('.blur-md');
-                    if(glow) glow.classList.add('hidden');
+                    if(wrapper) { wrapper.classList.remove('bg-zinc-900'); wrapper.classList.add('group-hover:bg-zinc-900'); }
+                    const glow = t.querySelector('.blur-md'); if(glow) glow.classList.add('hidden');
                 } 
             });
 
             if(panels[activeTab]) { panels[activeTab].classList.remove('hidden'); panels[activeTab].classList.add('flex'); }
             if(tabs[activeTab]) { 
-                tabs[activeTab].classList.remove('text-zinc-500'); 
-                tabs[activeTab].classList.add('text-white'); 
+                tabs[activeTab].classList.remove('text-zinc-500'); tabs[activeTab].classList.add('text-white'); 
                 const wrapper = tabs[activeTab].querySelector('.rounded-xl');
-                if(wrapper) {
-                    wrapper.classList.add('bg-zinc-900');
-                    wrapper.classList.remove('group-hover:bg-zinc-900');
-                }
-                const glow = tabs[activeTab].querySelector('.blur-md');
-                if(glow) glow.classList.remove('hidden');
+                if(wrapper) { wrapper.classList.add('bg-zinc-900'); wrapper.classList.remove('group-hover:bg-zinc-900'); }
+                const glow = tabs[activeTab].querySelector('.blur-md'); if(glow) glow.classList.remove('hidden');
             }
 
             if(activeTab === 'chat') {
                 const mBadge = document.getElementById('mobile-chat-badge');
                 if(mBadge) { mBadge.classList.add('hidden'); mBadge.classList.remove('flex'); }
-                lastViewedMessageCount = chatMessages.length;
-                setTimeout(scrollToBottomChat, 100);
+                lastViewedMessageCount = chatMessages.length; setTimeout(scrollToBottomChat, 100);
             }
         };
 
@@ -678,13 +689,18 @@
         async function initAuth() {
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
+                    try {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } catch (customErr) {
+                        console.warn("Custom token mismatch (expected if using custom Firebase config). Falling back to Anonymous Auth.");
+                        await signInAnonymously(auth);
+                    }
                 } else {
                     await signInAnonymously(auth);
                 }
             } catch (e) {
                 console.error("Auth error:", e);
-                showToast("Connection failed. Try refreshing.");
+                showToast("Connection failed. Check if Anonymous Auth is enabled in Firebase.");
             }
         }
         onAuthStateChanged(auth, (user) => { currentUser = user; });
@@ -768,15 +784,8 @@
             closeBanModal();
         });
 
-        window.addEventListener('beforeunload', () => {
-            if (myUserDocId) { transferHostRole(); updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: false }).catch(() => {}); }
-        });
-        document.addEventListener('visibilitychange', () => {
-            if (myUserDocId) {
-                const isVisible = document.visibilityState === 'visible';
-                updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: isVisible, lastActive: Date.now() }).catch(() => {});
-            }
-        });
+        window.addEventListener('beforeunload', () => { if (myUserDocId) { transferHostRole(); updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: false }).catch(() => {}); } });
+        document.addEventListener('visibilitychange', () => { if (myUserDocId) { const isVisible = document.visibilityState === 'visible'; updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: isVisible, lastActive: Date.now() }).catch(() => {}); } });
         window.addEventListener('offline', () => { if (myUserDocId) updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: false }).catch(() => {}); });
         window.addEventListener('online', () => { if (myUserDocId) updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: true, lastActive: Date.now() }).catch(() => {}); });
 
@@ -839,9 +848,9 @@
                 });
 
                 const batch = writeBatch(db);
-                DUMMY_PLAYERS.forEach((p, idx) => {
+                AUCTION_PLAYERS.forEach((p, idx) => {
                     const pRef = doc(getPlayersRef());
-                    batch.set(pRef, { playerId: pRef.id, roomId: roomId, name: p.name, role: p.role, country: p.country, basePrice: p.base, soldPrice: null, ownerId: null, status: 'upcoming', order: idx });
+                    batch.set(pRef, { playerId: pRef.id, roomId: roomId, name: p.name, role: p.role, country: p.country, basePrice: p.base, set: p.set, soldPrice: null, ownerId: null, status: 'upcoming', order: idx });
                 });
                 await batch.commit();
                 enterRoom(roomId);
@@ -890,36 +899,25 @@
 
         function enterRoom(roomId) {
             currentRoomId = roomId;
-            screens.lobby.classList.add('hidden');
-            screens.auction.classList.remove('hidden');
+            screens.lobby.classList.add('hidden'); screens.auction.classList.remove('hidden');
             ui.roomCode.innerText = roomId;
-            setupListeners();
-            initVoiceChat();
-            startHeartbeat();
+            setupListeners(); initVoiceChat(); startHeartbeat();
         }
 
         function startHeartbeat() {
             if (heartbeatInterval) clearInterval(heartbeatInterval);
-            heartbeatInterval = setInterval(() => {
-                if (myUserDocId && document.visibilityState === 'visible') {
-                    updateDoc(doc(getUsersRef(), myUserDocId), { lastActive: Date.now() }).catch(()=>{});
-                }
-            }, 10000); 
+            heartbeatInterval = setInterval(() => { if (myUserDocId && document.visibilityState === 'visible') { updateDoc(doc(getUsersRef(), myUserDocId), { lastActive: Date.now() }).catch(()=>{}); } }, 10000); 
         }
 
         let unsubscribeRooms, unsubscribeUsers, unsubscribePlayers, unsubscribeChat;
         function setupListeners() {
             if(!currentUser) return;
             unsubscribeRooms = onSnapshot(getRoomsRef(), (snapshot) => {
-                snapshot.forEach(docSnap => {
-                    const data = docSnap.data();
-                    if(data.roomId === currentRoomId) { roomData = data; updateRoomUI(); }
-                });
-            });
+                snapshot.forEach(docSnap => { const data = docSnap.data(); if(data.roomId === currentRoomId) { roomData = data; updateRoomUI(); } });
+            }, (error) => { console.error("Room sync error", error) });
 
             unsubscribeUsers = onSnapshot(getUsersRef(), (snapshot) => {
-                const tempUsers = [];
-                const now = Date.now();
+                const tempUsers = []; const now = Date.now();
                 snapshot.forEach(docSnap => {
                     const data = docSnap.data();
                     if(data.roomId === currentRoomId) {
@@ -954,66 +952,46 @@
                             }
                             failoverTimer = null;
                         }, 2000);
-                    } else if (hasAdmin && failoverTimer) {
-                        clearTimeout(failoverTimer); failoverTimer = null;
-                    }
+                    } else if (hasAdmin && failoverTimer) { clearTimeout(failoverTimer); failoverTimer = null; }
                 }
 
-                // WebRTC Mesh Network Logic: Connect to new users
                 if (peer && !peer.destroyed && myPeerId) {
                     usersData.forEach(u => {
                         if (u.userId !== myUserDocId && u._computedOnline && u.peerId && !connectedPeers.has(u.peerId)) {
                             const me = usersData.find(m => m.userId === myUserDocId);
-                            // To prevent duplicate connections, only the newer user calls the older users
-                            if (me && (me.joinedAt > u.joinedAt || (me.joinedAt === u.joinedAt && myUserDocId > u.userId))) {
-                                makeCall(u.peerId);
-                            }
+                            if (me && (me.joinedAt > u.joinedAt || (me.joinedAt === u.joinedAt && myUserDocId > u.userId))) { makeCall(u.peerId); }
                         }
-                        
-                        // Clean up offline users
                         if (!u._computedOnline && u.peerId && connectedPeers.has(u.peerId)) {
-                            connectedPeers.delete(u.peerId);
-                            activeStreams.delete(u.peerId);
+                            connectedPeers.delete(u.peerId); activeStreams.delete(u.peerId);
                         }
                     });
                 }
-
-                updateUsersUI();
-                updateVideoGallery();
-            });
+                updateUsersUI(); updateVideoGallery();
+            }, (error) => { console.error("Users sync error", error) });
 
             unsubscribePlayers = onSnapshot(getPlayersRef(), (snapshot) => {
                 const tempPlayers = [];
-                snapshot.forEach(docSnap => {
-                    const data = docSnap.data();
-                    if(data.roomId === currentRoomId) tempPlayers.push(data);
-                });
+                snapshot.forEach(docSnap => { const data = docSnap.data(); if(data.roomId === currentRoomId) tempPlayers.push(data); });
                 playersData = tempPlayers.sort((a, b) => a.order - b.order);
                 updatePlayersUI();
-            });
+            }, (error) => { console.error("Players sync error", error) });
 
             unsubscribeChat = onSnapshot(getChatRef(), (snapshot) => {
                 const msgs = [];
                 snapshot.forEach(docSnap => {
                     const data = docSnap.data();
-                    if(data.roomId === currentRoomId) {
-                        if (data.receiverId === 'all' || data.senderId === myUserDocId || data.receiverId === myUserDocId) {
-                            msgs.push(data);
-                        }
-                    }
+                    if(data.roomId === currentRoomId && (data.receiverId === 'all' || data.senderId === myUserDocId || data.receiverId === myUserDocId)) { msgs.push(data); }
                 });
                 chatMessages = msgs.sort((a,b) => a.timestamp - b.timestamp);
                 updateChatUI();
-            });
+            }, (error) => { console.error("Chat sync error", error) });
         }
 
         function updateVideoGallery() {
             const gallery = document.getElementById('video-gallery');
             if (!gallery) return;
 
-            Array.from(gallery.children).forEach(child => {
-                if (!child.querySelector('#local-video')) child.remove();
-            });
+            Array.from(gallery.children).forEach(child => { if (!child.querySelector('#local-video')) child.remove(); });
 
             usersData.forEach(u => {
                 if (u.userId !== myUserDocId && u._computedOnline) {
@@ -1025,28 +1003,21 @@
                     if (stream) {
                         const videoWrap = document.createElement('div');
                         videoWrap.className = "p-0.5 rounded-[1rem] sm:rounded-[1.25rem] bg-gradient-to-b from-zinc-700 to-transparent";
-                        
                         const video = document.createElement('video');
-                        video.srcObject = stream;
-                        video.autoplay = true;
-                        video.playsInline = true;
+                        video.srcObject = stream; video.autoplay = true; video.playsInline = true;
                         video.className = "w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-[0.875rem] sm:rounded-[1rem] object-cover bg-zinc-900 block";
-                        
-                        videoWrap.appendChild(video);
-                        wrapper.appendChild(videoWrap);
+                        videoWrap.appendChild(video); wrapper.appendChild(videoWrap);
                     } else {
                         const avatar = document.createElement('div');
                         avatar.className = "w-[52px] h-[52px] sm:w-[60px] sm:h-[60px] md:w-[68px] md:h-[68px] rounded-[1rem] sm:rounded-[1.25rem] border border-zinc-700 bg-zinc-800 flex items-center justify-center text-lg sm:text-xl md:text-2xl font-bold shadow-md text-zinc-300 font-display uppercase";
-                        avatar.innerText = u.username.charAt(0);
-                        wrapper.appendChild(avatar);
+                        avatar.innerText = u.username.charAt(0); wrapper.appendChild(avatar);
                     }
                     
                     const nameTag = document.createElement('span');
                     nameTag.className = "absolute -bottom-2 bg-zinc-900 border border-zinc-700 text-white text-[8px] sm:text-[9px] font-bold px-2 py-0.5 rounded-md whitespace-nowrap z-10 shadow-sm uppercase tracking-wider";
                     nameTag.innerText = u.username;
 
-                    wrapper.appendChild(nameTag);
-                    gallery.appendChild(wrapper);
+                    wrapper.appendChild(nameTag); gallery.appendChild(wrapper);
                 }
             });
         }
@@ -1072,9 +1043,7 @@
                 let badgesHtml = '';
                 if (boughtPlayers.length > 0) {
                     badgesHtml = '<div class="mt-3 flex flex-wrap gap-1.5">';
-                    boughtPlayers.forEach(bp => {
-                        badgesHtml += `<span class="bg-zinc-950 border border-zinc-800 text-[10px] px-2 py-1 rounded text-zinc-300 shadow-sm whitespace-nowrap">${bp.name} <span class="text-cric-gold font-bold">₹${formatMoney(bp.soldPrice)}</span></span>`;
-                    });
+                    boughtPlayers.forEach(bp => { badgesHtml += `<span class="bg-zinc-950 border border-zinc-800 text-[10px] px-2 py-1 rounded text-zinc-300 shadow-sm whitespace-nowrap">${bp.name} <span class="text-cric-gold font-bold">₹${formatMoney(bp.soldPrice)}</span></span>`; });
                     badgesHtml += '</div>';
                 }
 
@@ -1082,9 +1051,7 @@
                 if (amIHost && !isMe) {
                     const safeName = u.username.replace(/'/g, "\\'");
                     let hostBtnHtml = '';
-                    if (!isOffline) {
-                        hostBtnHtml = `<button onclick="transferHostTo('${u.userId}')" class="flex-1 text-[10px] font-bold bg-zinc-800 text-zinc-300 hover:bg-zinc-700 py-2 rounded-lg transition-colors border border-zinc-700">Make Host</button>`;
-                    }
+                    if (!isOffline) { hostBtnHtml = `<button onclick="transferHostTo('${u.userId}')" class="flex-1 text-[10px] font-bold bg-zinc-800 text-zinc-300 hover:bg-zinc-700 py-2 rounded-lg transition-colors border border-zinc-700">Make Host</button>`; }
                     adminControlsHtml = `
                         <div class="flex gap-2 mt-4 pt-3 border-t border-zinc-800/50">
                             ${hostBtnHtml}
@@ -1132,7 +1099,7 @@
                     <div class="p-3.5 border border-zinc-800/80 bg-zinc-900/50 rounded-xl flex justify-between items-center hover:bg-zinc-900 transition-colors">
                         <div>
                             <p class="text-sm font-bold text-zinc-200 tracking-wide">${p.name}</p>
-                            <p class="text-[9px] text-zinc-500 uppercase tracking-widest font-bold mt-0.5">${p.role}</p>
+                            <p class="text-[9px] text-zinc-500 uppercase tracking-widest font-bold mt-0.5">${p.set} • ${p.role}</p>
                         </div>
                         <span class="text-xs font-display text-zinc-400 font-bold bg-zinc-950 px-2.5 py-1.5 rounded-lg border border-zinc-800 shadow-inner">₹${p.base}</span>
                     </div>
@@ -1175,38 +1142,27 @@
             const isHost = usersData.find(u => u.userId === myUserDocId)?.role === 'admin';
             const currentPlayer = playersData.find(p => p.order === roomData.currentAuctionIndex);
 
-            if (isHost && ui.btnHostUnsold) {
-                ui.btnHostUnsold.disabled = roomData.currentBidder ? true : false;
-            }
+            if (isHost && ui.btnHostUnsold) { ui.btnHostUnsold.disabled = roomData.currentBidder ? true : false; }
 
             if(roomData.status === 'active' && roomData.timerEndTime > 0) {
                 startTimer(roomData.timerEndTime);
-                ui.roomStatus.innerText = "Live";
-                ui.roomStatus.className = "font-bold text-red-500 text-[10px] sm:text-xs lg:text-sm tracking-widest uppercase";
+                ui.roomStatus.innerText = "Live"; ui.roomStatus.className = "font-bold text-red-500 text-[10px] sm:text-xs lg:text-sm tracking-widest uppercase";
                 ui.statusIndicator.className = "w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-red-500 shadow-[0_0_12px_#ef4444] animate-pulse";
                 ui.timer.classList.remove('hidden');
                 
-                if(roomData.currentBidder !== myUserDocId) {
-                    ui.biddingControls.classList.remove('opacity-50', 'pointer-events-none');
-                } else {
-                    ui.biddingControls.classList.add('opacity-50', 'pointer-events-none');
-                }
+                if(roomData.currentBidder !== myUserDocId) { ui.biddingControls.classList.remove('opacity-50', 'pointer-events-none'); } 
+                else { ui.biddingControls.classList.add('opacity-50', 'pointer-events-none'); }
             } else {
-                stopTimer();
-                ui.timer.classList.add('hidden');
-                ui.biddingControls.classList.add('opacity-50', 'pointer-events-none');
+                stopTimer(); ui.timer.classList.add('hidden'); ui.biddingControls.classList.add('opacity-50', 'pointer-events-none');
                 
                 if(roomData.status === 'waiting') {
-                    ui.roomStatus.innerText = "Waiting...";
-                    ui.roomStatus.className = "font-bold text-yellow-500 text-[10px] sm:text-xs lg:text-sm tracking-widest uppercase";
+                    ui.roomStatus.innerText = "Waiting..."; ui.roomStatus.className = "font-bold text-yellow-500 text-[10px] sm:text-xs lg:text-sm tracking-widest uppercase";
                     ui.statusIndicator.className = "w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-yellow-500 shadow-[0_0_12px_#eab308]";
                 } else if(roomData.status === 'paused') {
-                    ui.roomStatus.innerText = "Finalizing...";
-                    ui.roomStatus.className = "font-bold text-orange-500 text-[10px] sm:text-xs lg:text-sm tracking-widest uppercase";
+                    ui.roomStatus.innerText = "Finalizing..."; ui.roomStatus.className = "font-bold text-orange-500 text-[10px] sm:text-xs lg:text-sm tracking-widest uppercase";
                     ui.statusIndicator.className = "w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-orange-500 shadow-[0_0_12px_#f97316]";
                 } else if(roomData.status === 'finished') {
-                    ui.roomStatus.innerText = "Completed";
-                    ui.roomStatus.className = "font-bold text-emerald-500 text-[10px] sm:text-xs lg:text-sm tracking-widest uppercase";
+                    ui.roomStatus.innerText = "Completed"; ui.roomStatus.className = "font-bold text-emerald-500 text-[10px] sm:text-xs lg:text-sm tracking-widest uppercase";
                     ui.statusIndicator.className = "w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-emerald-500 shadow-[0_0_12px_#10b981]";
                 }
             }
@@ -1216,6 +1172,13 @@
                 ui.playerRole.innerText = currentPlayer.role;
                 ui.playerCountry.innerHTML = `<svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path></svg> ${currentPlayer.country}`;
                 ui.playerBase.innerText = `₹ ${formatMoney(currentPlayer.basePrice)} Cr`;
+
+                if (currentPlayer.set) {
+                    ui.playerSet.innerText = currentPlayer.set + " SET";
+                    ui.playerSet.classList.remove('hidden');
+                } else {
+                    ui.playerSet.classList.add('hidden');
+                }
                 
                 const displayBid = roomData.currentBid > 0 ? roomData.currentBid : currentPlayer.basePrice;
                 ui.currentBid.innerHTML = `₹ ${formatMoney(displayBid)} <span class="text-xl sm:text-2xl lg:text-3xl text-zinc-500 font-bold tracking-normal">Cr</span>`;
@@ -1226,8 +1189,7 @@
                     ui.highestBidder.className = "font-bold text-cric-gold text-xs sm:text-sm lg:text-base truncate max-w-[120px] sm:max-w-[150px] lg:max-w-[200px]";
                     
                     if (lastBidderState !== roomData.currentBidder) {
-                        ui.playerCard.classList.add('glowing-bid');
-                        setTimeout(() => ui.playerCard.classList.remove('glowing-bid'), 1000);
+                        ui.playerCard.classList.add('glowing-bid'); setTimeout(() => ui.playerCard.classList.remove('glowing-bid'), 1000);
                         lastBidderState = roomData.currentBidder;
                     }
                 } else {
@@ -1238,8 +1200,7 @@
 
                 if(currentPlayer.status === 'sold') {
                     ui.soldOverlay.classList.remove('hidden'); ui.soldOverlay.classList.add('flex', 'animate-fade-in');
-                    const owner = usersData.find(u => u.userId === currentPlayer.ownerId);
-                    const ownerName = owner ? owner.username : "Unknown";
+                    const owner = usersData.find(u => u.userId === currentPlayer.ownerId); const ownerName = owner ? owner.username : "Unknown";
                     if (!ui.soldOverlay.innerHTML.includes(currentPlayer.name)) {
                         ui.soldOverlay.innerHTML = `
                             <span class="hidden">${currentPlayer.name}</span>
@@ -1268,14 +1229,11 @@
                 } else {
                     ui.soldOverlay.classList.add('hidden'); ui.soldOverlay.classList.remove('flex', 'animate-fade-in'); ui.soldOverlay.innerHTML = ''; 
                 }
-
             } else {
-                ui.playerName.innerText = "Auction Finished";
-                ui.playerRole.innerText = "---";
-                ui.playerCountry.innerHTML = `---`;
-                ui.playerBase.innerText = "---";
-                ui.currentBid.innerHTML = "₹ 0.00";
-                ui.highestBidder.innerText = "---";
+                ui.playerName.innerText = "Auction Finished"; ui.playerRole.innerText = "---";
+                ui.playerCountry.innerHTML = `---`; ui.playerBase.innerText = "---";
+                ui.currentBid.innerHTML = "₹ 0.00"; ui.highestBidder.innerText = "---";
+                ui.playerSet.classList.add('hidden');
             }
         }
 
@@ -1294,9 +1252,7 @@
         }
 
         function updateChatUI() {
-            const container = document.getElementById('chat-messages');
-            if (!container) return;
-            
+            const container = document.getElementById('chat-messages'); if (!container) return;
             const chatPanel = document.getElementById('chat-panel');
             const isHiddenDesktop = window.innerWidth >= 1024 && chatPanel.classList.contains('hidden');
             const isHiddenMobile = window.innerWidth < 1024 && chatPanel.classList.contains('hidden');
@@ -1304,8 +1260,7 @@
             if (chatMessages.length > lastViewedMessageCount) {
                 if (isHiddenDesktop || isHiddenMobile) {
                     const unread = chatMessages.length - lastViewedMessageCount;
-                    const badge = document.getElementById('chat-badge');
-                    const mobileBadge = document.getElementById('mobile-chat-badge'); 
+                    const badge = document.getElementById('chat-badge'); const mobileBadge = document.getElementById('mobile-chat-badge'); 
                     if(badge && isHiddenDesktop) { badge.innerText = unread > 9 ? '9+' : unread; badge.classList.remove('hidden'); badge.classList.add('flex'); }
                     if(mobileBadge && isHiddenMobile) { mobileBadge.innerText = unread > 9 ? '9+' : unread; mobileBadge.classList.remove('hidden'); mobileBadge.classList.add('flex'); }
                 } else { lastViewedMessageCount = chatMessages.length; }
@@ -1322,10 +1277,7 @@
                 div.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} w-full mb-4`;
                 
                 let labelText = isMe ? 'You' : msg.senderName;
-                if (isWhisper) {
-                    if (isWhisperToMe) { labelText = `Whisper from ${msg.senderName}`; } 
-                    else { labelText = `Whisper to ${msg.receiverName}`; }
-                }
+                if (isWhisper) { labelText = isWhisperToMe ? `Whisper from ${msg.senderName}` : `Whisper to ${msg.receiverName}`; }
                 
                 let bubbleClasses = isMe 
                     ? 'bg-zinc-800 text-white rounded-[1.25rem] rounded-tr-sm border border-zinc-700' 
@@ -1337,141 +1289,85 @@
                         : 'bg-purple-950/80 text-purple-100 rounded-[1.25rem] rounded-tl-sm border border-purple-500/30';
                 }
                 
-                div.innerHTML = `
-                    <span class="text-[9px] font-bold uppercase tracking-widest ${isWhisper ? 'text-purple-400' : 'text-zinc-500'} mb-1.5 mx-1">${labelText}</span>
-                    <div class="px-4 py-3 text-sm shadow-md inline-block max-w-[85%] break-words leading-relaxed ${bubbleClasses}">
-                        ${msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
-                    </div>
-                `;
+                div.innerHTML = `<span class="text-[9px] font-bold uppercase tracking-widest ${isWhisper ? 'text-purple-400' : 'text-zinc-500'} mb-1.5 mx-1">${labelText}</span><div class="px-4 py-3 text-sm shadow-md inline-block max-w-[85%] break-words leading-relaxed ${bubbleClasses}">${msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>`;
                 container.appendChild(div);
             });
-            
             scrollToBottomChat();
         }
 
-        function scrollToBottomChat() {
-            const container = document.getElementById('chat-messages');
-            if(container) { container.scrollTop = container.scrollHeight; }
-        }
+        function scrollToBottomChat() { const container = document.getElementById('chat-messages'); if(container) { container.scrollTop = container.scrollHeight; } }
 
         window.sendChatMessage = async () => {
-            const input = document.getElementById('chat-input');
-            const text = input.value.trim();
+            const input = document.getElementById('chat-input'); const text = input.value.trim();
             if(!text || !currentUser || !currentRoomId) return;
-            
             const select = document.getElementById('chat-recipient');
-            const receiverId = select.value;
-            const receiverName = receiverId === 'all' ? 'Everyone' : select.options[select.selectedIndex].text.replace('Whisper: ', '');
-            
-            const me = usersData.find(u => u.userId === myUserDocId);
-            if(!me) return;
+            const receiverId = select.value; const receiverName = receiverId === 'all' ? 'Everyone' : select.options[select.selectedIndex].text.replace('Whisper: ', '');
+            const me = usersData.find(u => u.userId === myUserDocId); if(!me) return;
             
             try {
                 input.value = ''; 
                 const msgRef = doc(getChatRef());
-                await setDoc(msgRef, {
-                    id: msgRef.id, roomId: currentRoomId, senderId: myUserDocId,
-                    senderName: me.username, receiverId: receiverId, receiverName: receiverName,
-                    text: text, timestamp: Date.now()
-                });
+                await setDoc(msgRef, { id: msgRef.id, roomId: currentRoomId, senderId: myUserDocId, senderName: me.username, receiverId: receiverId, receiverName: receiverName, text: text, timestamp: Date.now() });
+                document.getElementById('emoji-picker')?.classList.add('hidden');
             } catch(e) { console.error("Chat send error:", e); showToast("Failed to send message"); }
         };
 
         setTimeout(() => {
-            const chatInput = document.getElementById('chat-input');
-            const sendBtn = document.getElementById('btn-send-chat');
-            if(chatInput && sendBtn) {
-                chatInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') sendChatMessage(); });
-                sendBtn.addEventListener('click', sendChatMessage);
+            const chatInput = document.getElementById('chat-input'); const sendBtn = document.getElementById('btn-send-chat');
+            const emojiToggle = document.getElementById('btn-emoji-toggle'); const emojiPicker = document.getElementById('emoji-picker'); const emojiGrid = document.getElementById('emoji-grid');
+            if(chatInput && sendBtn) { chatInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') sendChatMessage(); }); sendBtn.addEventListener('click', sendChatMessage); }
+
+            const emojis = ['😀', '😂', '😎', '😍', '😊', '🙌', '👍', '🔥', '🎉', '💯', '🏏', '🏆', '💰', '🚀', '👀', '🤯', '😱', '👏', '🤝', '💪', '🤔', '🤨', '🤫', '🥱', '🥺', '😡', '🤬', '🤮', '💔', '📈'];
+            if (emojiGrid) {
+                emojis.forEach(emoji => {
+                    const btn = document.createElement('button'); btn.className = "hover:bg-zinc-700 rounded p-1.5 transition-colors flex items-center justify-center"; btn.innerText = emoji;
+                    btn.onclick = (e) => { e.preventDefault(); if (chatInput) { chatInput.value += emoji; chatInput.focus(); } };
+                    emojiGrid.appendChild(btn);
+                });
+            }
+
+            if (emojiToggle && emojiPicker) {
+                emojiToggle.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); emojiPicker.classList.toggle('hidden'); });
+                document.addEventListener('click', (e) => { if (!emojiPicker.contains(e.target) && !emojiToggle.contains(e.target)) { emojiPicker.classList.add('hidden'); } });
+                emojiPicker.addEventListener('click', (e) => { e.stopPropagation(); });
             }
         }, 1000);
 
-        // ---------------- MEDIA LOGIC (WebRTC Mesh Network) ----------------
-        
         async function initVoiceChat() {
             try {
-                try {
-                    localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: { facingMode: "user" } });
-                } catch (camErr) {
-                    console.warn("Camera failed/denied, falling back to audio only.");
-                    localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-                }
-                const localVid = document.getElementById('local-video');
-                if (localVid) localVid.srcObject = localStream;
-                localStream.getAudioTracks().forEach(track => track.enabled = false);
-                localStream.getVideoTracks().forEach(track => track.enabled = false);
+                try { localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: { facingMode: "user" } }); } 
+                catch (camErr) { console.warn("Camera failed, audio only."); localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false }); }
+                
+                const localVid = document.getElementById('local-video'); if (localVid) localVid.srcObject = localStream;
+                localStream.getAudioTracks().forEach(track => track.enabled = false); localStream.getVideoTracks().forEach(track => track.enabled = false);
 
-                // Initialize PeerJS
                 try {
                     peer = new Peer();
-
-                    peer.on('open', (id) => {
-                        myPeerId = id;
-                        if (myUserDocId) {
-                            updateDoc(doc(getUsersRef(), myUserDocId), { peerId: myPeerId }).catch(console.error);
-                        }
-                    });
-
-                    peer.on('call', (call) => {
-                        call.answer(localStream);
-                        handleCallStream(call);
-                    });
-
-                    peer.on('error', (err) => {
-                        if (err.type === 'network' || String(err).includes('SecurityError') || String(err).includes('WebSocket')) {
-                            showToast("Video signaling blocked by local environment. Deploy to test.");
-                        } else if (err.type !== 'peer-unavailable') {
-                            console.warn("PeerJS Warning:", err);
-                        }
-                    });
-                } catch (peerErr) {
-                    console.error("PeerJS init failed:", peerErr);
-                }
-
-            } catch (err) {
-                console.error("Media err:", err);
-            }
+                    peer.on('open', (id) => { myPeerId = id; if (myUserDocId) { updateDoc(doc(getUsersRef(), myUserDocId), { peerId: myPeerId }).catch(console.error); } });
+                    peer.on('call', (call) => { call.answer(localStream); handleCallStream(call); });
+                    peer.on('error', (err) => { if (err.type === 'network' || String(err).includes('SecurityError') || String(err).includes('WebSocket')) { showToast("Video blocked by browser policy. Deploy to test."); } else if (err.type !== 'peer-unavailable') { console.warn("PeerJS:", err); } });
+                } catch (peerErr) { console.error("PeerJS init failed:", peerErr); }
+            } catch (err) { console.error("Media err:", err); }
         }
 
         function makeCall(remotePeerId) {
             if (!localStream || !peer || peer.destroyed) return;
-            try {
-                const call = peer.call(remotePeerId, localStream);
-                if (call) handleCallStream(call);
-            } catch(e) {
-                console.warn("Call failed:", e);
-            }
+            try { const call = peer.call(remotePeerId, localStream); if (call) handleCallStream(call); } 
+            catch(e) { console.warn("Call failed:", e); }
         }
 
         function handleCallStream(call) {
             connectedPeers.add(call.peer);
-            call.on('stream', (remoteStream) => {
-                activeStreams.set(call.peer, remoteStream);
-                updateVideoGallery();
-            });
-            call.on('close', () => {
-                connectedPeers.delete(call.peer);
-                activeStreams.delete(call.peer);
-                updateVideoGallery();
-            });
+            call.on('stream', (remoteStream) => { activeStreams.set(call.peer, remoteStream); updateVideoGallery(); });
+            call.on('close', () => { connectedPeers.delete(call.peer); activeStreams.delete(call.peer); updateVideoGallery(); });
         }
 
         document.getElementById('btn-mic').addEventListener('click', () => {
             if (!localStream || localStream.getAudioTracks().length === 0) return showToast("Mic unavailable!");
-            isMicMuted = !isMicMuted;
-            localStream.getAudioTracks().forEach(t => t.enabled = !isMicMuted);
-
-            const btn = document.getElementById('btn-mic');
-            const iconOn = document.getElementById('icon-mic-on');
-            const iconOff = document.getElementById('icon-mic-off');
-
-            if (isMicMuted) {
-                iconOn.classList.add('hidden'); iconOff.classList.remove('hidden');
-                btn.classList.add('bg-red-500/10', 'text-red-400'); btn.classList.remove('bg-cric-green/20', 'text-cric-green');
-            } else {
-                iconOn.classList.remove('hidden'); iconOff.classList.add('hidden');
-                btn.classList.remove('bg-red-500/10', 'text-red-400'); btn.classList.add('bg-cric-green/20', 'text-cric-green');
-            }
+            isMicMuted = !isMicMuted; localStream.getAudioTracks().forEach(t => t.enabled = !isMicMuted);
+            const btn = document.getElementById('btn-mic'); const iconOn = document.getElementById('icon-mic-on'); const iconOff = document.getElementById('icon-mic-off');
+            if (isMicMuted) { iconOn.classList.add('hidden'); iconOff.classList.remove('hidden'); btn.classList.add('bg-red-500/10', 'text-red-400'); btn.classList.remove('bg-cric-green/20', 'text-cric-green'); } 
+            else { iconOn.classList.remove('hidden'); iconOff.classList.add('hidden'); btn.classList.remove('bg-red-500/10', 'text-red-400'); btn.classList.add('bg-cric-green/20', 'text-cric-green'); }
         });
 
         document.getElementById('btn-video').addEventListener('click', async () => {
@@ -1480,57 +1376,37 @@
                 try {
                     const vidStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
                     localStream.addTrack(vidStream.getVideoTracks()[0]);
-                    const localVid = document.getElementById('local-video');
-                    if (localVid) localVid.srcObject = localStream;
+                    const localVid = document.getElementById('local-video'); if (localVid) localVid.srcObject = localStream;
                 } catch (e) { return showToast("Camera denied!"); }
             }
-
-            isVideoMuted = !isVideoMuted;
-            localStream.getVideoTracks().forEach(t => t.enabled = !isVideoMuted);
-
-            const btn = document.getElementById('btn-video');
-            const iconOn = document.getElementById('icon-video-on');
-            const iconOff = document.getElementById('icon-video-off');
-            const localVid = document.getElementById('local-video');
-
+            isVideoMuted = !isVideoMuted; localStream.getVideoTracks().forEach(t => t.enabled = !isVideoMuted);
+            const btn = document.getElementById('btn-video'); const iconOn = document.getElementById('icon-video-on'); const iconOff = document.getElementById('icon-video-off'); const localVid = document.getElementById('local-video');
             if (isVideoMuted) {
-                iconOn.classList.add('hidden'); iconOff.classList.remove('hidden');
-                btn.classList.add('bg-red-500/10', 'text-red-400'); btn.classList.remove('bg-cric-green/20', 'text-cric-green');
-                if(localVid) {
-                    localVid.classList.replace('opacity-100', 'opacity-30');
-                    localVid.classList.add('grayscale');
-                }
+                iconOn.classList.add('hidden'); iconOff.classList.remove('hidden'); btn.classList.add('bg-red-500/10', 'text-red-400'); btn.classList.remove('bg-cric-green/20', 'text-cric-green');
+                if(localVid) { localVid.classList.replace('opacity-100', 'opacity-30'); localVid.classList.add('grayscale'); }
             } else {
-                iconOn.classList.remove('hidden'); iconOff.classList.add('hidden');
-                btn.classList.remove('bg-red-500/10', 'text-red-400'); btn.classList.add('bg-cric-green/20', 'text-cric-green');
-                if(localVid) {
-                    localVid.classList.replace('opacity-30', 'opacity-100');
-                    localVid.classList.remove('grayscale');
-                }
+                iconOn.classList.remove('hidden'); iconOff.classList.add('hidden'); btn.classList.remove('bg-red-500/10', 'text-red-400'); btn.classList.add('bg-cric-green/20', 'text-cric-green');
+                if(localVid) { localVid.classList.replace('opacity-30', 'opacity-100'); localVid.classList.remove('grayscale'); }
             }
         });
 
         function startTimer(endTime) {
             stopTimer();
             timerInterval = setInterval(() => {
-                const now = Date.now();
-                const diff = Math.max(0, endTime - now);
-                const seconds = Math.ceil(diff / 1000);
-
+                const now = Date.now(); const diff = Math.max(0, endTime - now); const seconds = Math.ceil(diff / 1000);
                 ui.timer.innerText = seconds.toString().padStart(2, '0');
-                if(seconds <= 5) { ui.timer.classList.add('text-red-500'); ui.timer.classList.remove('text-white'); }
-                else { ui.timer.classList.remove('text-red-500'); ui.timer.classList.add('text-white'); }
-
+                if(seconds <= 5) { ui.timer.classList.add('text-red-500'); ui.timer.classList.remove('text-white'); } else { ui.timer.classList.remove('text-red-500'); ui.timer.classList.add('text-white'); }
                 if(diff <= 0) { stopTimer(); handleTimerEnd(); }
             }, 100);
         }
+        
         function stopTimer() { if(timerInterval) clearInterval(timerInterval); }
+        
         async function handleTimerEnd() {
             const me = usersData.find(u => u.userId === myUserDocId);
             if(me && me.role === 'admin' && roomData.status === 'active') {
                 const currentPlayer = playersData.find(p => p.order === roomData.currentAuctionIndex);
                 if(!currentPlayer || currentPlayer.status !== 'auctioning') return;
-
                 if(roomData.currentBidder) await markPlayerSold(currentPlayer.playerId, roomData.currentBid, roomData.currentBidder);
                 else await markPlayerUnsold(currentPlayer.playerId);
             }
@@ -1545,8 +1421,7 @@
             let newBid = roomData.currentBid === 0 ? currentPlayer.basePrice : parseFloat((roomData.currentBid + amount).toFixed(2));
             if(newBid > me.budget) return showToast("Insufficient Budget!");
 
-            const now = Date.now();
-            let newEndTime = roomData.timerEndTime;
+            const now = Date.now(); let newEndTime = roomData.timerEndTime;
             if((newEndTime - now) < 5000) newEndTime = now + 10000;
 
             try {
@@ -1557,21 +1432,47 @@
 
         document.getElementById('btn-host-start').addEventListener('click', async () => {
             if(!currentUser || !roomData) return;
+            
+            // PRIORITY SET ORDER
+            const SET_ORDER = ["Marquee", "Batsmen", "Wicketkeepers", "All-Rounders", "Pacers", "Spinners"];
             const currentPlayer = playersData.find(p => p.order === roomData.currentAuctionIndex);
 
             if(currentPlayer && (currentPlayer.status === 'sold' || currentPlayer.status === 'unsold')) {
-                const nextIndex = roomData.currentAuctionIndex + 1;
-                const nextPlayer = playersData.find(p => p.order === nextIndex);
+                // Find next available set with players
+                let nextPlayer = null;
+                for (const setName of SET_ORDER) {
+                    const availableInSet = playersData.filter(p => p.set === setName && p.status === 'upcoming');
+                    if (availableInSet.length > 0) {
+                        // Pick randomly from this active set
+                        nextPlayer = availableInSet[Math.floor(Math.random() * availableInSet.length)];
+                        break;
+                    }
+                }
+
                 if(nextPlayer) {
-                    await updateDoc(doc(getRoomsRef(), currentRoomId), { currentAuctionIndex: nextIndex, status: 'active', currentBid: 0, currentBidder: null, timerEndTime: Date.now() + (TIMER_SECONDS * 1000) });
+                    await updateDoc(doc(getRoomsRef(), currentRoomId), { currentAuctionIndex: nextPlayer.order, status: 'active', currentBid: 0, currentBidder: null, timerEndTime: Date.now() + (TIMER_SECONDS * 1000) });
                     await updateDoc(doc(getPlayersRef(), nextPlayer.playerId), { status: 'auctioning' });
                 } else {
                     await updateDoc(doc(getRoomsRef(), currentRoomId), { status: 'finished' });
                     showToast("Auction Finished!");
                 }
-            } else if (currentPlayer && currentPlayer.status === 'upcoming') {
-                await updateDoc(doc(getRoomsRef(), currentRoomId), { status: 'active', currentBid: 0, currentBidder: null, timerEndTime: Date.now() + (TIMER_SECONDS * 1000) });
-                await updateDoc(doc(getPlayersRef(), currentPlayer.playerId), { status: 'auctioning' });
+            } else if (!currentPlayer || currentPlayer.status === 'upcoming') {
+                // Very first start of the auction
+                let firstPlayer = currentPlayer;
+                if (!currentPlayer || currentPlayer.status !== 'upcoming') {
+                    for (const setName of SET_ORDER) {
+                        const availableInSet = playersData.filter(p => p.set === setName && p.status === 'upcoming');
+                        if (availableInSet.length > 0) {
+                            firstPlayer = availableInSet[Math.floor(Math.random() * availableInSet.length)];
+                            break;
+                        }
+                    }
+                }
+                
+                if (firstPlayer) {
+                    await updateDoc(doc(getRoomsRef(), currentRoomId), { currentAuctionIndex: firstPlayer.order, status: 'active', currentBid: 0, currentBidder: null, timerEndTime: Date.now() + (TIMER_SECONDS * 1000) });
+                    await updateDoc(doc(getPlayersRef(), firstPlayer.playerId), { status: 'auctioning' });
+                }
             } else if (roomData.status === 'paused') {
                 await updateDoc(doc(getRoomsRef(), currentRoomId), { status: 'active', timerEndTime: Date.now() + (TIMER_SECONDS * 1000) });
             }
