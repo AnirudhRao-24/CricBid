@@ -382,6 +382,7 @@
                                 <button id="btn-host-start" class="bg-white hover:bg-zinc-200 text-zinc-950 font-bold px-3 sm:px-5 py-2.5 sm:py-3 rounded-lg sm:rounded-xl shadow-md flex-1 min-w-[80px] sm:min-w-[100px] transition-colors active:scale-95 text-[10px] sm:text-xs uppercase tracking-wider">Start / Next</button>
                                 <button id="btn-host-pause" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold px-3 sm:px-5 py-2.5 sm:py-3 rounded-lg sm:rounded-xl shadow-md flex-1 min-w-[80px] sm:min-w-[100px] transition-colors active:scale-95 text-[10px] sm:text-xs uppercase tracking-wider border border-zinc-700">Pause</button>
                                 <button id="btn-host-unsold" class="bg-red-500/10 hover:bg-red-500/20 text-red-500 font-bold px-3 sm:px-5 py-2.5 sm:py-3 rounded-lg sm:rounded-xl shadow-md flex-1 min-w-[80px] sm:min-w-[100px] transition-colors disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 text-[10px] sm:text-xs uppercase tracking-wider border border-red-500/20">Mark Unsold</button>
+                                <button id="btn-start-season" class="hidden bg-gradient-to-r from-cric-green to-emerald-400 hover:from-emerald-400 hover:to-emerald-300 text-zinc-950 font-black px-3 sm:px-5 py-2.5 sm:py-3 rounded-lg sm:rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.4)] w-full transition-all active:scale-95 text-[10px] sm:text-xs uppercase tracking-widest mt-2">Launch IPL Season Mode 🚀</button>
                             </div>
 
                             <!-- Bidding Controls -->
@@ -408,13 +409,85 @@
 
             </section>
 
+            <!-- PANEL: Season Dashboard (Hidden by default, shown after auction) -->
+            <section id="season-panel" class="app-panel desktop-panel-force hidden flex-col flex-1 w-full relative z-20 overflow-y-auto bg-zinc-950 hide-scrollbar pb-24 lg:pb-0 p-4 sm:p-6 lg:p-8">
+                
+                <div class="flex justify-between items-end mb-6">
+                    <div>
+                        <h2 class="text-3xl sm:text-4xl font-display font-black text-white tracking-tight">Season <span class="text-cric-green">Dashboard</span></h2>
+                        <p id="ui-season-phase" class="text-zinc-400 text-xs sm:text-sm font-bold uppercase tracking-widest mt-1">League Stage</p>
+                    </div>
+                    <div id="season-admin-controls" class="hidden gap-2">
+                        <button id="btn-sim-match" class="bg-cric-green hover:bg-emerald-400 text-zinc-950 font-bold px-4 py-2 rounded-xl shadow-lg transition-all active:scale-95 text-xs sm:text-sm uppercase tracking-wider">Simulate Match</button>
+                        <button id="btn-sim-round" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold px-4 py-2 rounded-xl border border-zinc-700 shadow-md transition-all active:scale-95 text-xs sm:text-sm uppercase tracking-wider">Simulate Round</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Points Table -->
+                    <div class="lg:col-span-2 bg-zinc-900/50 border border-zinc-800/80 rounded-[1.5rem] p-5 shadow-lg flex flex-col">
+                        <h3 class="text-xs text-zinc-500 font-bold uppercase tracking-widest mb-4 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-cric-gold"></span> Points Table</h3>
+                        <div class="overflow-x-auto hide-scrollbar flex-1">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="border-b border-zinc-800 text-[10px] sm:text-xs text-zinc-500 uppercase tracking-widest">
+                                        <th class="pb-3 pl-2 font-bold">Team</th>
+                                        <th class="pb-3 text-center font-bold">P</th>
+                                        <th class="pb-3 text-center font-bold">W</th>
+                                        <th class="pb-3 text-center font-bold">L</th>
+                                        <th class="pb-3 text-center font-bold">NRR</th>
+                                        <th class="pb-3 text-center font-black text-white">Pts</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ui-points-table">
+                                    <!-- Injected via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Match Center -->
+                    <div class="bg-zinc-900/50 border border-zinc-800/80 rounded-[1.5rem] p-5 shadow-lg flex flex-col">
+                        <h3 class="text-xs text-zinc-500 font-bold uppercase tracking-widest mb-4 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-cric-accent"></span> Match Center</h3>
+                        <div id="ui-next-match" class="bg-zinc-950 border border-zinc-800 rounded-xl p-4 mb-4 shadow-inner text-center">
+                            <p class="text-[10px] text-zinc-500 uppercase font-bold tracking-widest mb-2">Next Fixture</p>
+                            <div class="flex justify-between items-center px-2">
+                                <span id="ui-match-team1" class="font-display font-bold text-sm sm:text-base text-white truncate w-24">Team 1</span>
+                                <span class="text-xs text-zinc-600 font-black italic">VS</span>
+                                <span id="ui-match-team2" class="font-display font-bold text-sm sm:text-base text-white truncate w-24">Team 2</span>
+                            </div>
+                        </div>
+                        <div class="flex-1 overflow-y-auto hide-scrollbar space-y-2" id="ui-match-logs">
+                            <!-- Injected via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Stats & Awards (Caps) -->
+                    <div class="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-orange-500/10 border border-orange-500/20 rounded-[1.5rem] p-5 shadow-lg relative overflow-hidden group">
+                            <div class="absolute -right-6 -top-6 w-24 h-24 bg-orange-500/20 rounded-full blur-xl group-hover:bg-orange-500/30 transition-colors"></div>
+                            <h3 class="text-xs text-orange-500 font-bold uppercase tracking-widest mb-3 flex items-center gap-2"><span class="text-lg">🧢</span> Orange Cap (Runs)</h3>
+                            <div id="ui-orange-cap" class="space-y-2 relative z-10"></div>
+                        </div>
+
+                        <div class="bg-purple-500/10 border border-purple-500/20 rounded-[1.5rem] p-5 shadow-lg relative overflow-hidden group">
+                            <div class="absolute -right-6 -top-6 w-24 h-24 bg-purple-500/20 rounded-full blur-xl group-hover:bg-purple-500/30 transition-colors"></div>
+                            <h3 class="text-xs text-purple-400 font-bold uppercase tracking-widest mb-3 flex items-center gap-2"><span class="text-lg">🧢</span> Purple Cap (Wickets)</h3>
+                            <div id="ui-purple-cap" class="space-y-2 relative z-10"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <!-- PANEL: Pool (Right Sidebar Desktop, Tab Mobile) -->
             <aside id="pool-panel" class="app-panel desktop-panel-force hidden flex-col w-full lg:w-[300px] xl:w-[340px] bg-zinc-950/80 border-l border-zinc-800/80 overflow-y-auto p-4 z-10 pb-24 lg:pb-4 transition-all hide-scrollbar">
                 <div class="sticky top-0 bg-zinc-950/95 backdrop-blur-xl pb-4 pt-2 z-10 mb-2">
-                    <h2 class="text-base font-display font-bold text-white flex items-center gap-2 tracking-wide uppercase">
+                    <h2 id="pool-title" class="text-base font-display font-bold text-white flex items-center gap-2 tracking-wide uppercase">
                         <span class="w-2 h-6 rounded-full bg-cric-accent shrink-0"></span>
                         Auction Pool
                     </h2>
+                    <p id="transfer-desc" class="text-[9px] text-zinc-400 mt-1 hidden">Mid-season window. Buy directly at base price.</p>
                 </div>
                 <div id="upcoming-list" class="space-y-2.5">
                     <!-- Pool JS Injection -->
@@ -546,6 +619,9 @@
         let playerToKick = null;
         let playerToBan = null;
         let heartbeatInterval = null;
+
+        // Season State
+        let matchesData = [];
 
         // Media State (With PeerJS WebRTC)
         let peer = null;
@@ -835,7 +911,8 @@
                 buttons.create.disabled = true; buttons.create.innerText = "Hosting...";
                 await setDoc(doc(getRoomsRef(), roomId), {
                     roomId: roomId, hostId: currentUser.uid, status: 'waiting', 
-                    currentAuctionIndex: 0, timerEndTime: 0, currentBid: 0, currentBidder: null, createdAt: serverTimestamp()
+                    currentAuctionIndex: 0, timerEndTime: 0, currentBid: 0, currentBidder: null, 
+                    seasonPhase: 'not_started', currentMatch: 0, schedule: '[]', createdAt: serverTimestamp()
                 });
 
                 let localSessionId = sessionStorage.getItem('cricbid_session');
@@ -845,13 +922,18 @@
                 await setDoc(doc(getUsersRef(), myUserDocId), {
                     userId: myUserDocId, authId: currentUser.uid, roomId: roomId, username: username,
                     budget: BUDGET_DEFAULT, role: 'admin', joinedAt: Date.now(), isOnline: true,
-                    kicked: false, banned: false, peerId: null, lastActive: Date.now()
+                    kicked: false, banned: false, peerId: null, lastActive: Date.now(),
+                    wins: 0, losses: 0, points: 0, nrr: 0, matchesPlayed: 0 // Season Stats
                 });
 
                 const batch = writeBatch(db);
                 DUMMY_PLAYERS.forEach((p, idx) => {
                     const pRef = doc(getPlayersRef());
-                    batch.set(pRef, { playerId: pRef.id, roomId: roomId, name: p.name, role: p.role, country: p.country, basePrice: p.base, soldPrice: null, ownerId: null, status: 'upcoming', order: idx });
+                    batch.set(pRef, { 
+                        playerId: pRef.id, roomId: roomId, name: p.name, role: p.role, country: p.country, 
+                        basePrice: p.base, soldPrice: null, ownerId: null, status: 'upcoming', order: idx,
+                        runs: 0, wickets: 0, isInjured: false, injuryDuration: 0 // Season Stats
+                    });
                 });
                 await batch.commit();
                 enterRoom(roomId);
@@ -891,7 +973,8 @@
                     await setDoc(userRef, {
                         userId: myUserDocId, authId: currentUser.uid, roomId: roomId, username: username,
                         budget: BUDGET_DEFAULT, role: 'player', joinedAt: Date.now(), isOnline: true,
-                        kicked: false, banned: false, peerId: null, lastActive: Date.now()
+                        kicked: false, banned: false, peerId: null, lastActive: Date.now(),
+                        wins: 0, losses: 0, points: 0, nrr: 0, matchesPlayed: 0 // Season Stats
                     });
                 }
                 enterRoom(roomId);
@@ -923,7 +1006,12 @@
             unsubscribeRooms = onSnapshot(getRoomsRef(), (snapshot) => {
                 snapshot.forEach(docSnap => {
                     const data = docSnap.data();
-                    if(data.roomId === currentRoomId) { roomData = data; updateRoomUI(); }
+                    if(data.roomId === currentRoomId) { 
+                        roomData = data; 
+                        try { matchesData = JSON.parse(roomData.schedule || '[]'); } catch(e) { matchesData = []; }
+                        updateRoomUI(); 
+                        if(roomData.seasonPhase !== 'not_started') updateSeasonUI();
+                    }
                 });
             });
 
@@ -1000,6 +1088,7 @@
                 });
                 playersData = tempPlayers.sort((a, b) => a.order - b.order);
                 updatePlayersUI();
+                if(roomData && roomData.seasonPhase !== 'not_started') updateSeasonUI();
             });
 
             unsubscribeChat = onSnapshot(getChatRef(), (snapshot) => {
@@ -1179,16 +1268,56 @@
             }
         }
 
+        function getFlagEmoji(countryCode) {
+            const flags = { 'IND': '🇮🇳', 'AUS': '🇦🇺', 'ENG': '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'AFG': '🇦🇫', 'RSA': '🇿🇦', 'NZ': '🇳🇿', 'PAK': '🇵🇰', 'WI': '🌴', 'SL': '🇱🇰', 'BAN': '🇧🇩' };
+            return flags[countryCode] || '🏳️';
+        }
+
         let lastBidderState = null;
         function updateRoomUI() {
             if(!roomData) return;
             const isHost = usersData.find(u => u.userId === myUserDocId)?.role === 'admin';
             const currentPlayer = playersData.find(p => p.order === roomData.currentAuctionIndex);
 
+            // Season Mode Switcher
+            if (roomData.status === 'season') {
+                document.getElementById('auction-panel').classList.add('hidden');
+                document.getElementById('auction-panel').classList.remove('flex', 'desktop-panel-force');
+                document.getElementById('season-panel').classList.remove('hidden');
+                document.getElementById('season-panel').classList.add('flex', 'desktop-panel-force');
+                
+                // Update Tab names dynamically
+                const liveTabLabel = document.querySelector('#tab-auction span');
+                if(liveTabLabel) liveTabLabel.innerText = "SEASON";
+                
+                // Transfer Window logic
+                if (roomData.seasonPhase === 'transfer') {
+                    document.getElementById('pool-title').innerHTML = `<span class="w-2 h-6 rounded-full bg-blue-500 shrink-0"></span> Transfer Window`;
+                    document.getElementById('transfer-desc').classList.remove('hidden');
+                } else {
+                    document.getElementById('pool-title').innerHTML = `<span class="w-2 h-6 rounded-full bg-cric-accent shrink-0"></span> Auction Pool`;
+                    document.getElementById('transfer-desc').classList.add('hidden');
+                }
+                return; // Skip drawing auction UI
+            } else {
+                document.getElementById('auction-panel').classList.remove('hidden');
+                document.getElementById('auction-panel').classList.add('flex', 'desktop-panel-force');
+                document.getElementById('season-panel').classList.add('hidden');
+                document.getElementById('season-panel').classList.remove('flex', 'desktop-panel-force');
+            }
+
+            const btnStartSeason = document.getElementById('btn-start-season');
+            if (isHost && roomData.status === 'finished') {
+                btnStartSeason.classList.remove('hidden');
+            } else {
+                btnStartSeason.classList.add('hidden');
+            }
+
             if (isHost && ui.btnHostUnsold) {
                 ui.btnHostUnsold.disabled = roomData.currentBidder ? true : false;
             }
 
+            // UI Timer and Bidding Controls
             if(roomData.status === 'active' && roomData.timerEndTime > 0) {
                 startTimer(roomData.timerEndTime);
                 ui.roomStatus.innerText = "Live";
@@ -1201,6 +1330,7 @@
                 } else {
                     ui.biddingControls.classList.add('opacity-50', 'pointer-events-none');
                 }
+
             } else {
                 stopTimer();
                 ui.timer.classList.add('hidden');
@@ -1221,19 +1351,19 @@
                 }
             }
 
-            if(currentPlayer) {
+            // Restore Player Data displaying which was overwritten by the previous code chunk bug
+            if(currentPlayer && roomData.status !== 'finished') {
                 ui.playerName.innerText = currentPlayer.name;
                 ui.playerRole.innerText = currentPlayer.role;
-                ui.playerCountry.innerHTML = `<svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path></svg> ${currentPlayer.country}`;
+                ui.playerCountry.innerHTML = getFlagEmoji(currentPlayer.country) + " " + currentPlayer.country;
                 ui.playerBase.innerText = `₹ ${formatMoney(currentPlayer.basePrice)} Cr`;
-                
+
                 const displayBid = roomData.currentBid > 0 ? roomData.currentBid : currentPlayer.basePrice;
                 ui.currentBid.innerHTML = `₹ ${formatMoney(displayBid)} <span class="text-xl sm:text-2xl lg:text-3xl text-zinc-500 font-bold tracking-normal">Cr</span>`;
 
                 if(roomData.currentBidder) {
                     const bidder = usersData.find(u => u.userId === roomData.currentBidder);
                     ui.highestBidder.innerText = bidder ? bidder.username : "Unknown";
-                    ui.highestBidder.className = "font-bold text-cric-gold text-xs sm:text-sm lg:text-base truncate max-w-[120px] sm:max-w-[150px] lg:max-w-[200px]";
                     
                     if (lastBidderState !== roomData.currentBidder) {
                         ui.playerCard.classList.add('glowing-bid');
@@ -1241,8 +1371,7 @@
                         lastBidderState = roomData.currentBidder;
                     }
                 } else {
-                    ui.highestBidder.innerText = "Be the first!";
-                    ui.highestBidder.className = "font-bold text-zinc-500 text-xs sm:text-sm lg:text-base truncate max-w-[120px] sm:max-w-[150px] lg:max-w-[200px]";
+                    ui.highestBidder.innerText = "None";
                     lastBidderState = null;
                 }
 
@@ -1254,13 +1383,13 @@
                         ui.soldOverlay.innerHTML = `
                             <span class="hidden">${currentPlayer.name}</span>
                             <div class="animate-stamp flex flex-col items-center justify-center w-full">
-                                <h3 class="text-4xl sm:text-5xl lg:text-7xl font-display font-black text-cric-green mb-4 sm:mb-6 transform -rotate-12 uppercase tracking-widest drop-shadow-[0_0_30px_rgba(16,185,129,0.8)]">SOLD!</h3>
-                                <div class="bg-zinc-950/95 border border-zinc-800 rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 lg:p-8 w-[95%] sm:w-[90%] shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-                                    <p class="text-[9px] sm:text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Purchased By</p>
-                                    <p class="text-xl sm:text-2xl lg:text-3xl font-black text-cric-gold tracking-tight truncate w-full">${ownerName}</p>
-                                    <div class="w-full h-px bg-zinc-800 my-3 sm:my-4"></div>
-                                    <p class="text-[9px] sm:text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Final Amount</p>
-                                    <p class="text-3xl sm:text-4xl lg:text-5xl font-display font-black text-white">₹ ${formatMoney(currentPlayer.soldPrice)} <span class="text-lg sm:text-xl lg:text-2xl text-zinc-500">Cr</span></p>
+                                <h3 class="text-5xl sm:text-6xl font-display font-black text-cric-green mb-4 transform -rotate-12 uppercase tracking-widest drop-shadow-[0_0_30px_rgba(16,185,129,0.8)]">SOLD!</h3>
+                                <div class="bg-zinc-950/95 border border-zinc-800 rounded-[2rem] p-6 sm:p-8 w-[90%] shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+                                    <p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Purchased By</p>
+                                    <p class="text-2xl sm:text-3xl font-black text-cric-gold tracking-tight">${ownerName}</p>
+                                    <div class="w-full h-px bg-zinc-800 my-4"></div>
+                                    <p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Final Amount</p>
+                                    <p class="text-4xl sm:text-5xl font-display font-black text-white">₹ ${formatMoney(currentPlayer.soldPrice)} <span class="text-xl sm:text-2xl text-zinc-500">Cr</span></p>
                                 </div>
                             </div>
                         `;
@@ -1270,8 +1399,8 @@
                     if (!ui.soldOverlay.innerHTML.includes(currentPlayer.name)) {
                         ui.soldOverlay.innerHTML = `
                             <span class="hidden">${currentPlayer.name}</span>
-                            <div class="animate-stamp flex flex-col items-center justify-center w-full">
-                                <h3 class="text-4xl sm:text-5xl lg:text-6xl font-display font-black text-zinc-400 mb-2 transform -rotate-12 uppercase tracking-widest drop-shadow-2xl">UNSOLD</h3>
+                            <div class="animate-stamp flex flex-col items-center justify-center">
+                                <h3 class="text-5xl sm:text-6xl font-display font-black text-zinc-400 mb-2 transform -rotate-12 uppercase tracking-widest drop-shadow-2xl">UNSOLD</h3>
                             </div>
                         `;
                     }
@@ -1286,8 +1415,414 @@
                 ui.playerBase.innerText = "---";
                 ui.currentBid.innerHTML = "₹ 0.00";
                 ui.highestBidder.innerText = "---";
+                ui.soldOverlay.classList.add('hidden');
             }
         }
+
+        // ==================== SEASON & SIMULATION ENGINE ====================
+
+        function updateSeasonUI() {
+            const isHost = usersData.find(u => u.userId === myUserDocId)?.role === 'admin';
+            
+            // Host Controls
+            if(isHost && roomData.seasonPhase !== 'completed') {
+                document.getElementById('season-admin-controls').classList.remove('hidden');
+                document.getElementById('season-admin-controls').classList.add('flex');
+                
+                if(roomData.seasonPhase === 'transfer') {
+                    document.getElementById('btn-sim-match').innerText = "Close Window & Resume";
+                    document.getElementById('btn-sim-round').classList.add('hidden');
+                } else if(roomData.seasonPhase === 'playoffs') {
+                    document.getElementById('btn-sim-match').innerText = "Simulate Playoff Match";
+                    document.getElementById('btn-sim-round').classList.add('hidden');
+                } else {
+                    document.getElementById('btn-sim-match').innerText = "Simulate Match";
+                    document.getElementById('btn-sim-round').classList.remove('hidden');
+                }
+            } else {
+                document.getElementById('season-admin-controls').classList.add('hidden');
+                document.getElementById('season-admin-controls').classList.remove('flex');
+            }
+
+            // Title Update
+            const phaseMap = { 'league': 'League Stage', 'transfer': 'Mid-Season Transfers', 'playoffs': 'Playoffs', 'completed': 'Season Completed' };
+            document.getElementById('ui-season-phase').innerText = phaseMap[roomData.seasonPhase] || 'League Stage';
+
+            // Points Table
+            const activeTeams = usersData.filter(u => playersData.some(p => p.ownerId === u.userId)).sort((a,b) => b.points - a.points || b.nrr - a.nrr);
+            const ptBody = document.getElementById('ui-points-table');
+            ptBody.innerHTML = '';
+            
+            activeTeams.forEach((team, index) => {
+                let badge = '';
+                if(roomData.seasonPhase === 'playoffs' || roomData.seasonPhase === 'completed') {
+                    if(index < 4) badge = '<span class="ml-2 text-[8px] bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded uppercase font-black">Q</span>';
+                    if(roomData.seasonPhase === 'completed' && index === 0) badge = '<span class="ml-2 text-[8px] bg-cric-gold text-zinc-950 px-1.5 py-0.5 rounded uppercase font-black">CHAMPION 🏆</span>';
+                }
+
+                ptBody.innerHTML += `
+                    <tr class="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors">
+                        <td class="py-3 pl-2 font-bold text-sm text-white flex items-center">${index + 1}. ${team.username} ${badge}</td>
+                        <td class="py-3 text-center text-xs text-zinc-400">${team.matchesPlayed || 0}</td>
+                        <td class="py-3 text-center text-xs text-emerald-400 font-bold">${team.wins || 0}</td>
+                        <td class="py-3 text-center text-xs text-red-400">${team.losses || 0}</td>
+                        <td class="py-3 text-center text-xs text-zinc-400">${(team.nrr || 0).toFixed(2)}</td>
+                        <td class="py-3 text-center text-sm text-white font-black">${team.points || 0}</td>
+                    </tr>
+                `;
+            });
+
+            // Stats (Orange/Purple Cap)
+            const sortedBatsmen = [...playersData].filter(p => p.runs > 0).sort((a,b) => b.runs - a.runs).slice(0,5);
+            const orangeDiv = document.getElementById('ui-orange-cap');
+            orangeDiv.innerHTML = sortedBatsmen.length ? '' : '<p class="text-xs text-zinc-600">No stats yet.</p>';
+            sortedBatsmen.forEach((p, i) => {
+                const owner = usersData.find(u => u.userId === p.ownerId)?.username || 'Unknown';
+                const isInjured = p.isInjured ? `<span class="text-[8px] bg-red-500 text-white px-1 rounded ml-1">INJURED (${p.injuryDuration})</span>` : '';
+                orangeDiv.innerHTML += `
+                    <div class="flex justify-between items-center text-sm border-b border-orange-500/10 pb-1 mb-1">
+                        <div>
+                            <span class="text-white font-bold">${i+1}. ${p.name}</span> ${isInjured}
+                            <p class="text-[9px] text-zinc-500">${owner}</p>
+                        </div>
+                        <span class="font-display font-black text-orange-400">${p.runs}</span>
+                    </div>
+                `;
+            });
+
+            const sortedBowlers = [...playersData].filter(p => p.wickets > 0).sort((a,b) => b.wickets - a.wickets).slice(0,5);
+            const purpleDiv = document.getElementById('ui-purple-cap');
+            purpleDiv.innerHTML = sortedBowlers.length ? '' : '<p class="text-xs text-zinc-600">No stats yet.</p>';
+            sortedBowlers.forEach((p, i) => {
+                const owner = usersData.find(u => u.userId === p.ownerId)?.username || 'Unknown';
+                const isInjured = p.isInjured ? `<span class="text-[8px] bg-red-500 text-white px-1 rounded ml-1">INJURED (${p.injuryDuration})</span>` : '';
+                purpleDiv.innerHTML += `
+                    <div class="flex justify-between items-center text-sm border-b border-purple-500/10 pb-1 mb-1">
+                        <div>
+                            <span class="text-white font-bold">${i+1}. ${p.name}</span> ${isInjured}
+                            <p class="text-[9px] text-zinc-500">${owner}</p>
+                        </div>
+                        <span class="font-display font-black text-purple-400">${p.wickets}</span>
+                    </div>
+                `;
+            });
+
+            // Match Center logic
+            const nextMatch = matchesData[roomData.currentMatch];
+            if(nextMatch && roomData.seasonPhase !== 'completed') {
+                const t1 = usersData.find(u => u.userId === nextMatch.teamA)?.username || 'TBD';
+                const t2 = usersData.find(u => u.userId === nextMatch.teamB)?.username || 'TBD';
+                document.getElementById('ui-match-team1').innerText = t1;
+                document.getElementById('ui-match-team2').innerText = t2;
+            } else {
+                document.getElementById('ui-next-match').innerHTML = `<p class="text-sm font-bold text-cric-gold py-4">Season Concluded 🏆</p>`;
+            }
+
+            // Match Logs
+            const logsDiv = document.getElementById('ui-match-logs');
+            logsDiv.innerHTML = '';
+            const playedMatches = matchesData.filter(m => m.played).reverse().slice(0, 10);
+            playedMatches.forEach(m => {
+                logsDiv.innerHTML += `
+                    <div class="bg-zinc-950/50 border border-zinc-800/50 rounded-lg p-2.5 text-xs">
+                        <p class="font-bold text-white mb-1">${m.resultSummary}</p>
+                        <p class="text-[9px] text-zinc-500 leading-tight">${m.highlight}</p>
+                    </div>
+                `;
+            });
+
+            // Transfer Window Pool rendering logic override
+            if (roomData.seasonPhase === 'transfer') {
+                ui.upcomingList.innerHTML = '';
+                const unsold = playersData.filter(p => p.status === 'unsold' || p.status === 'upcoming');
+                unsold.forEach(p => {
+                    ui.upcomingList.innerHTML += `
+                        <div class="p-3 border border-blue-500/30 bg-blue-500/5 rounded-xl flex justify-between items-center hover:bg-blue-500/10 transition-colors">
+                            <div>
+                                <p class="text-sm font-bold text-zinc-200 tracking-wide">${p.name}</p>
+                                <p class="text-[9px] text-zinc-500 uppercase tracking-widest font-bold mt-0.5">${p.role}</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-xs font-display text-zinc-300 font-bold block mb-1">₹${p.base} Cr</span>
+                                <button onclick="buyTransferPlayer('${p.playerId}', ${p.base})" class="text-[9px] bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-1 rounded shadow-md transition-colors uppercase">Sign</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        document.getElementById('btn-start-season').addEventListener('click', async () => {
+            if(!currentUser || !roomData) return;
+            const activeTeams = usersData.filter(u => playersData.some(p => p.ownerId === u.userId));
+            if(activeTeams.length < 2) return showToast("Need at least 2 teams with players to start a season!");
+
+            // Generate Round Robin
+            let schedule = [];
+            for(let i=0; i<activeTeams.length; i++) {
+                for(let j=i+1; j<activeTeams.length; j++) {
+                    schedule.push({ teamA: activeTeams[i].userId, teamB: activeTeams[j].userId, played: false, resultSummary: '', highlight: '' });
+                }
+            }
+            // Shuffle
+            schedule = schedule.sort(() => Math.random() - 0.5);
+
+            try {
+                await updateDoc(doc(getRoomsRef(), currentRoomId), {
+                    status: 'season',
+                    seasonPhase: 'league',
+                    schedule: JSON.stringify(schedule),
+                    currentMatch: 0
+                });
+                showToast("Season Started!");
+            } catch(e) { console.error(e); }
+        });
+
+        // The Core Simulation Logic Engine
+        async function runMatchSimulation(matchIndex) {
+            const match = matchesData[matchIndex];
+            if(!match || match.played) return false;
+
+            const tA = usersData.find(u => u.userId === match.teamA);
+            const tB = usersData.find(u => u.userId === match.teamB);
+            if(!tA || !tB) return false;
+
+            // Gather players and calculate strength
+            const pA = playersData.filter(p => p.ownerId === tA.userId && !p.isInjured);
+            const pB = playersData.filter(p => p.ownerId === tB.userId && !p.isInjured);
+
+            const strengthA = pA.reduce((sum, p) => sum + (p.soldPrice || p.basePrice), 0);
+            const strengthB = pB.reduce((sum, p) => sum + (p.soldPrice || p.basePrice), 0);
+
+            // Randomize match scores based on strength + high variance (T20 style)
+            let scoreA = Math.floor(Math.random() * 60) + 120 + Math.floor(strengthA * 2);
+            let scoreB = Math.floor(Math.random() * 60) + 120 + Math.floor(strengthB * 2);
+            let wktsA = Math.floor(Math.random() * 8) + 2;
+            let wktsB = Math.floor(Math.random() * 8) + 2;
+
+            // Determine winner
+            let winner, loser, winScore, loseScore, winWkts, loseWkts;
+            if(scoreA >= scoreB) { 
+                winner = tA; loser = tB; 
+                winScore = scoreA; loseScore = scoreB; winWkts = wktsA; loseWkts = wktsB;
+            } else { 
+                winner = tB; loser = tA; 
+                winScore = scoreB; loseScore = scoreA; winWkts = wktsB; loseWkts = wktsA;
+            }
+
+            match.played = true;
+            match.resultSummary = `${winner.username} won by ${winScore - loseScore} runs.`;
+
+            // Prepare Batch Updates
+            const batch = writeBatch(db);
+
+            // Update Teams (Points & basic NRR approx)
+            const margin = (winScore - loseScore) / 20; // very rough NRR proxy
+            batch.update(doc(getUsersRef(), winner.userId), { 
+                matchesPlayed: (winner.matchesPlayed || 0) + 1, wins: (winner.wins || 0) + 1, 
+                points: (winner.points || 0) + 2, nrr: (winner.nrr || 0) + margin 
+            });
+            batch.update(doc(getUsersRef(), loser.userId), { 
+                matchesPlayed: (loser.matchesPlayed || 0) + 1, losses: (loser.losses || 0) + 1, 
+                nrr: (loser.nrr || 0) - margin 
+            });
+
+            // Distribute Stats to Players & Process Injuries
+            let matchHighlights = [];
+            
+            const distributeStats = (playersList, totalRuns, totalWickets) => {
+                if(!playersList.length) return;
+                
+                // Top run scorer
+                const topBat = playersList[Math.floor(Math.random() * playersList.length)];
+                const topRuns = Math.floor(Math.random() * 40) + 30; // 30-70 runs
+                batch.update(doc(getPlayersRef(), topBat.playerId), { runs: (topBat.runs || 0) + topRuns });
+                matchHighlights.push(`${topBat.name} (${topRuns})`);
+
+                // Wickets
+                if(totalWickets > 0) {
+                    const topBowl = playersList[Math.floor(Math.random() * playersList.length)];
+                    const wkts = Math.min(totalWickets, Math.floor(Math.random() * 3) + 1);
+                    batch.update(doc(getPlayersRef(), topBowl.playerId), { wickets: (topBowl.wickets || 0) + wkts });
+                    matchHighlights.push(`${topBowl.name} (${wkts}W)`);
+                }
+
+                // Process ongoing injuries healing
+                playersData.forEach(p => {
+                    if(p.ownerId === playersList[0].ownerId && p.isInjured) {
+                        const newDur = p.injuryDuration - 1;
+                        batch.update(doc(getPlayersRef(), p.playerId), { injuryDuration: newDur, isInjured: newDur > 0 });
+                    }
+                });
+
+                // Random new injury (3% chance per match per team)
+                if(Math.random() < 0.03 && playersList.length > 0) {
+                    const unlucky = playersList[Math.floor(Math.random() * playersList.length)];
+                    batch.update(doc(getPlayersRef(), unlucky.playerId), { isInjured: true, injuryDuration: Math.floor(Math.random() * 2) + 1 });
+                    matchHighlights.push(`🚨 ${unlucky.name} injured!`);
+                }
+            };
+
+            distributeStats(pA, scoreA, wktsB);
+            distributeStats(pB, scoreB, wktsA);
+
+            match.highlight = matchHighlights.join(' | ');
+            matchesData[matchIndex] = match;
+
+            return true;
+        }
+
+        document.getElementById('btn-sim-match').addEventListener('click', async () => {
+            if(!currentUser || !roomData) return;
+            const btn = document.getElementById('btn-sim-match');
+            btn.disabled = true; btn.innerText = "Simulating...";
+
+            try {
+                if(roomData.seasonPhase === 'transfer') {
+                    // Close transfer window, resume
+                    await updateDoc(doc(getRoomsRef(), currentRoomId), { seasonPhase: 'league' });
+                    showToast("Transfer Window Closed.");
+                    btn.disabled = false;
+                    return;
+                }
+
+                if(roomData.seasonPhase === 'playoffs') {
+                    await handlePlayoffSimulation();
+                    btn.disabled = false;
+                    return;
+                }
+
+                const success = await runMatchSimulation(roomData.currentMatch);
+                if(success) {
+                    let nextPhase = roomData.seasonPhase;
+                    const nextMatch = roomData.currentMatch + 1;
+                    
+                    // Check for Mid-Season Transfer Trigger
+                    const totalMatches = matchesData.length;
+                    if(nextMatch === Math.floor(totalMatches / 2) && roomData.seasonPhase === 'league') {
+                        nextPhase = 'transfer';
+                        showToast("Mid-Season Transfer Window Opened!");
+                    } else if (nextMatch >= totalMatches && roomData.seasonPhase === 'league') {
+                        nextPhase = 'playoffs';
+                        initPlayoffs(); // Prepare playoff bracket
+                    }
+
+                    await updateDoc(doc(getRoomsRef(), currentRoomId), { 
+                        schedule: JSON.stringify(matchesData),
+                        currentMatch: nextMatch,
+                        seasonPhase: nextPhase
+                    });
+
+                    // Send chat alert
+                    const msgRef = doc(getChatRef());
+                    await setDoc(msgRef, {
+                        id: msgRef.id, roomId: currentRoomId, senderId: 'system', senderName: '🏏 Umpire',
+                        receiverId: 'all', receiverName: 'Everyone', text: matchesData[roomData.currentMatch].resultSummary, timestamp: Date.now()
+                    });
+                }
+            } catch(e) { console.error(e); }
+            btn.disabled = false;
+        });
+
+        // Fast forward 1 full round (simplification)
+        document.getElementById('btn-sim-round').addEventListener('click', async () => {
+            // Limits to prevent massive batch failures
+            let count = 0;
+            const btn = document.getElementById('btn-sim-round');
+            btn.disabled = true; btn.innerText = "Processing...";
+            
+            while(count < 4 && roomData.currentMatch < matchesData.length && roomData.seasonPhase === 'league') {
+                await document.getElementById('btn-sim-match').click(); // Re-use logic safely with awaits
+                await new Promise(r => setTimeout(r, 500)); // allow firebase sync buffer
+                count++;
+            }
+            btn.disabled = false; btn.innerText = "Simulate Round";
+        });
+
+        // Transfer Logic
+        window.buyTransferPlayer = async (playerId, price) => {
+            const me = usersData.find(u => u.userId === myUserDocId);
+            if(!me || roomData.seasonPhase !== 'transfer') return;
+            if(me.budget < price) return showToast("Not enough budget!");
+
+            try {
+                const batch = writeBatch(db);
+                batch.update(doc(getPlayersRef(), playerId), { status: 'sold', soldPrice: price, ownerId: myUserDocId });
+                batch.update(doc(getUsersRef(), myUserDocId), { budget: me.budget - price });
+                await batch.commit();
+                
+                triggerConfetti();
+                showToast("Player signed successfully!");
+            } catch(e) { console.error(e); }
+        };
+
+        // Playoffs Logic
+        async function initPlayoffs() {
+            const activeTeams = usersData.filter(u => playersData.some(p => p.ownerId === u.userId)).sort((a,b) => b.points - a.points || b.nrr - a.nrr);
+            if(activeTeams.length < 4) {
+                // Skip playoffs if not enough teams
+                await updateDoc(doc(getRoomsRef(), currentRoomId), { seasonPhase: 'completed' });
+                triggerConfetti();
+                return;
+            }
+
+            const t1 = activeTeams[0].userId; const t2 = activeTeams[1].userId;
+            const t3 = activeTeams[2].userId; const t4 = activeTeams[3].userId;
+
+            const playoffBracket = [
+                { teamA: t1, teamB: t2, played: false, resultSummary: '', highlight: '', type: 'Qualifier 1' },
+                { teamA: t3, teamB: t4, played: false, resultSummary: '', highlight: '', type: 'Eliminator' },
+                { teamA: null, teamB: null, played: false, resultSummary: '', highlight: '', type: 'Qualifier 2' }, // TBD
+                { teamA: null, teamB: null, played: false, resultSummary: '', highlight: '', type: 'GRAND FINAL' }  // TBD
+            ];
+
+            await updateDoc(doc(getRoomsRef(), currentRoomId), { 
+                schedule: JSON.stringify(playoffBracket), currentMatch: 0 
+            });
+            showToast("Playoffs Stage Commencing!");
+        }
+
+        async function handlePlayoffSimulation() {
+            const matchIndex = roomData.currentMatch;
+            const match = matchesData[matchIndex];
+            if(!match || match.played) return;
+
+            if(!match.teamA || !match.teamB) return showToast("Waiting for teams to be decided.");
+
+            const success = await runMatchSimulation(matchIndex);
+            if(success) {
+                // Resolve bracket logically based on summary text parsing (hacky but fits 1 file constraint gracefully)
+                let winnerId = match.resultSummary.includes(usersData.find(u=>u.userId===match.teamA).username) ? match.teamA : match.teamB;
+                let loserId = winnerId === match.teamA ? match.teamB : match.teamA;
+
+                if(match.type === 'Qualifier 1') {
+                    matchesData[3].teamA = winnerId; // Straight to final
+                    matchesData[2].teamA = loserId;  // Goes to Q2
+                } else if(match.type === 'Eliminator') {
+                    matchesData[2].teamB = winnerId; // Goes to Q2
+                } else if(match.type === 'Qualifier 2') {
+                    matchesData[3].teamB = winnerId; // Goes to Final
+                }
+
+                let nextPhase = 'playoffs';
+                if(match.type === 'GRAND FINAL') {
+                    nextPhase = 'completed';
+                    // Re-sort teams explicitly so champion is 1st
+                    const champ = usersData.find(u=>u.userId===winnerId);
+                    await updateDoc(doc(getUsersRef(), champ.userId), { points: 999 }); // Hack to force top of table
+                    triggerConfetti(); triggerConfetti();
+                    showToast(`${champ.username} wins the Title!`);
+                }
+
+                await updateDoc(doc(getRoomsRef(), currentRoomId), { 
+                    schedule: JSON.stringify(matchesData),
+                    currentMatch: matchIndex + 1,
+                    seasonPhase: nextPhase
+                });
+            }
+        }
+
+        // ==================== END SEASON LOGIC ====================
 
         function updateChatRecipients() {
             const select = document.getElementById('chat-recipient');
