@@ -175,61 +175,6 @@
         </div>
     </div>
 
-    <!-- Team Analysis Modal -->
-    <div id="team-analysis-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[130] hidden flex-col items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-        <div class="glass-panel bg-zinc-900 border border-zinc-700 p-6 sm:p-8 rounded-[2rem] max-w-md w-full shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col relative overflow-hidden">
-            <div class="absolute -top-20 -right-20 w-40 h-40 bg-purple-500/20 rounded-full blur-[50px] pointer-events-none"></div>
-            <div class="text-center mb-6 shrink-0 relative z-10">
-                <div class="w-16 h-16 bg-purple-500/10 rounded-2xl mx-auto mb-4 flex items-center justify-center text-purple-400 shadow-inner border border-purple-500/20 text-3xl">
-                    🤖
-                </div>
-                <h2 class="text-xl sm:text-2xl font-display font-black text-white" id="analysis-team-name">Team Analysis</h2>
-            </div>
-            <div id="analysis-loading" class="text-center py-8 text-zinc-400 animate-pulse text-sm">Analyzing squad balance...</div>
-            <div id="analysis-content" class="hidden flex-col space-y-4 text-sm relative z-10">
-                <div class="flex justify-between items-center bg-zinc-950 p-3 rounded-xl border border-zinc-800">
-                    <span class="text-zinc-400 font-bold uppercase text-[10px] tracking-widest">Squad Rating</span>
-                    <span class="text-2xl font-display font-black text-emerald-400" id="analysis-rating">0.0</span>
-                </div>
-                <div class="bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-xl">
-                    <p class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-1">Strengths</p>
-                    <p class="text-emerald-100" id="analysis-strengths"></p>
-                </div>
-                <div class="bg-red-500/10 border border-red-500/20 p-3 rounded-xl">
-                    <p class="text-[10px] font-bold text-red-500 uppercase tracking-widest mb-1">Weaknesses</p>
-                    <p class="text-red-100" id="analysis-weaknesses"></p>
-                </div>
-                <div class="bg-zinc-800/50 p-3 rounded-xl border border-zinc-700">
-                    <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">AI Verdict</p>
-                    <p class="text-zinc-200 italic" id="analysis-verdict"></p>
-                </div>
-            </div>
-            <button onclick="document.getElementById('team-analysis-modal').classList.add('hidden')" class="mt-6 px-5 py-2.5 rounded-xl text-white font-bold bg-zinc-800 hover:bg-zinc-700 transition-colors w-full z-10 relative">Close</button>
-        </div>
-    </div>
-
-    <!-- Best XI Modal -->
-    <div id="best-xi-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[130] hidden flex-col items-center p-4 sm:p-8 opacity-0 transition-opacity duration-300 overflow-y-auto">
-        <div class="w-full max-w-2xl text-center mb-6 mt-4">
-            <h2 class="text-3xl sm:text-5xl font-display font-black text-transparent bg-clip-text bg-gradient-to-r from-cric-gold to-yellow-200 drop-shadow-lg">Tournament Best XI</h2>
-            <p class="text-zinc-400 mt-2 text-sm sm:text-base font-medium">Selected by AI based on auction purchases</p>
-        </div>
-        <div class="w-full max-w-3xl glass-panel bg-zinc-900 border border-zinc-700 p-6 sm:p-8 rounded-[2rem] shadow-2xl relative min-h-[400px]">
-            <button onclick="document.getElementById('best-xi-modal').classList.add('hidden')" class="absolute top-4 right-4 text-zinc-400 hover:text-white bg-zinc-800 p-2 rounded-lg transition-colors z-20">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-            <div id="best-xi-loading" class="absolute inset-0 flex flex-col items-center justify-center text-zinc-400 animate-pulse text-sm">
-                <div class="text-4xl mb-4 animate-float">🤖</div>
-                Curating the ultimate dream team...
-            </div>
-            <div id="best-xi-content" class="hidden relative z-10">
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3" id="best-xi-grid">
-                    <!-- Injected -->
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- ==================== SCREEN 1: LOBBY ==================== -->
     <div id="lobby-screen" class="flex flex-1 flex-col items-center justify-center p-4 sm:p-5 h-full overflow-y-auto mesh-bg w-full relative z-10 touch-scroll">
         <div class="glass-panel p-6 sm:p-12 rounded-[2rem] sm:rounded-[2.5rem] w-full max-w-[460px] text-center shadow-[0_30px_60px_rgba(0,0,0,0.6)] animate-fade-in-up relative overflow-hidden my-auto">
@@ -484,9 +429,6 @@
 
                             <!-- Bidding Controls -->
                             <div id="bidding-controls" class="opacity-50 pointer-events-none transition-opacity duration-300 w-full pb-safe">
-                                <div id="ai-bid-suggestion" class="hidden text-center mb-2.5 text-[10px] sm:text-xs text-purple-400 font-bold bg-purple-500/10 py-1.5 rounded-lg border border-purple-500/20 flex items-center justify-center gap-1.5 transition-colors">
-                                    🤖 AI Suggests Max: ₹<span id="ai-bid-max">0.00</span>Cr
-                                </div>
                                 <div class="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-5">
                                     <button onclick="placeBid(0.20)" class="bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-700 text-white font-bold py-2.5 sm:py-5 lg:py-6 rounded-xl sm:rounded-[1.5rem] transition-all shadow-md sm:shadow-lg flex flex-col items-center justify-center border border-zinc-800 active:scale-[0.97] group">
                                         <span class="text-[8px] sm:text-[10px] lg:text-xs text-zinc-500 font-bold mb-0.5 sm:mb-1 uppercase tracking-widest group-hover:text-zinc-400 transition-colors">Raise</span>
@@ -729,24 +671,16 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
         import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, onSnapshot, writeBatch, serverTimestamp, deleteDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-        const appId = typeof __app_id !== 'undefined' && String(__app_id).trim() !== '' ? String(__app_id) : 'default-app-id';
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         
-        let parsedConfig = null;
-        if (typeof __firebase_config !== 'undefined' && __firebase_config) {
-            try {
-                parsedConfig = typeof __firebase_config === 'string' ? JSON.parse(__firebase_config) : __firebase_config;
-            } catch(e) {
-                console.error("Firebase config parse error", e);
-            }
-        }
-
-        const firebaseConfig = parsedConfig || {
-          apiKey: "AIzaSyCAd5OJKmVW2aSWgDogBg3lSpj1uzPxGrk",
-          authDomain: "cricbid.firebaseapp.com",
-          projectId: "cricbid",
-          storageBucket: "cricbid.firebasestorage.app",
-          messagingSenderId: "123456789",
-          appId: "1:123456789:web:abcdef123456"
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+          apiKey: "AQ.Ab8RN6Lhnw9R1Vu-BbckLMHDYYMGEQGv16rk2oB4DvS4L5t__Q",
+          authDomain: "cricbid-839eb.firebaseapp.com",
+          projectId: "cricbid-839eb",
+          storageBucket: "cricbid-839eb.firebasestorage.app",
+          messagingSenderId: "521652177425",
+          appId: "1:521652177425:web:c33adfb7ea97360d6affb0",
+          measurementId: "G-7WHCC3VSTW"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -887,18 +821,7 @@ Return a JSON object exactly matching the schema.
                     }
                 };
 
-                const apiKey = ""; // Set by Canvas environment
-                
-                // If API Key is missing, instantly fallback
-                if (!apiKey) {
-                    const fallback = getFallbackAnalytics(player);
-                    playerStatsCache[player.name] = fallback;
-                    if (roomData && playersData.find(p => p.order === roomData.currentAuctionIndex)?.name === player.name) {
-                        renderPlayerAnalyticsUI(player, fallback);
-                    }
-                    return fallback;
-                }
-                
+                const apiKey = ""; // API key mapped by the execution environment
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
 
                 let result = null;
@@ -1004,53 +927,43 @@ Return a JSON object exactly matching the schema.
         const BUDGET_DEFAULT = 120.0;
         const TIMER_SECONDS = 15;
 
-        // Rich Mock Data for testing and demonstration
+        // Fully populated sample data for the app to be functional
         const AUCTION_DATABASES = {
             "T20": [
                 { name: "Virat Kohli", role: "Batsman", country: "India", base: 2.0, set: "Marquee" },
-                { name: "Rashid Khan", role: "Spinner", country: "Afghanistan", base: 2.0, set: "Marquee" },
                 { name: "Jasprit Bumrah", role: "Pacer", country: "India", base: 2.0, set: "Marquee" },
+                { name: "Rashid Khan", role: "Spinner", country: "Afghanistan", base: 2.0, set: "Marquee" },
                 { name: "Glenn Maxwell", role: "All-Rounder", country: "Australia", base: 2.0, set: "Marquee" },
-                { name: "Jos Buttler", role: "Wicketkeeper", country: "England", base: 2.0, set: "Marquee" },
-                { name: "Suryakumar Yadav", role: "Batsman", country: "India", base: 1.5, set: "Batsmen" },
-                { name: "David Warner", role: "Batsman", country: "Australia", base: 1.5, set: "Batsmen" },
-                { name: "Nicholas Pooran", role: "Wicketkeeper", country: "West Indies", base: 1.5, set: "Wicketkeepers" },
-                { name: "Trent Boult", role: "Pacer", country: "New Zealand", base: 1.5, set: "Pacers" },
-                { name: "Kagiso Rabada", role: "Pacer", country: "South Africa", base: 1.5, set: "Pacers" },
-                { name: "Sunil Narine", role: "All-Rounder", country: "West Indies", base: 1.0, set: "Spinners" },
-                { name: "Heinrich Klaasen", role: "Wicketkeeper", country: "South Africa", base: 1.0, set: "Wicketkeepers" },
-                { name: "Hardik Pandya", role: "All-Rounder", country: "India", base: 2.0, set: "All-Rounders" },
-                { name: "Jofra Archer", role: "Pacer", country: "England", base: 1.5, set: "Pacers" },
-                { name: "Yuzvendra Chahal", role: "Spinner", country: "India", base: 1.0, set: "Spinners" },
-                { name: "Mitchell Starc", role: "Pacer", country: "Australia", base: 2.0, set: "Marquee" },
-                { name: "Rishabh Pant", role: "Wicketkeeper", country: "India", base: 2.0, set: "Wicketkeepers" },
+                { name: "Suryakumar Yadav", role: "Batsman", country: "India", base: 2.0, set: "Marquee" },
                 { name: "Travis Head", role: "Batsman", country: "Australia", base: 1.5, set: "Batsmen" },
-                { name: "Matheesha Pathirana", role: "Pacer", country: "Sri Lanka", base: 1.0, set: "Pacers" },
-                { name: "Wanindu Hasaranga", role: "All-Rounder", country: "Sri Lanka", base: 1.5, set: "Spinners" }
+                { name: "Heinrich Klaasen", role: "Wicketkeeper", country: "South Africa", base: 1.5, set: "Wicketkeepers" },
+                { name: "Hardik Pandya", role: "All-Rounder", country: "India", base: 2.0, set: "All-Rounders" },
+                { name: "Sunil Narine", role: "Spinner", country: "West Indies", base: 1.0, set: "Spinners" },
+                { name: "Jofra Archer", role: "Pacer", country: "England", base: 1.5, set: "Pacers" },
             ],
             "ODI": [
-                { name: "Babar Azam", role: "Batsman", country: "Pakistan", base: 2.0, set: "Marquee" },
                 { name: "Rohit Sharma", role: "Batsman", country: "India", base: 2.0, set: "Marquee" },
-                { name: "Mohammed Shami", role: "Pacer", country: "India", base: 1.5, set: "Pacers" },
-                { name: "Shai Hope", role: "Wicketkeeper", country: "West Indies", base: 1.0, set: "Wicketkeepers" },
-                { name: "Adam Zampa", role: "Spinner", country: "Australia", base: 1.5, set: "Spinners" },
-                { name: "Shakib Al Hasan", role: "All-Rounder", country: "Bangladesh", base: 1.5, set: "All-Rounders" },
-                { name: "Kane Williamson", role: "Batsman", country: "New Zealand", base: 2.0, set: "Marquee" },
-                { name: "Mitchell Santner", role: "All-Rounder", country: "New Zealand", base: 1.0, set: "Spinners" },
+                { name: "Mitchell Starc", role: "Pacer", country: "Australia", base: 2.0, set: "Marquee" },
+                { name: "Babar Azam", role: "Batsman", country: "Pakistan", base: 2.0, set: "Marquee" },
+                { name: "Shakib Al Hasan", role: "All-Rounder", country: "Bangladesh", base: 1.5, set: "Marquee" },
+                { name: "Trent Boult", role: "Pacer", country: "New Zealand", base: 2.0, set: "Marquee" },
                 { name: "Quinton de Kock", role: "Wicketkeeper", country: "South Africa", base: 1.5, set: "Wicketkeepers" },
-                { name: "Shaheen Afridi", role: "Pacer", country: "Pakistan", base: 2.0, set: "Pacers" }
+                { name: "David Warner", role: "Batsman", country: "Australia", base: 1.5, set: "Batsmen" },
+                { name: "Kuldeep Yadav", role: "Spinner", country: "India", base: 1.0, set: "Spinners" },
+                { name: "Ben Stokes", role: "All-Rounder", country: "England", base: 2.0, set: "All-Rounders" },
+                { name: "Kagiso Rabada", role: "Pacer", country: "South Africa", base: 1.5, set: "Pacers" },
             ],
             "TEST": [
                 { name: "Steve Smith", role: "Batsman", country: "Australia", base: 2.0, set: "Marquee" },
-                { name: "Joe Root", role: "Batsman", country: "England", base: 2.0, set: "Marquee" },
                 { name: "Pat Cummins", role: "Pacer", country: "Australia", base: 2.0, set: "Marquee" },
-                { name: "R. Ashwin", role: "Spinner", country: "India", base: 2.0, set: "Marquee" },
-                { name: "James Anderson", role: "Pacer", country: "England", base: 1.5, set: "Pacers" },
-                { name: "Nathan Lyon", role: "Spinner", country: "Australia", base: 1.5, set: "Spinners" },
-                { name: "Ben Stokes", role: "All-Rounder", country: "England", base: 2.0, set: "All-Rounders" },
-                { name: "Marnus Labuschagne", role: "Batsman", country: "Australia", base: 1.5, set: "Batsmen" },
+                { name: "Joe Root", role: "Batsman", country: "England", base: 2.0, set: "Marquee" },
+                { name: "Ravichandran Ashwin", role: "Spinner", country: "India", base: 2.0, set: "Marquee" },
+                { name: "Kane Williamson", role: "Batsman", country: "New Zealand", base: 2.0, set: "Marquee" },
                 { name: "Rishabh Pant", role: "Wicketkeeper", country: "India", base: 1.5, set: "Wicketkeepers" },
-                { name: "Josh Hazlewood", role: "Pacer", country: "Australia", base: 1.5, set: "Pacers" }
+                { name: "Nathan Lyon", role: "Spinner", country: "Australia", base: 1.5, set: "Spinners" },
+                { name: "Ravindra Jadeja", role: "All-Rounder", country: "India", base: 2.0, set: "All-Rounders" },
+                { name: "James Anderson", role: "Pacer", country: "England", base: 1.0, set: "Pacers" },
+                { name: "Marnus Labuschagne", role: "Batsman", country: "Australia", base: 1.5, set: "Batsmen" },
             ]
         };
 
@@ -1267,70 +1180,31 @@ Return a JSON object exactly matching the schema.
             if(!currentUser) return;
             try {
                 buttons.create.disabled = true; buttons.create.innerText = "Hosting...";
-
-                let localSessionId;
-                try {
-                    localSessionId = sessionStorage.getItem('cricbid_session');
-                    if (!localSessionId) { 
-                        localSessionId = Math.random().toString(36).substring(2, 9); 
-                        sessionStorage.setItem('cricbid_session', localSessionId); 
-                    }
-                } catch(e) {
-                    // Safe fallback if iframe blocks sessionStorage
-                    localSessionId = Math.random().toString(36).substring(2, 9);
-                }
-
-                myUserDocId = currentUser.uid + "_" + localSessionId + "_" + roomId; 
-
-                const batch = writeBatch(db);
-
-                // Add the room to the batch
-                batch.set(doc(getRoomsRef(), roomId), {
+                await setDoc(doc(getRoomsRef(), roomId), {
                     roomId: roomId, hostId: currentUser.uid, status: 'waiting', format: format,
                     currentAuctionIndex: 0, timerEndTime: 0, currentBid: 0, currentBidder: null, createdAt: serverTimestamp()
                 });
+
+                let localSessionId = sessionStorage.getItem('cricbid_session');
+                if (!localSessionId) { localSessionId = Math.random().toString(36).substring(2, 9); sessionStorage.setItem('cricbid_session', localSessionId); }
+                myUserDocId = currentUser.uid + "_" + localSessionId + "_" + roomId; 
                 
-                // Add the host user to the batch
-                batch.set(doc(getUsersRef(), myUserDocId), {
+                await setDoc(doc(getUsersRef(), myUserDocId), {
                     userId: myUserDocId, authId: currentUser.uid, roomId: roomId, username: username,
                     budget: BUDGET_DEFAULT, role: 'admin', joinedAt: Date.now(), isOnline: true,
                     kicked: false, banned: false, peerId: null, lastActive: Date.now()
                 });
 
-                let playersToLoad = [...(AUCTION_DATABASES[format] || AUCTION_DATABASES["T20"])];
+                const batch = writeBatch(db);
+                const playersToLoad = AUCTION_DATABASES[format] || AUCTION_DATABASES["T20"];
                 
-                // Ensure enough players to support 5 teams hitting up to 25 players
-                if (playersToLoad.length < 125) {
-                    const basePlayers = [...playersToLoad];
-                    let pIdx = 1;
-                    while (playersToLoad.length < 125) {
-                        const template = basePlayers[pIdx % basePlayers.length];
-                        playersToLoad.push({
-                            name: `Draft Prospect ${pIdx}`,
-                            role: template.role,
-                            country: "Uncapped",
-                            base: 0.20,
-                            set: "Uncapped"
-                        });
-                        pIdx++;
-                    }
-                }
-                
-                // Add all the players to the batch
                 playersToLoad.forEach((p, idx) => {
                     const pRef = doc(getPlayersRef());
                     batch.set(pRef, { playerId: pRef.id, roomId: roomId, name: p.name, role: p.role, country: p.country, basePrice: p.base, set: p.set, soldPrice: null, ownerId: null, status: 'upcoming', order: idx });
                 });
-                
-                // Commit everything at once
                 await batch.commit();
                 enterRoom(roomId);
-            } catch(e) { 
-                console.error("Create Room Error:", e); 
-                showToast("Error creating room: " + (e.message || "Network Error")); 
-                buttons.create.disabled = false; 
-                buttons.create.innerText = "Host New Auction"; 
-            }
+            } catch(e) { console.error(e); showToast("Error creating room."); buttons.create.disabled = false; buttons.create.innerText = "Host New Auction"; }
         }
 
         async function joinRoom(roomId, username) {
@@ -1348,20 +1222,11 @@ Return a JSON object exactly matching the schema.
 
                 const usersSnap = await getDocs(getUsersRef());
                 let isBanned = false;
-                let usersInRoom = 0;
-                let iAmInRoom = false;
                 usersSnap.forEach(docSnap => {
                     const data = docSnap.data();
-                    if (data.roomId === roomId) {
-                        usersInRoom++;
-                        if (data.authId === currentUser.uid) {
-                            iAmInRoom = true;
-                            if (data.banned) isBanned = true;
-                        }
-                    }
+                    if (data.roomId === roomId && data.authId === currentUser.uid && data.banned) isBanned = true;
                 });
                 if (isBanned) { showToast("You are permanently banned."); buttons.join.disabled = false; return; }
-                if (!iAmInRoom && usersInRoom >= 5) { showToast("Room is full! Maximum 5 franchises allowed."); buttons.join.disabled = false; return; }
 
                 let localSessionId = sessionStorage.getItem('cricbid_session');
                 if (!localSessionId) { localSessionId = Math.random().toString(36).substring(2, 9); sessionStorage.setItem('cricbid_session', localSessionId); }
@@ -1542,9 +1407,6 @@ Return a JSON object exactly matching the schema.
                     badgesHtml += '</div>';
                 }
 
-                let analyzeBtnHtml = `<button onclick="analyzeTeam('${u.userId}')" class="mt-3 w-full justify-center text-[9px] sm:text-[10px] font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20 hover:bg-purple-500/20 px-2 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 shadow-inner"><span class="text-xs">🤖</span> Analyze Balance</button>`;
-                badgesHtml += analyzeBtnHtml;
-
                 let adminControlsHtml = '';
                 if (amIHost && !isMe) {
                     const safeName = u.username.replace(/'/g, "\\'");
@@ -1571,7 +1433,7 @@ Return a JSON object exactly matching the schema.
                                     ${isOffline ? '<span class="text-[8px] sm:text-[9px] bg-zinc-700 text-white px-1.5 py-0.5 rounded shadow-sm uppercase tracking-widest font-bold">Offline</span>' : ''}
                                 </span>
                             </p>
-                            <p class="text-[9px] sm:text-[10px] ${boughtPlayers.length < 15 ? 'text-orange-400' : (boughtPlayers.length >= 25 ? 'text-red-400' : 'text-cric-green')} mt-1 uppercase tracking-widest font-bold">${boughtPlayers.length}/25 Players ${boughtPlayers.length < 15 ? '(Min 15)' : ''}</p>
+                            <p class="text-[9px] sm:text-[10px] text-zinc-500 mt-1 uppercase tracking-widest font-bold">${boughtPlayers.length} Players</p>
                         </div>
                         <div class="text-right bg-zinc-950/80 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl border border-zinc-800 shadow-inner">
                             <p class="font-display font-black text-cric-gold text-base sm:text-lg leading-none tracking-tight">₹${formatMoney(u.budget)}</p>
@@ -1684,24 +1546,12 @@ Return a JSON object exactly matching the schema.
                     ui.statusIndicator.className = "w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-emerald-500 shadow-[0_0_12px_#10b981]";
                     
                     if (isHost && !document.getElementById('btn-host-start-season')) {
-                        const btnContainer = document.createElement('div');
-                        btnContainer.className = "flex gap-2 w-full mt-2";
-                        
-                        const btn1 = document.createElement('button');
-                        btn1.id = 'btn-host-start-season';
-                        btn1.className = "bg-cric-accent hover:bg-blue-500 text-white font-bold px-2.5 sm:px-5 py-2 sm:py-3 rounded-lg sm:rounded-xl shadow-[0_0_20px_rgba(59,130,246,0.4)] flex-1 transition-colors active:scale-95 text-[9px] sm:text-xs uppercase tracking-wider";
-                        btn1.innerText = "Simulate Season 🏆";
-                        btn1.onclick = initializeSeason;
-                        
-                        const btn2 = document.createElement('button');
-                        btn2.id = 'btn-host-best-xi';
-                        btn2.className = "bg-purple-600 hover:bg-purple-500 text-white font-bold px-2.5 sm:px-5 py-2 sm:py-3 rounded-lg sm:rounded-xl shadow-[0_0_20px_rgba(147,51,234,0.4)] flex-1 transition-colors active:scale-95 text-[9px] sm:text-xs uppercase tracking-wider";
-                        btn2.innerHTML = "🤖 Best XI";
-                        btn2.onclick = generateBestXI;
-                        
-                        btnContainer.appendChild(btn1);
-                        btnContainer.appendChild(btn2);
-                        ui.hostControls.appendChild(btnContainer);
+                        const btn = document.createElement('button');
+                        btn.id = 'btn-host-start-season';
+                        btn.className = "bg-cric-accent hover:bg-blue-500 text-white font-bold px-2.5 sm:px-5 py-2 sm:py-3 rounded-lg sm:rounded-xl shadow-[0_0_20px_rgba(59,130,246,0.4)] flex-1 min-w-[100%] sm:min-w-[150px] transition-colors active:scale-95 text-[10px] sm:text-sm uppercase tracking-wider mt-2";
+                        btn.innerText = "Simulate Season 🏆";
+                        btn.onclick = initializeSeason;
+                        ui.hostControls.appendChild(btn);
                     }
                 }
             }
@@ -1721,32 +1571,9 @@ Return a JSON object exactly matching the schema.
                     if(ui.playerSet) ui.playerSet.classList.add('hidden');
                 }
                 
-                const bidSuggestionBox = document.getElementById('ai-bid-suggestion');
-                
                 if (playerStatsCache[currentPlayer.name]) {
                     renderPlayerAnalyticsUI(currentPlayer, playerStatsCache[currentPlayer.name]);
-                    
-                    if (roomData.status === 'active') {
-                        const pMax = playerStatsCache[currentPlayer.name].predMax;
-                        document.getElementById('ai-bid-max').innerText = pMax.toFixed(2);
-                        bidSuggestionBox.classList.remove('hidden');
-                        
-                        if (roomData.currentBid > pMax) {
-                            bidSuggestionBox.classList.replace('bg-purple-500/10', 'bg-red-500/10');
-                            bidSuggestionBox.classList.replace('text-purple-400', 'text-red-400');
-                            bidSuggestionBox.classList.replace('border-purple-500/20', 'border-red-500/20');
-                            bidSuggestionBox.innerHTML = `⚠️ Overpriced: Over AI Max ₹${pMax.toFixed(2)}Cr`;
-                        } else {
-                            bidSuggestionBox.classList.replace('bg-red-500/10', 'bg-purple-500/10');
-                            bidSuggestionBox.classList.replace('text-red-400', 'text-purple-400');
-                            bidSuggestionBox.classList.replace('border-red-500/20', 'border-purple-500/20');
-                            bidSuggestionBox.innerHTML = `🤖 AI Suggests Max: ₹<span id="ai-bid-max">${pMax.toFixed(2)}</span>Cr`;
-                        }
-                    } else {
-                        bidSuggestionBox.classList.add('hidden');
-                    }
                 } else {
-                    bidSuggestionBox.classList.add('hidden');
                     const statRating = document.getElementById('ui-stat-rating');
                     if (statRating) {
                         statRating.innerText = "AI";
@@ -1834,12 +1661,7 @@ Return a JSON object exactly matching the schema.
         async function initializeSeason() {
             if (!currentUser || !roomData) return;
             const teams = usersData.filter(u => playersData.some(p => p.ownerId === u.userId));
-            if (teams.length < 2) return showToast("Need at least 2 teams to start Season.");
-
-            for (let team of teams) {
-                const count = playersData.filter(p => p.ownerId === team.userId).length;
-                if (count < 15) return showToast(`Cannot start! ${team.username} has only ${count} players (Min: 15).`);
-            }
+            if (teams.length < 2) return showToast("Need at least 2 teams with players to start Season.");
 
             const matches = [];
             let matchId = 0;
@@ -2256,130 +2078,6 @@ Return a JSON object exactly matching the schema.
             document.getElementById('btn-confirm-transfer').disabled = !(selectedTransferRelease && selectedTransferSign);
         }
 
-        window.analyzeTeam = async (userId) => {
-            const team = usersData.find(u => u.userId === userId);
-            const squad = playersData.filter(p => p.ownerId === userId);
-            
-            const modal = document.getElementById('team-analysis-modal');
-            document.getElementById('analysis-team-name').innerText = team.username + "'s Squad";
-            document.getElementById('analysis-loading').classList.remove('hidden');
-            document.getElementById('analysis-content').classList.add('hidden');
-            
-            modal.classList.remove('hidden');
-            setTimeout(() => modal.classList.remove('opacity-0'), 10);
-            
-            if (squad.length === 0) {
-                document.getElementById('analysis-loading').classList.add('hidden');
-                document.getElementById('analysis-content').classList.remove('hidden');
-                document.getElementById('analysis-content').classList.add('flex');
-                document.getElementById('analysis-rating').innerText = '0.0';
-                document.getElementById('analysis-strengths').innerText = 'None.';
-                document.getElementById('analysis-weaknesses').innerText = 'No players bought yet.';
-                document.getElementById('analysis-verdict').innerText = 'Need to actively participate in the auction.';
-                return;
-            }
-
-            const formatStr = roomData ? roomData.format : 'T20';
-            const prompt = `Act as an expert Cricket Analyst. Analyze this squad for a ${formatStr} tournament: ${squad.map(p=>p.name + ' (' + p.role + ')').join(', ')}. 
-    Return JSON exactly matching this schema:
-    {
-      "rating": <number out of 10>,
-      "strengths": "<1 detailed sentence string summarizing key strengths>",
-      "weaknesses": "<1 detailed sentence string summarizing obvious weaknesses/gaps>",
-      "verdict": "<1 short punchy sentence overall verdict>"
-    }`;
-
-            const payload = {
-                contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: { responseMimeType: "application/json" }
-            };
-
-            try {
-                // Set the canvas API key here when making calls inside the application
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=`, { method: 'POST', body: JSON.stringify(payload) });
-                const data = await response.json();
-                const parsed = JSON.parse(data.candidates[0].content.parts[0].text);
-                
-                document.getElementById('analysis-rating').innerText = parsed.rating.toFixed(1);
-                document.getElementById('analysis-strengths').innerText = parsed.strengths;
-                document.getElementById('analysis-weaknesses').innerText = parsed.weaknesses;
-                document.getElementById('analysis-verdict').innerText = parsed.verdict;
-            } catch(e) {
-                console.error("Analysis err", e);
-                document.getElementById('analysis-rating').innerText = 'N/A';
-                document.getElementById('analysis-strengths').innerText = 'Data fetch failed.';
-                document.getElementById('analysis-weaknesses').innerText = 'Data fetch failed.';
-                document.getElementById('analysis-verdict').innerText = 'Failed to analyze (Network or API error).';
-            }
-            document.getElementById('analysis-loading').classList.add('hidden');
-            document.getElementById('analysis-content').classList.remove('hidden');
-            document.getElementById('analysis-content').classList.add('flex');
-        };
-
-        window.generateBestXI = async () => {
-            const modal = document.getElementById('best-xi-modal');
-            document.getElementById('best-xi-loading').classList.remove('hidden');
-            document.getElementById('best-xi-content').classList.add('hidden');
-            
-            modal.classList.remove('hidden');
-            setTimeout(() => modal.classList.remove('opacity-0'), 10);
-            
-            const soldPlayers = playersData.filter(p => p.status === 'sold');
-            if(soldPlayers.length < 11) {
-                document.getElementById('best-xi-loading').innerHTML = 'Not enough players sold yet to form a Best XI. Please auction more players.';
-                return;
-            }
-
-            const formatStr = roomData ? roomData.format : 'T20';
-            const prompt = `Act as an expert Cricket Selector. From this list of players bought in an auction, select the absolute Best Playing XI for a ${formatStr} match. 
-    Ensure a balanced team (top order, middle order, keeper, pacers, spinners). Assign one player as captain.
-    Players available: ${soldPlayers.map(p=>p.name + ' (' + p.role + ')').join(', ')}.
-    Return JSON exactly matching this schema:
-    {
-      "xi": [
-        { "name": "Player Name", "role": "Specific role (e.g. Opening Batsman, Pace Bowler)", "isCaptain": <boolean> }
-      ]
-    } (Array must be exactly length 11, ordered roughly by batting position).`;
-
-            const payload = {
-                contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: { responseMimeType: "application/json" }
-            };
-
-            try {
-                // Set the canvas API key here when making calls inside the application
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=`, { method: 'POST', body: JSON.stringify(payload) });
-                const data = await response.json();
-                const parsed = JSON.parse(data.candidates[0].content.parts[0].text);
-                
-                const grid = document.getElementById('best-xi-grid');
-                grid.innerHTML = '';
-                parsed.xi.forEach((p, index) => {
-                    const owner = playersData.find(pl => pl.name === p.name)?.ownerId;
-                    const ownerName = usersData.find(u => u.userId === owner)?.username || 'Unknown';
-                    
-                    grid.innerHTML += `
-                        <div class="bg-zinc-950/50 border border-zinc-800 rounded-xl p-3 flex items-center gap-3 shadow-md hover:border-purple-500/50 transition-colors">
-                            <div class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-xs text-zinc-400 shrink-0 border border-zinc-700">${index+1}</div>
-                            <div class="text-left flex-1 min-w-0">
-                                <p class="font-bold text-white text-sm truncate flex items-center gap-1.5">
-                                    ${p.name}
-                                    ${p.isCaptain ? '<span class="bg-cric-gold text-zinc-900 text-[9px] px-1.5 py-0.5 rounded-md uppercase tracking-widest font-black shadow-sm">C</span>' : ''}
-                                </p>
-                                <p class="text-[9px] text-zinc-500 uppercase tracking-widest truncate mt-0.5">${p.role}</p>
-                                <p class="text-[9px] text-cric-accent mt-0.5 truncate font-medium">Team: ${ownerName}</p>
-                            </div>
-                        </div>
-                    `;
-                });
-                document.getElementById('best-xi-loading').classList.add('hidden');
-                document.getElementById('best-xi-content').classList.remove('hidden');
-            } catch(e) {
-                console.error("Best XI err", e);
-                document.getElementById('best-xi-loading').innerHTML = 'Failed to generate Best XI. Please try again.';
-            }
-        };
-
         document.getElementById('btn-confirm-transfer').addEventListener('click', async () => {
             if (!selectedTransferRelease || !selectedTransferSign) return;
             const releaseP = playersData.find(p => p.playerId === selectedTransferRelease);
@@ -2516,9 +2214,6 @@ Return a JSON object exactly matching the schema.
             const me = usersData.find(u => u.userId === myUserDocId);
             const currentPlayer = playersData.find(p => p.order === roomData.currentAuctionIndex);
             if(!me || !currentPlayer || currentPlayer.status !== 'auctioning' || roomData.status !== 'active') return;
-
-            const myPlayersCount = playersData.filter(p => p.ownerId === myUserDocId).length;
-            if(myPlayersCount >= 25) return showToast("Squad full! Max 25 players allowed.");
 
             let newBid = roomData.currentBid === 0 ? currentPlayer.basePrice : parseFloat((roomData.currentBid + amount).toFixed(2));
             if(newBid > me.budget) return showToast("Insufficient Budget!");
