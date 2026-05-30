@@ -373,36 +373,36 @@
                             </div>
                         </div>
 
-                    </div>
-                </div>
+                        <!-- Scrolled Controls Container (Moves organically with the board) -->
+                        <div class="w-full max-w-[900px] mx-auto mt-6 sm:mt-8 pb-24 lg:pb-4 z-30 flex flex-col gap-4">
+                            
+                            <!-- Host Controls (Only visible to admin) -->
+                            <div id="host-controls" class="hidden flex-wrap gap-2 justify-center p-4 bg-zinc-900/50 border border-zinc-800/80 rounded-[1.5rem] shadow-lg">
+                                <span class="w-full text-center text-[9px] text-zinc-500 uppercase tracking-widest font-bold flex items-center justify-center gap-1.5 mb-1"><span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> Host Desk</span>
+                                <button id="btn-host-start" class="bg-white hover:bg-zinc-200 text-zinc-950 font-bold px-5 py-3 rounded-xl shadow-md flex-1 min-w-[100px] transition-colors active:scale-95 text-xs uppercase tracking-wider">Start / Next</button>
+                                <button id="btn-host-pause" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold px-5 py-3 rounded-xl shadow-md flex-1 min-w-[100px] transition-colors active:scale-95 text-xs uppercase tracking-wider border border-zinc-700">Pause</button>
+                                <button id="btn-host-unsold" class="bg-red-500/10 hover:bg-red-500/20 text-red-500 font-bold px-5 py-3 rounded-xl shadow-md flex-1 min-w-[100px] transition-colors disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 text-xs uppercase tracking-wider border border-red-500/20">Mark Unsold</button>
+                            </div>
 
-                <!-- Sticky Bottom Controls Container -->
-                <div class="shrink-0 bg-zinc-950/95 backdrop-blur-xl border-t border-zinc-800 pb-24 lg:pb-0 relative z-30">
-                    
-                    <!-- Host Controls (Only visible to admin) -->
-                    <div id="host-controls" class="hidden flex-wrap gap-2 justify-center p-3 border-b border-zinc-800 bg-zinc-900/30">
-                        <span class="w-full text-center text-[9px] text-zinc-500 uppercase tracking-widest font-bold flex items-center justify-center gap-1.5 mb-1"><span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> Host Desk</span>
-                        <button id="btn-host-start" class="bg-white hover:bg-zinc-200 text-zinc-950 font-bold px-5 py-2.5 rounded-xl shadow-md flex-1 min-w-[100px] transition-colors active:scale-95 text-xs uppercase tracking-wider">Start / Next</button>
-                        <button id="btn-host-pause" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold px-5 py-2.5 rounded-xl shadow-md flex-1 min-w-[100px] transition-colors active:scale-95 text-xs uppercase tracking-wider border border-zinc-700">Pause</button>
-                        <button id="btn-host-unsold" class="bg-red-500/10 hover:bg-red-500/20 text-red-500 font-bold px-5 py-2.5 rounded-xl shadow-md flex-1 min-w-[100px] transition-colors disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 text-xs uppercase tracking-wider border border-red-500/20">Mark Unsold</button>
-                    </div>
-
-                    <!-- Bidding Controls -->
-                    <div id="bidding-controls" class="p-3 sm:p-5 opacity-50 pointer-events-none transition-opacity duration-300 max-w-[900px] mx-auto w-full pb-safe">
-                        <div class="grid grid-cols-3 gap-3 sm:gap-5">
-                            <button onclick="placeBid(0.20)" class="bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-700 text-white font-bold py-4 sm:py-6 rounded-[1.5rem] transition-all shadow-lg flex flex-col items-center justify-center border border-zinc-800 active:scale-[0.97] group">
-                                <span class="text-[10px] sm:text-xs text-zinc-500 font-bold mb-1 uppercase tracking-widest group-hover:text-zinc-400 transition-colors">Raise</span>
-                                <span class="text-xl sm:text-2xl font-display font-black">20 L</span>
-                            </button>
-                            <button onclick="placeBid(0.50)" class="bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-700 text-white font-bold py-4 sm:py-6 rounded-[1.5rem] transition-all shadow-lg flex flex-col items-center justify-center border border-zinc-800 active:scale-[0.97] group">
-                                <span class="text-[10px] sm:text-xs text-zinc-500 font-bold mb-1 uppercase tracking-widest group-hover:text-zinc-400 transition-colors">Raise</span>
-                                <span class="text-xl sm:text-2xl font-display font-black">50 L</span>
-                            </button>
-                            <button onclick="placeBid(1.00)" class="bg-cric-green hover:bg-emerald-400 active:bg-emerald-500 text-zinc-950 font-bold py-4 sm:py-6 rounded-[1.5rem] transition-all shadow-[0_10px_30px_rgba(16,185,129,0.3)] flex flex-col items-center justify-center active:scale-[0.97]">
-                                <span class="text-[10px] sm:text-xs text-emerald-900/70 font-black mb-1 uppercase tracking-widest">Power Raise</span>
-                                <span class="text-2xl sm:text-3xl font-display font-black">1 Cr</span>
-                            </button>
+                            <!-- Bidding Controls -->
+                            <div id="bidding-controls" class="opacity-50 pointer-events-none transition-opacity duration-300 w-full pb-safe">
+                                <div class="grid grid-cols-3 gap-3 sm:gap-5">
+                                    <button onclick="placeBid(0.20)" class="bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-700 text-white font-bold py-4 sm:py-6 rounded-[1.5rem] transition-all shadow-lg flex flex-col items-center justify-center border border-zinc-800 active:scale-[0.97] group">
+                                        <span class="text-[10px] sm:text-xs text-zinc-500 font-bold mb-1 uppercase tracking-widest group-hover:text-zinc-400 transition-colors">Raise</span>
+                                        <span class="text-xl sm:text-2xl font-display font-black">20 L</span>
+                                    </button>
+                                    <button onclick="placeBid(0.50)" class="bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-700 text-white font-bold py-4 sm:py-6 rounded-[1.5rem] transition-all shadow-lg flex flex-col items-center justify-center border border-zinc-800 active:scale-[0.97] group">
+                                        <span class="text-[10px] sm:text-xs text-zinc-500 font-bold mb-1 uppercase tracking-widest group-hover:text-zinc-400 transition-colors">Raise</span>
+                                        <span class="text-xl sm:text-2xl font-display font-black">50 L</span>
+                                    </button>
+                                    <button onclick="placeBid(1.00)" class="bg-cric-green hover:bg-emerald-400 active:bg-emerald-500 text-zinc-950 font-bold py-4 sm:py-6 rounded-[1.5rem] transition-all shadow-[0_10px_30px_rgba(16,185,129,0.3)] flex flex-col items-center justify-center active:scale-[0.97]">
+                                        <span class="text-[10px] sm:text-xs text-emerald-900/70 font-black mb-1 uppercase tracking-widest">Power Raise</span>
+                                        <span class="text-2xl sm:text-3xl font-display font-black">1 Cr</span>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
+
                     </div>
                 </div>
 
