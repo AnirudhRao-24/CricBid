@@ -680,6 +680,33 @@
         </div>
     </div>
 
+    <!-- Post-Auction Draft Modal -->
+    <div id="draft-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[120] hidden flex-col items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="glass-panel bg-zinc-900 border border-zinc-700 p-6 sm:p-8 rounded-[2rem] max-w-2xl w-full shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]">
+            <div class="text-center mb-6 shrink-0">
+                <h2 class="text-2xl sm:text-3xl font-display font-black text-white">Post-Auction Allocation</h2>
+                <p class="text-zinc-400 text-sm mt-2">Some franchises have less than 13 players. Assign unsold players to complete their squads.</p>
+            </div>
+            
+            <div class="flex flex-col gap-4 flex-1 min-h-[300px] overflow-hidden">
+                <div>
+                    <label class="block text-[10px] font-bold text-zinc-400 mb-2 uppercase tracking-wider">Select Franchise</label>
+                    <select id="draft-team-select" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-cric-green">
+                    </select>
+                </div>
+                <div class="flex-1 flex flex-col overflow-hidden">
+                    <label class="block text-[10px] font-bold text-zinc-400 mb-2 uppercase tracking-wider">Select Unsold Player (Base Price)</label>
+                    <div id="draft-unsold-players" class="flex-1 overflow-y-auto hide-scrollbar touch-scroll border border-zinc-800 rounded-xl p-2 bg-zinc-950/50 space-y-2"></div>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-zinc-800 flex justify-end gap-3 shrink-0">
+                <button id="btn-close-draft" class="px-5 py-2.5 rounded-xl text-zinc-400 font-bold bg-zinc-800 hover:bg-zinc-700 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Close Window</button>
+                <button id="btn-assign-draft" class="px-5 py-2.5 rounded-xl text-zinc-950 font-bold bg-cric-green hover:bg-emerald-400 transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">Assign Player</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
@@ -1108,24 +1135,6 @@
                 { name: "Yashasvi Jaiswal", role: "Batsman", country: "IND", base: 1.5, set: "Batsmen" },
                 { name: "Ruturaj Gaikwad", role: "Batsman", country: "IND", base: 1.0, set: "Batsmen" },
                 { name: "Tilak Varma", role: "Batsman", country: "IND", base: 1.0, set: "Batsmen" },
-                { name: "Rinku Singh", role: "Batsman", country: "IND", base: 1.0, set: "Batsmen" },
-                { name: "Sai Sudharsan", role: "Batsman", country: "IND", base: 1.0, set: "Batsmen" },
-                { name: "Abhishek Sharma", role: "Batsman", country: "IND", base: 1.0, set: "Batsmen" },
-                { name: "David Miller", role: "Batsman", country: "SA", base: 1.0, set: "Batsmen" },
-                { name: "Faf du Plessis", role: "Batsman", country: "SA", base: 1.0, set: "Batsmen" },
-                { name: "Harry Brook", role: "Batsman", country: "ENG", base: 1.0, set: "Batsmen" },
-                { name: "Devon Conway", role: "Batsman", country: "NZ", base: 1.0, set: "Batsmen" },
-                { name: "Jake Fraser-McGurk", role: "Batsman", country: "AUS", base: 0.75, set: "Batsmen" },
-                { name: "Ryan Rickelton", role: "Batsman", country: "SA", base: 0.75, set: "Batsmen" },
-                { name: "Dewald Brevis", role: "Batsman", country: "SA", base: 0.75, set: "Batsmen" },
-                { name: "Rahul Tripathi", role: "Batsman", country: "IND", base: 0.5, set: "Batsmen" },
-                { name: "Mohammed Shami", role: "Pacer", country: "IND", base: 1.5, set: "Pacers" },
-                { name: "Mohammed Siraj", role: "Pacer", country: "IND", base: 1.5, set: "Pacers" },
-                { name: "Arshdeep Singh", role: "Pacer", country: "IND", base: 1.5, set: "Pacers" },
-                { name: "Mayank Yadav", role: "Pacer", country: "IND", base: 1.0, set: "Pacers" },
-                { name: "Harshit Rana", role: "Pacer", country: "IND", base: 0.75, set: "Pacers" },
-                { name: "Prasidh Krishna", role: "Pacer", country: "IND", base: 0.75, set: "Pacers" },
-                { name: "Matheesha Pathirana", role: "Pacer", country: "SL", base: 1.5, set: "Pacers" }
             ],
             "ODI": [
                 { name: "Rohit Sharma", role: "Batsman", country: "India", base: 2.0, set: "Marquee" },
@@ -1197,11 +1206,26 @@
 
                 const usersSnap = await getDocs(getUsersRef());
                 let isBanned = false;
+                let activeUsersInRoom = 0;
+                let isAlreadyInRoom = false;
                 usersSnap.forEach(docSnap => {
                     const data = docSnap.data();
-                    if (data.roomId === roomId && data.authId === currentUser.uid && data.banned) isBanned = true;
+                    if (data.roomId === roomId) {
+                        if (data.authId === currentUser.uid) {
+                            isAlreadyInRoom = true;
+                            if (data.banned) isBanned = true;
+                        } else if (!data.kicked && !data.banned) {
+                            activeUsersInRoom++;
+                        }
+                    }
                 });
                 if (isBanned) { showToast("You are permanently banned."); buttons.join.disabled = false; return; }
+
+                if (!isAlreadyInRoom && activeUsersInRoom >= 6) {
+                    showToast("Room is full! Maximum 6 franchises allowed.");
+                    buttons.join.disabled = false;
+                    return;
+                }
 
                 // Fixed: Unique ID binds to user to prevent duplicate ghost players
                 myUserDocId = currentUser.uid + "_" + roomId;
@@ -1632,7 +1656,9 @@ Return a JSON object exactly matching the schema.
                                     ${isOffline ? '<span class="text-[8px] sm:text-[9px] bg-zinc-700 text-white px-1.5 py-0.5 rounded shadow-sm uppercase tracking-widest font-bold">Offline</span>' : ''}
                                 </span>
                             </p>
-                            <p class="text-[9px] sm:text-[10px] text-zinc-500 mt-1 uppercase tracking-widest font-bold">${boughtPlayers.length} Players</p>
+                            <p class="text-[9px] sm:text-[10px] ${boughtPlayers.length < 13 ? 'text-red-400' : (boughtPlayers.length >= 18 ? 'text-cric-green' : 'text-zinc-500')} mt-1 uppercase tracking-widest font-bold">
+                                Squad: ${boughtPlayers.length}/18 ${boughtPlayers.length < 13 ? '(Needs ' + (13 - boughtPlayers.length) + ' more)' : (boughtPlayers.length === 18 ? '(Full)' : '')}
+                            </p>
                         </div>
                         <div class="text-right bg-zinc-950/80 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl border border-zinc-800 shadow-inner">
                             <p class="font-display font-black text-cric-gold text-base sm:text-lg leading-none tracking-tight">₹${formatMoney(u.budget)}</p>
@@ -1746,13 +1772,25 @@ Return a JSON object exactly matching the schema.
                     ui.roomStatus.innerText = "Completed"; ui.roomStatus.className = "font-bold text-emerald-500 text-[9px] sm:text-xs lg:text-sm tracking-widest uppercase";
                     ui.statusIndicator.className = "w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-emerald-500 shadow-[0_0_12px_#10b981]";
                     
-                    if (isHost && !document.getElementById('btn-host-start-season')) {
-                        const btn = document.createElement('button');
-                        btn.id = 'btn-host-start-season';
-                        btn.className = "bg-cric-accent hover:bg-blue-500 text-white font-bold px-2.5 sm:px-5 py-2 sm:py-3 rounded-lg sm:rounded-xl shadow-[0_0_20px_rgba(59,130,246,0.4)] flex-1 min-w-[100%] sm:min-w-[150px] transition-colors active:scale-95 text-[10px] sm:text-sm uppercase tracking-wider mt-2";
-                        btn.innerText = "Simulate Season 🏆";
-                        btn.onclick = initializeSeason;
-                        ui.hostControls.appendChild(btn);
+                    if (isHost) {
+                        const teamsNeedingPlayers = usersData.filter(u => {
+                            const count = playersData.filter(p => p.ownerId === u.userId).length;
+                            return !u.kicked && !u.banned && count < 13;
+                        });
+                        
+                        if (teamsNeedingPlayers.length > 0) {
+                            openDraftModal(teamsNeedingPlayers);
+                        } else {
+                            document.getElementById('draft-modal').classList.add('hidden');
+                            if (!document.getElementById('btn-host-start-season')) {
+                                const btn = document.createElement('button');
+                                btn.id = 'btn-host-start-season';
+                                btn.className = "bg-cric-accent hover:bg-blue-500 text-white font-bold px-2.5 sm:px-5 py-2 sm:py-3 rounded-lg sm:rounded-xl shadow-[0_0_20px_rgba(59,130,246,0.4)] flex-1 min-w-[100%] sm:min-w-[150px] transition-colors active:scale-95 text-[10px] sm:text-sm uppercase tracking-wider mt-2";
+                                btn.innerText = "Simulate Season 🏆";
+                                btn.onclick = initializeSeason;
+                                ui.hostControls.appendChild(btn);
+                            }
+                        }
                     }
                 }
             }
@@ -1877,6 +1915,9 @@ Return a JSON object exactly matching the schema.
             const me = usersData.find(u => u.userId === myUserDocId);
             const currentPlayer = playersData.find(p => p.order === roomData.currentAuctionIndex);
             if(!me || !currentPlayer || currentPlayer.status !== 'auctioning' || roomData.status !== 'active') return;
+
+            const myPlayersCount = playersData.filter(p => p.ownerId === myUserDocId).length;
+            if(myPlayersCount >= 18) return showToast("Roster full! Maximum 18 players allowed.");
 
             let newBid = roomData.currentBid === 0 ? currentPlayer.basePrice : parseFloat((roomData.currentBid + amount).toFixed(2));
             if(newBid > me.budget) return showToast("Insufficient Budget!");
@@ -2400,6 +2441,84 @@ Return a JSON object exactly matching the schema.
                 document.getElementById('transfer-modal').classList.add('hidden');
                 showToast("Transfer Successful!");
             } catch(e) { console.error("Transfer Error", e); showToast("Failed to process transfer."); }
+        });
+
+        let selectedDraftPlayer = null;
+        window.openDraftModal = (teamsNeedingPlayers) => {
+            const modal = document.getElementById('draft-modal');
+            const select = document.getElementById('draft-team-select');
+            const list = document.getElementById('draft-unsold-players');
+            const btnClose = document.getElementById('btn-close-draft');
+            
+            const currentSelectedTeam = select.value;
+            select.innerHTML = '';
+            
+            teamsNeedingPlayers.forEach(t => {
+                const count = playersData.filter(p => p.ownerId === t.userId).length;
+                const opt = document.createElement('option');
+                opt.value = t.userId;
+                opt.innerText = `${t.username} (${count}/13 min players)`;
+                select.appendChild(opt);
+            });
+            
+            if (currentSelectedTeam && [...select.options].some(o => o.value === currentSelectedTeam)) {
+                select.value = currentSelectedTeam;
+            }
+
+            const unsoldPlayers = playersData.filter(p => p.status === 'unsold');
+            list.innerHTML = '';
+            unsoldPlayers.forEach(p => {
+                const div = document.createElement('div');
+                div.className = `p-2.5 rounded-lg border cursor-pointer transition-all flex justify-between items-center ${selectedDraftPlayer === p.playerId ? 'border-cric-green bg-cric-green/20' : 'border-zinc-800 bg-zinc-900 hover:border-zinc-600'}`;
+                div.innerHTML = `<div><p class="text-sm font-bold text-white">${p.name}</p><p class="text-[9px] text-zinc-500 uppercase">${p.role}</p></div><span class="font-display font-black text-xs text-zinc-400">₹${p.basePrice || p.base}</span>`;
+                div.onclick = () => { selectedDraftPlayer = p.playerId; openDraftModal(teamsNeedingPlayers); checkDraftValid(); };
+                list.appendChild(div);
+            });
+            
+            if(unsoldPlayers.length === 0) list.innerHTML = '<p class="text-xs text-zinc-500 italic p-2">No unsold players available.</p>';
+            
+            btnClose.disabled = teamsNeedingPlayers.length > 0 && unsoldPlayers.length > 0;
+            if (teamsNeedingPlayers.length === 0) btnClose.innerText = "Done - Proceed to Season";
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => { modal.classList.remove('opacity-0'); modal.querySelector('.glass-panel').classList.remove('scale-95'); }, 10);
+            checkDraftValid();
+        };
+
+        window.checkDraftValid = () => {
+            const btn = document.getElementById('btn-assign-draft');
+            if(btn) btn.disabled = !selectedDraftPlayer || !document.getElementById('draft-team-select').value;
+        };
+
+        document.getElementById('btn-assign-draft')?.addEventListener('click', async () => {
+            const teamId = document.getElementById('draft-team-select').value;
+            const playerId = selectedDraftPlayer;
+            if (!teamId || !playerId) return;
+            
+            const player = playersData.find(p => p.playerId === playerId);
+            const team = usersData.find(u => u.userId === teamId);
+            if (!player || !team) return;
+
+            try {
+                document.getElementById('btn-assign-draft').disabled = true;
+                const batch = writeBatch(db);
+                const price = player.basePrice || player.base || 0;
+                batch.update(doc(getPlayersRef(), playerId), { status: 'sold', ownerId: teamId, soldPrice: price });
+                batch.update(doc(getUsersRef(), teamId), { budget: team.budget - price });
+                await batch.commit();
+                selectedDraftPlayer = null;
+                showToast(`${player.name} assigned to ${team.username}`);
+            } catch(e) {
+                console.error("Draft err", e);
+                showToast("Assignment failed");
+            }
+        });
+
+        document.getElementById('btn-close-draft')?.addEventListener('click', () => {
+            const modal = document.getElementById('draft-modal');
+            modal.classList.add('opacity-0');
+            modal.querySelector('.glass-panel').classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
         });
 
         function updateChatUI() {
