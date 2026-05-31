@@ -758,6 +758,7 @@
         let seasonData = null;
         let selectedTransferRelease = null;
         let selectedTransferSign = null;
+        let draftModalDismissed = false;
 
         let peer = null;
         let myPeerId = null;
@@ -1135,33 +1136,6 @@
                 { name: "Yashasvi Jaiswal", role: "Batsman", country: "IND", base: 1.5, set: "Batsmen" },
                 { name: "Ruturaj Gaikwad", role: "Batsman", country: "IND", base: 1.0, set: "Batsmen" },
                 { name: "Tilak Varma", role: "Batsman", country: "IND", base: 1.0, set: "Batsmen" },
-                { name: "Rinku Singh", role: "Batsman", country: "IND", base: 1.0, set: "Batsmen" },
-                { name: "Sai Sudharsan", role: "Batsman", country: "IND", base: 1.0, set: "Batsmen" },
-                { name: "Abhishek Sharma", role: "Batsman", country: "IND", base: 1.0, set: "Batsmen" },
-                { name: "David Miller", role: "Batsman", country: "SA", base: 1.0, set: "Batsmen" },
-                { name: "Faf du Plessis", role: "Batsman", country: "SA", base: 1.0, set: "Batsmen" },
-                { name: "Harry Brook", role: "Batsman", country: "ENG", base: 1.0, set: "Batsmen" },
-                { name: "Devon Conway", role: "Batsman", country: "NZ", base: 1.0, set: "Batsmen" },
-                { name: "Jake Fraser-McGurk", role: "Batsman", country: "AUS", base: 0.75, set: "Batsmen" },
-                { name: "Ryan Rickelton", role: "Batsman", country: "SA", base: 0.75, set: "Batsmen" },
-                { name: "Dewald Brevis", role: "Batsman", country: "SA", base: 0.75, set: "Batsmen" },
-                { name: "Rahul Tripathi", role: "Batsman", country: "IND", base: 0.5, set: "Batsmen" },
-                { name: "Mohammed Shami", role: "Pacer", country: "IND", base: 1.5, set: "Pacers" },
-                { name: "Mohammed Siraj", role: "Pacer", country: "IND", base: 1.5, set: "Pacers" },
-                { name: "Arshdeep Singh", role: "Pacer", country: "IND", base: 1.5, set: "Pacers" },
-                { name: "Mayank Yadav", role: "Pacer", country: "IND", base: 1.0, set: "Pacers" },
-                { name: "Harshit Rana", role: "Pacer", country: "IND", base: 0.75, set: "Pacers" },
-                { name: "Prasidh Krishna", role: "Pacer", country: "IND", base: 0.75, set: "Pacers" },
-                { name: "Matheesha Pathirana", role: "Pacer", country: "SL", base: 1.5, set: "Pacers" },
-                { name: "Kagiso Rabada", role: "Pacer", country: "SA", base: 1.5, set: "Pacers" },
-                { name: "Mitchell Starc", role: "Pacer", country: "AUS", base: 2.0, set: "Pacers" },
-                { name: "Josh Hazlewood", role: "Pacer", country: "AUS", base: 1.5, set: "Pacers" },
-                { name: "Gerald Coetzee", role: "Pacer", country: "SA", base: 1.0, set: "Pacers" },
-                { name: "Lockie Ferguson", role: "Pacer", country: "NZ", base: 1.0, set: "Pacers" },
-                { name: "Spencer Johnson", role: "Pacer", country: "AUS", base: 0.75, set: "Pacers" },
-                { name: "Nandre Burger", role: "Pacer", country: "SA", base: 0.75, set: "Pacers" },
-                { name: "Naveen-ul-Haq", role: "Pacer", country: "AFG", base: 0.75, set: "Pacers" },
-                { name: "KL Rahul", role: "WK Batsman", country: "IND", base: 1.5, set: "Wicketkeepers" },
             ],
             "ODI": [
                 { name: "Rohit Sharma", role: "Batsman", country: "India", base: 2.0, set: "Marquee" },
@@ -1295,7 +1269,7 @@
 
         function startHeartbeat() {
             if (heartbeatInterval) clearInterval(heartbeatInterval);
-            heartbeatInterval = setInterval(() => { if (myUserDocId && auth.currentUser && document.visibilityState === 'visible') { updateDoc(doc(getUsersRef(), myUserDocId), { lastActive: Date.now() }).catch(()=>{}); } }, 10000); 
+            heartbeatInterval = setInterval(() => { if (myUserDocId && auth.currentUser) { updateDoc(doc(getUsersRef(), myUserDocId), { lastActive: Date.now() }).catch(()=>{}); } }, 15000); 
         }
 
         function setupListeners() {
@@ -1312,7 +1286,7 @@
                 snapshot.forEach(docSnap => {
                     const data = docSnap.data();
                     if(data.roomId === currentRoomId) {
-                        const isHeartbeatAlive = data.lastActive ? (now - data.lastActive < 40000) : true;
+                        const isHeartbeatAlive = data.lastActive ? (now - data.lastActive < 75000) : true;
                         data._computedOnline = data.isOnline !== false && isHeartbeatAlive;
                         tempUsers.push(data);
                     }
@@ -1330,7 +1304,6 @@
                         failoverTimer = setTimeout(() => {
                             const currentOnline = usersData.filter(u => u._computedOnline);
                             if (!currentOnline.some(u => u.role === 'admin') && currentOnline.length > 0) {
-                                // Fixed: Give strict priority to oldest player, increasing delay to prevent premature self-promotion
                                 const sortedUsers = [...currentOnline].sort((a, b) => (a.joinedAt || 0) - (b.joinedAt || 0));
                                 if (sortedUsers[0].userId === myUserDocId) {
                                     updateDoc(doc(getUsersRef(), myUserDocId), { role: 'admin' }).catch(console.error);
@@ -1338,7 +1311,7 @@
                                 }
                             }
                             failoverTimer = null;
-                        }, 5000); 
+                        }, 12000); 
                     } else if (hasAdmin && failoverTimer) { clearTimeout(failoverTimer); failoverTimer = null; }
                 }
 
@@ -1354,6 +1327,7 @@
                     });
                 }
                 updateUsersUI(); updateVideoGallery();
+                if (roomData && roomData.status === 'finished') updateRoomUI();
             }, (error) => { console.error("Users sync error", error) });
 
             unsubscribePlayers = onSnapshot(getPlayersRef(), (snapshot) => {
@@ -1362,6 +1336,7 @@
                 playersData = tempPlayers.sort((a, b) => a.order - b.order);
                 updatePlayersUI();
                 processPrefetchQueue();
+                if (roomData && roomData.status === 'finished') updateRoomUI();
             }, (error) => { console.error("Players sync error", error) });
 
             unsubscribeChat = onSnapshot(getChatRef(), (snapshot) => {
@@ -1800,12 +1775,13 @@ Return a JSON object exactly matching the schema.
                     ui.statusIndicator.className = "w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-emerald-500 shadow-[0_0_12px_#10b981]";
                     
                     if (isHost) {
+                        const unsoldPlayersLeft = playersData.filter(p => p.status === 'unsold');
                         const teamsNeedingPlayers = usersData.filter(u => {
                             const count = playersData.filter(p => p.ownerId === u.userId).length;
                             return !u.kicked && !u.banned && count < 13;
                         });
                         
-                        if (teamsNeedingPlayers.length > 0) {
+                        if (teamsNeedingPlayers.length > 0 && unsoldPlayersLeft.length > 0 && !draftModalDismissed) {
                             openDraftModal(teamsNeedingPlayers);
                         } else {
                             document.getElementById('draft-modal').classList.add('hidden');
@@ -2504,8 +2480,9 @@ Return a JSON object exactly matching the schema.
             
             if(unsoldPlayers.length === 0) list.innerHTML = '<p class="text-xs text-zinc-500 italic p-2">No unsold players available.</p>';
             
-            btnClose.disabled = teamsNeedingPlayers.length > 0 && unsoldPlayers.length > 0;
-            if (teamsNeedingPlayers.length === 0) btnClose.innerText = "Done - Proceed to Season";
+            btnClose.disabled = false;
+            if (teamsNeedingPlayers.length === 0 || unsoldPlayers.length === 0) btnClose.innerText = "Done - Proceed to Season";
+            else btnClose.innerText = "Skip Draft";
             
             modal.classList.remove('hidden');
             setTimeout(() => { modal.classList.remove('opacity-0'); modal.querySelector('.glass-panel').classList.remove('scale-95'); }, 10);
@@ -2526,6 +2503,9 @@ Return a JSON object exactly matching the schema.
             const team = usersData.find(u => u.userId === teamId);
             if (!player || !team) return;
 
+            const teamPlayersCount = playersData.filter(p => p.ownerId === teamId).length;
+            if (teamPlayersCount >= 18) return showToast("Team roster full!");
+
             try {
                 document.getElementById('btn-assign-draft').disabled = true;
                 const batch = writeBatch(db);
@@ -2542,10 +2522,12 @@ Return a JSON object exactly matching the schema.
         });
 
         document.getElementById('btn-close-draft')?.addEventListener('click', () => {
+            draftModalDismissed = true;
             const modal = document.getElementById('draft-modal');
             modal.classList.add('opacity-0');
             modal.querySelector('.glass-panel').classList.add('scale-95');
             setTimeout(() => modal.classList.add('hidden'), 300);
+            updateRoomUI();
         });
 
         function updateChatUI() {
