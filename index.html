@@ -687,14 +687,15 @@
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         
+        // Exact config provided by user
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
             apiKey: "AIzaSyCAd5OJKmVW2aSWgDogBg3lSpj1uzPxGrk",
-  authDomain: "cricbid-839eb.firebaseapp.com",
-  projectId: "cricbid-839eb",
-  storageBucket: "cricbid-839eb.firebasestorage.app",
-  messagingSenderId: "521652177425",
-  appId: "1:521652177425:web:c33adfb7ea97360d6affb0",
-  measurementId: "G-7WHCC3VSTW"
+            authDomain: "cricbid-839eb.firebaseapp.com",
+            projectId: "cricbid-839eb",
+            storageBucket: "cricbid-839eb.firebasestorage.app",
+            messagingSenderId: "521652177425",
+            appId: "1:521652177425:web:c33adfb7ea97360d6affb0",
+            measurementId: "G-7WHCC3VSTW"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -755,14 +756,6 @@
             try { localStorage.removeItem('cricbid_guest_name'); } catch(e) {}
         }
 
-        function getSessionId() {
-            try {
-                let id = sessionStorage.getItem('cricbid_session');
-                if (!id) { id = Math.random().toString(36).substring(2, 9); sessionStorage.setItem('cricbid_session', id); }
-                return id;
-            } catch(e) { return Math.random().toString(36).substring(2, 9); }
-        }
-
         const screens = { lobby: document.getElementById('lobby-screen'), auction: document.getElementById('auction-screen'), season: document.getElementById('season-screen') };
         const inputs = { roomCode: document.getElementById('room-code-input') };
         const buttons = { create: document.getElementById('btn-create-room'), join: document.getElementById('btn-join-room'), leave: document.getElementById('btn-leave') };
@@ -804,7 +797,6 @@
             setTimeout(() => toast.classList.remove('show'), actionHtml ? 8000 : 3500);
         };
 
-        // Added rule 3 fallback for scoped environments if they inject a custom token initially
         async function initAuth() {
             if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token && !auth.currentUser) {
                 try {
@@ -817,7 +809,6 @@
         onAuthStateChanged(auth, async (user) => { 
             currentUser = user;
             if (user) {
-                // Show authenticated Lobby menu
                 document.getElementById('login-section').classList.add('hidden');
                 document.getElementById('guest-name-section').classList.add('hidden');
                 document.getElementById('guest-name-section').classList.remove('flex');
@@ -830,21 +821,23 @@
                 document.getElementById('user-display-name').innerText = displayName;
                 document.getElementById('user-avatar').src = photoUrl;
 
-                // Update global presence
                 myPresenceId = user.uid;
-                await setDoc(doc(getPresenceRef(), myPresenceId), {
-                    uid: user.uid,
-                    name: displayName,
-                    photo: photoUrl,
-                    isOnline: true,
-                    lastActive: Date.now()
-                });
+                try {
+                    await setDoc(doc(getPresenceRef(), myPresenceId), {
+                        uid: user.uid,
+                        name: displayName,
+                        photo: photoUrl,
+                        isOnline: true,
+                        lastActive: Date.now()
+                    });
+                } catch(err) {
+                    console.warn("Could not set presence (checking rules):", err);
+                }
 
                 listenToGlobalPresence();
                 listenToInvites();
 
             } else {
-                // Show Login Screen
                 document.getElementById('login-section').classList.remove('hidden');
                 document.getElementById('guest-name-section').classList.add('hidden');
                 document.getElementById('guest-name-section').classList.remove('flex');
@@ -858,14 +851,9 @@
                 const provider = new GoogleAuthProvider();
                 await signInWithPopup(auth, provider);
             } catch(e) {
-                console.error("Google login error:", e);
-                if (e.code === 'auth/unauthorized-domain') {
-                    const domain = window.location.hostname || "null (sandbox)";
-                    showToast(`Google Login blocked. Please use 'Play as Guest' for testing, or add this domain in Firebase Auth Settings.`, 
-                              `<button onclick="document.getElementById('btn-guest-login').click(); document.getElementById('toast').classList.remove('show');" class="mt-2 w-full bg-zinc-800 hover:bg-zinc-700 text-white px-3 py-2 rounded-lg text-xs font-bold border border-zinc-700 transition-colors">Play as Guest Instead</button>`);
-                } else {
-                    showToast("Google Login cancelled or failed.");
-                }
+                console.warn("Google login blocked by Sandbox. Switching to Guest.");
+                showToast("Sandbox domain blocked Google Login. Switching to Guest mode...");
+                document.getElementById('btn-guest-login').click();
             }
         });
 
@@ -974,7 +962,6 @@
                 snapshot.docChanges().forEach(change => {
                     if (change.type === 'added') {
                         const data = change.doc.data();
-                        // Only show if sent to me within the last 30 seconds
                         if (data.toUid === currentUser?.uid && Date.now() - data.timestamp < 30000) {
                             showToast(
                                 `${data.fromName} invited you to play!`, 
@@ -1035,7 +1022,7 @@
         });
 
         window.addEventListener('beforeunload', () => { if (myUserDocId && auth.currentUser) { transferHostRole(); updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: false }).catch(() => {}); } });
-        document.addEventListener('visibilitychange', () => { if (myUserDocId && auth.currentUser) { const isVisible = document.visibilityState === 'visible'; updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: isVisible, lastActive: Date.now() }).catch(() => {}); } });
+        document.addEventListener('visibilitychange', () => { if (myUserDocId && auth.currentUser) { updateDoc(doc(getUsersRef(), myUserDocId), { lastActive: Date.now() }).catch(() => {}); } });
         window.addEventListener('offline', () => { if (myUserDocId && auth.currentUser) updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: false }).catch(() => {}); });
         window.addEventListener('online', () => { if (myUserDocId && auth.currentUser) updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: true, lastActive: Date.now() }).catch(() => {}); });
 
@@ -1120,8 +1107,8 @@
                     currentAuctionIndex: 0, timerEndTime: 0, currentBid: 0, currentBidder: null, createdAt: serverTimestamp()
                 });
 
-                let localSessionId = getSessionId();
-                myUserDocId = currentUser.uid + "_" + localSessionId + "_" + roomId; 
+                // Fixed: Unique ID binds to user to prevent duplicate ghost players
+                myUserDocId = currentUser.uid + "_" + roomId; 
                 
                 await setDoc(doc(getUsersRef(), myUserDocId), {
                     userId: myUserDocId, authId: currentUser.uid, roomId: roomId, username: username,
@@ -1139,8 +1126,12 @@
                 await batch.commit();
                 enterRoom(roomId);
             } catch(e) { 
-                console.error("Create Room Error:", e); 
-                showToast("Error: " + (e.message || "Failed to create room")); 
+                console.warn("Create Room Error:", e); 
+                if (String(e).includes("permissions") || String(e.message).includes("permissions")) {
+                    showToast("Database Permission Denied!", `<div class="mt-2 text-[10px] text-red-200 font-medium leading-relaxed tracking-wide">Please go to Firebase Console -> Firestore Database -> Rules and ensure they are exactly:<br><br><code class="bg-black/50 p-1.5 rounded block mt-1 text-emerald-400">allow read, write: if true;</code></div>`);
+                } else {
+                    showToast("Error: " + (e.message || "Failed to create room")); 
+                }
                 buttons.create.disabled = false; 
                 buttons.create.innerText = "Host New Auction"; 
             }
@@ -1167,13 +1158,13 @@
                 });
                 if (isBanned) { showToast("You are permanently banned."); buttons.join.disabled = false; return; }
 
-                let localSessionId = getSessionId();
-                myUserDocId = currentUser.uid + "_" + localSessionId + "_" + roomId;
+                // Fixed: Unique ID binds to user to prevent duplicate ghost players
+                myUserDocId = currentUser.uid + "_" + roomId;
                 
                 const userRef = doc(getUsersRef(), myUserDocId);
                 const userSnap = await getDoc(userRef);
                 if (userSnap.exists()) {
-                    await updateDoc(userRef, { username: username, isOnline: true, kicked: false, peerId: null });
+                    await updateDoc(userRef, { username: username, isOnline: true, kicked: false, lastActive: Date.now() });
                 } else {
                     await setDoc(userRef, {
                         userId: myUserDocId, authId: currentUser.uid, roomId: roomId, username: username,
@@ -1183,8 +1174,12 @@
                 }
                 enterRoom(roomId);
             } catch(e) { 
-                console.error("Join Room Error:", e); 
-                showToast("Error: " + (e.message || "Failed to join room")); 
+                console.warn("Join Room Error:", e); 
+                if (String(e).includes("permissions") || String(e.message).includes("permissions")) {
+                    showToast("Database Permission Denied!", `<div class="mt-2 text-[10px] text-red-200 font-medium leading-relaxed tracking-wide">Please go to Firebase Console -> Firestore Database -> Rules and ensure they are exactly:<br><br><code class="bg-black/50 p-1.5 rounded block mt-1 text-emerald-400">allow read, write: if true;</code></div>`);
+                } else {
+                    showToast("Error: " + (e.message || "Failed to join room")); 
+                }
                 buttons.join.disabled = false; 
             }
         }
@@ -1197,7 +1192,6 @@
             screens.auction.classList.add('flex');
             ui.roomCode.innerText = roomId;
             
-            // Show reaction buttons
             document.getElementById('reaction-buttons').classList.remove('hidden');
 
             setupListeners(); initVoiceChat(); startHeartbeat();
@@ -1222,7 +1216,7 @@
                 snapshot.forEach(docSnap => {
                     const data = docSnap.data();
                     if(data.roomId === currentRoomId) {
-                        const isHeartbeatAlive = data.lastActive ? (now - data.lastActive < 35000) : true;
+                        const isHeartbeatAlive = data.lastActive ? (now - data.lastActive < 40000) : true;
                         data._computedOnline = data.isOnline !== false && isHeartbeatAlive;
                         tempUsers.push(data);
                     }
@@ -1230,8 +1224,8 @@
                 usersData = tempUsers;
                 
                 const me = usersData.find(u => u.userId === myUserDocId);
-                if (me && me.kicked) { showToast("You were kicked."); sessionStorage.removeItem('cricbid_session'); setTimeout(() => window.location.reload(), 2000); return; }
-                if (me && me.banned) { showToast("You are banned."); sessionStorage.removeItem('cricbid_session'); setTimeout(() => window.location.reload(), 2000); return; }
+                if (me && me.kicked) { showToast("You were kicked."); setTimeout(() => window.location.reload(), 2000); return; }
+                if (me && me.banned) { showToast("You are banned."); setTimeout(() => window.location.reload(), 2000); return; }
 
                 const onlineUsers = usersData.filter(u => u._computedOnline);
                 if (onlineUsers.length > 0) {
@@ -1240,19 +1234,15 @@
                         failoverTimer = setTimeout(() => {
                             const currentOnline = usersData.filter(u => u._computedOnline);
                             if (!currentOnline.some(u => u.role === 'admin') && currentOnline.length > 0) {
-                                const sortedUsers = [...currentOnline].sort((a, b) => {
-                                    const timeA = a.joinedAt || 0; const timeB = b.joinedAt || 0;
-                                    if (timeA === timeB) return a.userId.localeCompare(b.userId); return timeA - timeB;
-                                });
+                                // Fixed: Give strict priority to oldest player, increasing delay to prevent premature self-promotion
+                                const sortedUsers = [...currentOnline].sort((a, b) => (a.joinedAt || 0) - (b.joinedAt || 0));
                                 if (sortedUsers[0].userId === myUserDocId) {
-                                    const myIndex = usersData.findIndex(u => u.userId === myUserDocId);
-                                    if (myIndex > -1) usersData[myIndex].role = 'admin';
                                     updateDoc(doc(getUsersRef(), myUserDocId), { role: 'admin' }).catch(console.error);
                                     updateDoc(doc(getRoomsRef(), currentRoomId), { hostId: currentUser.uid }).catch(console.error);
                                 }
                             }
                             failoverTimer = null;
-                        }, 2000);
+                        }, 5000); 
                     } else if (hasAdmin && failoverTimer) { clearTimeout(failoverTimer); failoverTimer = null; }
                 }
 
@@ -1283,7 +1273,6 @@
                 snapshot.docChanges().forEach(change => {
                     const data = change.doc.data();
                     if (data.roomId === currentRoomId) {
-                        // Handle Live Reactions
                         if (change.type === 'added' && data.type === 'reaction') {
                             if (Date.now() - data.timestamp < 5000 && data.senderId !== myUserDocId) {
                                 animateReaction(data.emoji);
@@ -1292,7 +1281,6 @@
                     }
                 });
 
-                // Populate regular text messages
                 snapshot.forEach(docSnap => {
                     const data = docSnap.data();
                     if(data.roomId === currentRoomId && !data.type) {
@@ -1311,7 +1299,7 @@
                 id: msgRef.id, roomId: currentRoomId, senderId: myUserDocId, 
                 type: 'reaction', emoji: emoji, timestamp: Date.now()
             }).catch(console.error);
-            animateReaction(emoji); // Animate for self instantly
+            animateReaction(emoji);
         };
 
         function animateReaction(emoji) {
@@ -1320,7 +1308,6 @@
             const el = document.createElement('div');
             el.className = 'absolute bottom-0 text-3xl sm:text-4xl animate-float-up opacity-100 pointer-events-none drop-shadow-lg';
             el.innerText = emoji;
-            // Randomize horizontal placement
             el.style.left = (Math.random() * 40) + 'px';
             container.appendChild(el);
             setTimeout(() => el.remove(), 2000);
@@ -2438,6 +2425,80 @@ Return a JSON object exactly matching the schema.
                 document.getElementById('emoji-picker')?.classList.add('hidden');
             } catch(e) { console.error("Chat send error:", e); showToast("Failed to send message"); }
         };
+
+        async function initVoiceChat() {
+            try {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    console.warn("MediaDevices API not available (requires HTTPS).");
+                    showToast("Camera/Mic access requires a secure HTTPS connection.");
+                    return;
+                }
+                try { 
+                    localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: { facingMode: "user" } }); 
+                } catch (camErr) { 
+                    console.warn("Camera failed, trying audio only.", camErr); 
+                    try {
+                        localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false }); 
+                    } catch (audioErr) {
+                        console.warn("Audio also failed.", audioErr);
+                        return; 
+                    }
+                }
+                
+                const localVid = document.getElementById('local-video'); if (localVid && localStream) localVid.srcObject = localStream;
+                if (localStream) {
+                    localStream.getAudioTracks().forEach(track => track.enabled = false); 
+                    localStream.getVideoTracks().forEach(track => track.enabled = false);
+                }
+
+                try {
+                    peer = new Peer();
+                    peer.on('open', (id) => { myPeerId = id; if (myUserDocId) { updateDoc(doc(getUsersRef(), myUserDocId), { peerId: myPeerId }).catch(console.error); } });
+                    peer.on('call', (call) => { call.answer(localStream); handleCallStream(call); });
+                    peer.on('error', (err) => { if (err.type === 'network' || String(err).includes('SecurityError') || String(err).includes('WebSocket')) { console.warn("PeerJS security error (HTTPS needed)."); } else if (err.type !== 'peer-unavailable') { console.warn("PeerJS:", err); } });
+                } catch (peerErr) { console.error("PeerJS init failed:", peerErr); }
+            } catch (err) { console.error("Media err:", err); }
+        }
+
+        function makeCall(remotePeerId) {
+            if (!localStream || !peer || peer.destroyed) return;
+            try { const call = peer.call(remotePeerId, localStream); if (call) handleCallStream(call); } 
+            catch(e) { console.warn("Call failed:", e); }
+        }
+
+        function handleCallStream(call) {
+            connectedPeers.add(call.peer);
+            call.on('stream', (remoteStream) => { activeStreams.set(call.peer, remoteStream); updateVideoGallery(); });
+            call.on('close', () => { connectedPeers.delete(call.peer); activeStreams.delete(call.peer); updateVideoGallery(); });
+        }
+
+        document.getElementById('btn-mic')?.addEventListener('click', () => {
+            if (!localStream || localStream.getAudioTracks().length === 0) return showToast("Mic unavailable!");
+            isMicMuted = !isMicMuted; localStream.getAudioTracks().forEach(t => t.enabled = !isMicMuted);
+            const btn = document.getElementById('btn-mic'); const iconOn = document.getElementById('icon-mic-on'); const iconOff = document.getElementById('icon-mic-off');
+            if (isMicMuted) { iconOn.classList.add('hidden'); iconOff.classList.remove('hidden'); btn.classList.add('bg-red-500/10', 'text-red-400'); btn.classList.remove('bg-cric-green/20', 'text-cric-green'); } 
+            else { iconOn.classList.remove('hidden'); iconOff.classList.add('hidden'); btn.classList.remove('bg-red-500/10', 'text-red-400'); btn.classList.add('bg-cric-green/20', 'text-cric-green'); }
+        });
+
+        document.getElementById('btn-video')?.addEventListener('click', async () => {
+            if (!localStream) return;
+            if (localStream.getVideoTracks().length === 0) {
+                try {
+                    const vidStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+                    localStream.addTrack(vidStream.getVideoTracks()[0]);
+                    const localVid = document.getElementById('local-video'); if (localVid) localVid.srcObject = localStream;
+                } catch (e) { return showToast("Camera denied!"); }
+            }
+            isVideoMuted = !isVideoMuted; localStream.getVideoTracks().forEach(t => t.enabled = !isVideoMuted);
+            const btn = document.getElementById('btn-video'); const iconOn = document.getElementById('icon-video-on'); const iconOff = document.getElementById('icon-video-off'); const localVid = document.getElementById('local-video');
+            if (isVideoMuted) {
+                iconOn.classList.add('hidden'); iconOff.classList.remove('hidden'); btn.classList.add('bg-red-500/10', 'text-red-400'); btn.classList.remove('bg-cric-green/20', 'text-cric-green');
+                if(localVid) { localVid.classList.replace('opacity-100', 'opacity-30'); localVid.classList.add('grayscale'); }
+            } else {
+                iconOn.classList.remove('hidden'); iconOff.classList.add('hidden'); btn.classList.remove('bg-red-500/10', 'text-red-400'); btn.classList.add('bg-cric-green/20', 'text-cric-green');
+                if(localVid) { localVid.classList.replace('opacity-30', 'opacity-100'); localVid.classList.remove('grayscale'); }
+            }
+        });
 
         setTimeout(() => {
             const chatInput = document.getElementById('chat-input'); const sendBtn = document.getElementById('btn-send-chat');
