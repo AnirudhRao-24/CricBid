@@ -174,6 +174,102 @@
         </div>
     </div>
 
+    <!-- Post-Auction Draft Modal -->
+    <div id="draft-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[120] hidden flex-col items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="glass-panel bg-zinc-900 border border-zinc-700 p-6 sm:p-8 rounded-[2rem] max-w-2xl w-full shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]">
+            <div class="text-center mb-6 shrink-0">
+                <h2 class="text-2xl sm:text-3xl font-display font-black text-white">Post-Auction Allocation</h2>
+                <p class="text-zinc-400 text-sm mt-2">Some franchises have less than 13 players. Assign unsold players to complete their squads.</p>
+            </div>
+            
+            <div class="flex flex-col gap-4 flex-1 min-h-[300px] overflow-hidden">
+                <div>
+                    <label class="block text-[10px] font-bold text-zinc-400 mb-2 uppercase tracking-wider">Select Franchise</label>
+                    <select id="draft-team-select" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-cric-green">
+                    </select>
+                </div>
+                <div class="flex-1 flex flex-col overflow-hidden">
+                    <label class="block text-[10px] font-bold text-zinc-400 mb-2 uppercase tracking-wider">Select Unsold Player (Base Price)</label>
+                    <div id="draft-unsold-players" class="flex-1 overflow-y-auto hide-scrollbar touch-scroll border border-zinc-800 rounded-xl p-2 bg-zinc-950/50 space-y-2"></div>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-zinc-800 flex justify-end gap-3 shrink-0">
+                <button id="btn-close-draft" class="px-5 py-2.5 rounded-xl text-zinc-400 font-bold bg-zinc-800 hover:bg-zinc-700 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Close Window</button>
+                <button id="btn-assign-draft" class="px-5 py-2.5 rounded-xl text-zinc-950 font-bold bg-cric-green hover:bg-emerald-400 transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">Assign Player</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Coach Modal (Auction Phase) -->
+    <div id="ai-coach-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[120] hidden flex-col items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="glass-panel bg-zinc-900 border border-purple-500/30 p-6 sm:p-8 rounded-[2rem] max-w-2xl w-full shadow-[0_0_50px_rgba(147,51,234,0.15)] transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center mb-6 shrink-0">
+                <h2 class="text-2xl sm:text-3xl font-display font-black text-white flex items-center gap-3">
+                    <span class="text-3xl sm:text-4xl">🤖</span> AI Strategist
+                </h2>
+                <button onclick="closeAICoach()" class="text-zinc-400 hover:text-white p-2 bg-zinc-800 rounded-xl">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <div id="ai-coach-loading" class="flex-1 flex flex-col items-center justify-center py-12">
+                <div class="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                <p class="text-purple-400 font-bold tracking-widest uppercase text-sm animate-pulse">Analyzing Squad & Pool...</p>
+            </div>
+
+            <div id="ai-coach-content" class="flex-1 overflow-y-auto hide-scrollbar hidden flex-col gap-6">
+                <div>
+                    <h3 class="text-xs font-bold text-purple-400 uppercase tracking-widest mb-2 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-purple-500"></span> Team Balance Analysis</h3>
+                    <div class="bg-purple-900/20 border border-purple-500/20 rounded-xl p-4 text-sm text-purple-100 leading-relaxed" id="ai-coach-analysis">
+                        <!-- AI Analysis Injected Here -->
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Recommended Targets</h3>
+                    <div id="ai-coach-targets" class="space-y-3">
+                        <!-- AI Targets Injected Here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Tournament Preview Modal (Season Phase) -->
+    <div id="ai-preview-modal" class="fixed inset-0 bg-black/95 backdrop-blur-xl z-[120] hidden flex-col items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="glass-panel bg-zinc-900 border border-cric-gold/30 p-6 sm:p-8 rounded-[2rem] max-w-3xl w-full shadow-[0_0_60px_rgba(251,191,36,0.15)] transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center mb-6 shrink-0 border-b border-zinc-800 pb-4">
+                <h2 class="text-2xl sm:text-3xl font-display font-black text-white flex items-center gap-3">
+                    <span class="text-3xl sm:text-4xl">🏆</span> Tournament Preview
+                </h2>
+                <button onclick="closeAIPreview()" class="text-zinc-400 hover:text-white p-2 bg-zinc-800 rounded-xl">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <div id="ai-preview-loading" class="flex-1 flex flex-col items-center justify-center py-16">
+                <span class="text-6xl mb-4 animate-float">🤖</span>
+                <p class="text-cric-gold font-bold tracking-widest uppercase text-sm animate-pulse">Evaluating All Franchises...</p>
+            </div>
+
+            <div id="ai-preview-content" class="flex-1 overflow-y-auto hide-scrollbar hidden flex-col gap-6">
+                <div class="bg-gradient-to-br from-zinc-800 to-zinc-900 border border-cric-gold/40 rounded-2xl p-6 text-center relative overflow-hidden">
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-cric-gold/20 rounded-full blur-[40px]"></div>
+                    <p class="text-[10px] font-bold text-cric-gold uppercase tracking-widest mb-1">Predicted Champion</p>
+                    <h3 id="ai-preview-best-team" class="text-3xl sm:text-4xl font-display font-black text-white mb-3">Team Name</h3>
+                    <p id="ai-preview-analysis" class="text-sm text-zinc-300 mx-auto max-w-xl"></p>
+                </div>
+
+                <div>
+                    <h3 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-blue-500"></span> Tournament Best XI</h3>
+                    <div id="ai-preview-xi" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <!-- AI Best XI Injected Here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ==================== SCREEN 1: LOBBY ==================== -->
     <div id="lobby-screen" class="flex flex-1 flex-col items-center justify-center p-4 sm:p-5 h-full overflow-y-auto mesh-bg w-full relative z-10 touch-scroll">
         <div class="glass-panel p-6 sm:p-12 rounded-[2rem] sm:rounded-[2.5rem] w-full max-w-[460px] text-center shadow-[0_30px_60px_rgba(0,0,0,0.6)] animate-fade-in-up relative overflow-hidden my-auto">
@@ -434,7 +530,7 @@
                                     <p class="text-[8px] sm:text-[9px] text-zinc-500 uppercase font-bold tracking-widest mb-0.5 sm:mb-1">Base Price</p>
                                     <p id="ui-player-base" class="font-display font-bold text-base sm:text-lg lg:text-xl text-zinc-300 bg-zinc-900 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-zinc-800 shadow-inner whitespace-nowrap">₹ -- Cr</p>
                                     <button onclick="document.getElementById('stats-overlay').classList.remove('hidden'); document.getElementById('stats-overlay').classList.add('flex');" class="mt-2 w-full flex items-center justify-center gap-1 text-[8px] sm:text-[10px] font-bold bg-cric-accent/10 hover:bg-cric-accent/20 text-cric-accent border border-cric-accent/30 py-1.5 rounded-lg transition-colors uppercase tracking-widest">
-                                        <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                                        <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012-2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                                         Analytics
                                     </button>
                                 </div>
@@ -556,6 +652,11 @@
             <svg class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
             <span id="chat-badge" class="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-red-500 text-white text-[9px] sm:text-[10px] font-black w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center hidden shadow-md ring-2 sm:ring-4 ring-zinc-950">0</span>
         </button>
+        
+        <!-- Fixed AI Coach Button -->
+        <button onclick="openAICoach()" class="fixed bottom-4 left-4 sm:bottom-8 sm:left-8 w-14 h-14 sm:w-16 sm:h-16 bg-purple-600 hover:bg-purple-500 text-white rounded-full sm:rounded-[1.5rem] shadow-[0_10px_20px_rgba(147,51,234,0.3)] flex items-center justify-center z-[105] transition-all hover:scale-105 active:scale-95 shrink-0 border border-purple-400" title="AI Coach">
+            <span class="text-2xl sm:text-3xl">🤖</span>
+        </button>
 
         <!-- Live Reaction Buttons -->
         <div id="reaction-buttons" class="fixed bottom-4 right-20 sm:bottom-8 sm:right-28 flex gap-1.5 sm:gap-2 z-[105] hidden">
@@ -580,6 +681,9 @@
                 </div>
             </div>
             <div class="flex gap-2">
+                <button onclick="openAIPreview()" class="bg-purple-600 hover:bg-purple-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-colors border border-purple-400 flex items-center gap-1 shadow-[0_0_10px_rgba(147,51,234,0.4)]">
+                    🤖 AI Preview
+                </button>
                 <button onclick="document.getElementById('season-screen').classList.add('hidden'); document.getElementById('season-screen').classList.remove('flex'); document.getElementById('auction-screen').classList.remove('hidden'); document.getElementById('auction-screen').classList.add('flex');" class="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-bold px-3 py-1.5 rounded-lg text-xs transition-colors border border-zinc-700">Back to Squads</button>
             </div>
         </header>
@@ -703,33 +807,6 @@
         </div>
     </div>
 
-    <!-- Post-Auction Draft Modal -->
-    <div id="draft-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[120] hidden flex-col items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-        <div class="glass-panel bg-zinc-900 border border-zinc-700 p-6 sm:p-8 rounded-[2rem] max-w-2xl w-full shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]">
-            <div class="text-center mb-6 shrink-0">
-                <h2 class="text-2xl sm:text-3xl font-display font-black text-white">Post-Auction Allocation</h2>
-                <p class="text-zinc-400 text-sm mt-2">Some franchises have less than 13 players. Assign unsold players to complete their squads.</p>
-            </div>
-            
-            <div class="flex flex-col gap-4 flex-1 min-h-[300px] overflow-hidden">
-                <div>
-                    <label class="block text-[10px] font-bold text-zinc-400 mb-2 uppercase tracking-wider">Select Franchise</label>
-                    <select id="draft-team-select" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-cric-green">
-                    </select>
-                </div>
-                <div class="flex-1 flex flex-col overflow-hidden">
-                    <label class="block text-[10px] font-bold text-zinc-400 mb-2 uppercase tracking-wider">Select Unsold Player (Base Price)</label>
-                    <div id="draft-unsold-players" class="flex-1 overflow-y-auto hide-scrollbar touch-scroll border border-zinc-800 rounded-xl p-2 bg-zinc-950/50 space-y-2"></div>
-                </div>
-            </div>
-
-            <div class="mt-6 pt-4 border-t border-zinc-800 flex justify-end gap-3 shrink-0">
-                <button id="btn-close-draft" class="px-5 py-2.5 rounded-xl text-zinc-400 font-bold bg-zinc-800 hover:bg-zinc-700 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Close Window</button>
-                <button id="btn-assign-draft" class="px-5 py-2.5 rounded-xl text-zinc-950 font-bold bg-cric-green hover:bg-emerald-400 transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">Assign Player</button>
-            </div>
-        </div>
-    </div>
-
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
@@ -795,6 +872,293 @@
         let playerStatsCache = {};
         let activeFetches = {};
         let inviteCooldowns = {};
+
+        // AI Feature Logic
+        window.openAICoach = async () => {
+            const modal = document.getElementById('ai-coach-modal');
+            const loading = document.getElementById('ai-coach-loading');
+            const content = document.getElementById('ai-coach-content');
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => { modal.classList.remove('opacity-0'); modal.querySelector('.glass-panel').classList.remove('scale-95'); }, 10);
+            
+            loading.classList.remove('hidden'); loading.classList.add('flex');
+            content.classList.add('hidden'); content.classList.remove('flex');
+
+            const me = usersData.find(u => u.userId === myUserDocId);
+            if (!me) { showToast("Error loading user data."); closeAICoach(); return; }
+
+            const myPlayers = playersData.filter(p => p.ownerId === myUserDocId);
+            const mySquadStr = myPlayers.length > 0 ? myPlayers.map(p => `${p.name} (${p.role})`).join(', ') : "No players drafted yet.";
+            
+            const availablePlayers = playersData.filter(p => p.status === 'upcoming' || p.status === 'unsold');
+            const poolStr = availablePlayers.length > 0 ? availablePlayers.map(p => `${p.name} (${p.role}, ₹${p.basePrice || p.base}Cr)`).join(', ') : "No players left in pool.";
+
+            const prompt = `Act as an expert Cricket Auction Strategist.
+My Budget: ₹${me.budget.toFixed(2)} Cr.
+My Drafted Squad: ${mySquadStr}
+Available Players in Pool: ${poolStr}
+
+Analyze my squad's balance (e.g., missing strong openers, lack of spin depth). Then, recommend exactly 3 players to target from the "Available Players in Pool" to fix my weaknesses, considering my remaining budget. Do not suggest players I already own or are not in the pool. If the pool is empty, just advise me to wait for the season.
+Return JSON exactly matching this schema:
+{
+  "balanceAnalysis": "A concise paragraph analyzing my team's strengths and weaknesses.",
+  "targets": [
+     { "name": "Player Name", "reason": "Short reason why they fit my team and budget." }
+  ]
+}`;
+
+            try {
+                const payload = {
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "OBJECT",
+                            properties: {
+                                "balanceAnalysis": { "type": "STRING" },
+                                "targets": {
+                                    "type": "ARRAY",
+                                    "items": {
+                                        "type": "OBJECT",
+                                        "properties": { "name": { "type": "STRING" }, "reason": { "type": "STRING" } },
+                                        "required": ["name", "reason"]
+                                    }
+                                }
+                            },
+                            required: ["balanceAnalysis", "targets"]
+                        }
+                    }
+                };
+
+                const apiKey = typeof __gemini_api_key !== 'undefined' ? __gemini_api_key : "";
+                
+                if (!apiKey) {
+                    // MOCK FALLBACK
+                    await new Promise(r => setTimeout(r, 1200));
+                    document.getElementById('ai-coach-analysis').innerText = "Based on your current setup (simulated), you might be missing some depth. Consider targeting high-value players remaining in the pool to balance your team.";
+                    const targetsContainer = document.getElementById('ai-coach-targets');
+                    targetsContainer.innerHTML = availablePlayers.slice(0, 3).map(p => `
+                        <div class="bg-zinc-950/50 border border-zinc-800 rounded-xl p-3 shadow-inner">
+                            <h4 class="text-sm font-bold text-white mb-1">${p.name}</h4>
+                            <p class="text-xs text-zinc-400 leading-relaxed">Great ${p.role.toLowerCase()} addition.</p>
+                        </div>
+                    `).join('') || '<p class="text-xs text-zinc-500 italic">No targets available.</p>';
+                    loading.classList.add('hidden'); loading.classList.remove('flex');
+                    content.classList.remove('hidden'); content.classList.add('flex');
+                    return;
+                }
+
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+                
+                let result = null;
+                let retries = 3;
+                let delay = 1000;
+
+                for (let i = 0; i < retries; i++) {
+                    try {
+                        if (!apiKey) throw new Error("No API Key available in environment context.");
+                        const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                        if (!response.ok) throw new Error('API Error');
+                        result = await response.json();
+                        break;
+                    } catch (err) {
+                        if (i === retries - 1) throw err;
+                        await new Promise(res => setTimeout(res, delay)); delay *= 2;
+                    }
+                }
+                
+                const jsonText = result.candidates[0].content.parts[0].text;
+                const data = JSON.parse(jsonText);
+
+                document.getElementById('ai-coach-analysis').innerText = data.balanceAnalysis;
+                
+                const targetsContainer = document.getElementById('ai-coach-targets');
+                targetsContainer.innerHTML = '';
+                if (data.targets && data.targets.length > 0) {
+                    data.targets.forEach(t => {
+                        targetsContainer.innerHTML += `
+                            <div class="bg-zinc-950/50 border border-zinc-800 rounded-xl p-3 shadow-inner">
+                                <h4 class="text-sm font-bold text-white mb-1">${t.name}</h4>
+                                <p class="text-xs text-zinc-400 leading-relaxed">${t.reason}</p>
+                            </div>
+                        `;
+                    });
+                } else {
+                    targetsContainer.innerHTML = '<p class="text-xs text-zinc-500 italic">No specific targets recommended.</p>';
+                }
+
+                loading.classList.add('hidden'); loading.classList.remove('flex');
+                content.classList.remove('hidden'); content.classList.add('flex');
+            } catch (err) {
+                console.error("AI Coach Error:", err);
+                closeAICoach();
+                showToast("AI Coach is currently unavailable. Try again later.");
+            }
+        };
+
+        window.closeAICoach = () => {
+            const modal = document.getElementById('ai-coach-modal');
+            modal.classList.add('opacity-0');
+            modal.querySelector('.glass-panel').classList.add('scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 300);
+        };
+
+        window.openAIPreview = async () => {
+            const modal = document.getElementById('ai-preview-modal');
+            const loading = document.getElementById('ai-preview-loading');
+            const content = document.getElementById('ai-preview-content');
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => { modal.classList.remove('opacity-0'); modal.querySelector('.glass-panel').classList.remove('scale-95'); }, 10);
+            
+            loading.classList.remove('hidden'); loading.classList.add('flex');
+            content.classList.add('hidden'); content.classList.remove('flex');
+
+            const activeTeams = usersData.filter(u => !u.kicked && !u.banned && playersData.some(p => p.ownerId === u.userId));
+            if (activeTeams.length === 0) {
+                closeAIPreview();
+                showToast("Not enough teams with players to preview.");
+                return;
+            }
+
+            let squadsInfo = "";
+            activeTeams.forEach(t => {
+                const teamPlayers = playersData.filter(p => p.ownerId === t.userId);
+                squadsInfo += `Franchise: ${t.username}\nPlayers: ${teamPlayers.map(p => p.name + " (" + p.role + ")").join(', ')}\n\n`;
+            });
+
+            const prompt = `Act as an expert Cricket Pundit evaluating a completed draft/auction.
+Here are the participating franchises and their finalized squads:
+${squadsInfo}
+
+Task 1: Evaluate all franchises and pick the single strongest team likely to win the tournament based on overall balance, star power, and depth. Provide a short analytical explanation.
+Task 2: Select a "Tournament Best XI" by combining the absolute best players from ALL franchises combined to form a realistic cricket XI (Openers, Middle Order, All-Rounders, Spinners, Pacers).
+
+Return JSON exactly matching this schema:
+{
+   "bestFranchise": "Name of the winning franchise",
+   "analysis": "Short explanation of why their squad is the best",
+   "bestXI": [
+      { "name": "Player Name", "role": "Specific role (e.g. Opener, Pacer)", "franchise": "Franchise Name" }
+   ]
+}`;
+
+            try {
+                const payload = {
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "OBJECT",
+                            properties: {
+                                "bestFranchise": { "type": "STRING" },
+                                "analysis": { "type": "STRING" },
+                                "bestXI": {
+                                    "type": "ARRAY",
+                                    "items": {
+                                        "type": "OBJECT",
+                                        "properties": {
+                                            "name": { "type": "STRING" },
+                                            "role": { "type": "STRING" },
+                                            "franchise": { "type": "STRING" }
+                                        },
+                                        "required": ["name", "role", "franchise"]
+                                    }
+                                }
+                            },
+                            required: ["bestFranchise", "analysis", "bestXI"]
+                        }
+                    }
+                };
+
+                const apiKey = typeof __gemini_api_key !== 'undefined' ? __gemini_api_key : "";
+                
+                if (!apiKey) {
+                    // MOCK FALLBACK
+                    await new Promise(r => setTimeout(r, 1200));
+                    const best = activeTeams[0]?.username || "Unknown Team";
+                    document.getElementById('ai-preview-best-team').innerText = best;
+                    document.getElementById('ai-preview-analysis').innerText = `${best} executed a fantastic draft strategy (simulated analysis).`;
+                    
+                    const xiContainer = document.getElementById('ai-preview-xi');
+                    const mockPlayers = playersData.filter(p => p.ownerId).slice(0, 4);
+                    xiContainer.innerHTML = mockPlayers.map(p => {
+                        const owner = usersData.find(u => u.userId === p.ownerId)?.username || "Unknown";
+                        return `
+                            <div class="bg-zinc-950/50 border border-zinc-800 rounded-xl p-3 flex justify-between items-center shadow-inner hover:bg-zinc-900 transition-colors">
+                                <div class="overflow-hidden pr-2">
+                                    <h4 class="text-sm font-bold text-white truncate">${p.name}</h4>
+                                    <p class="text-[9px] text-zinc-500 uppercase tracking-widest truncate">${p.role}</p>
+                                </div>
+                                <span class="bg-blue-900/30 text-blue-400 border border-blue-500/30 text-[9px] font-bold px-2 py-1 rounded truncate max-w-[100px] shrink-0">${owner}</span>
+                            </div>
+                        `;
+                    }).join('');
+
+                    loading.classList.add('hidden'); loading.classList.remove('flex');
+                    content.classList.remove('hidden'); content.classList.add('flex');
+                    return;
+                }
+
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+                
+                let result = null;
+                let retries = 3;
+                let delay = 1000;
+
+                for (let i = 0; i < retries; i++) {
+                    try {
+                        if (!apiKey) throw new Error("No API Key available in environment context.");
+                        const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                        if (!response.ok) throw new Error('API Error');
+                        result = await response.json();
+                        break;
+                    } catch (err) {
+                        if (i === retries - 1) throw err;
+                        await new Promise(res => setTimeout(res, delay)); delay *= 2;
+                    }
+                }
+                
+                const jsonText = result.candidates[0].content.parts[0].text;
+                const data = JSON.parse(jsonText);
+
+                document.getElementById('ai-preview-best-team').innerText = data.bestFranchise;
+                document.getElementById('ai-preview-analysis').innerText = data.analysis;
+                
+                const xiContainer = document.getElementById('ai-preview-xi');
+                xiContainer.innerHTML = '';
+                if (data.bestXI && data.bestXI.length > 0) {
+                    data.bestXI.forEach(p => {
+                        xiContainer.innerHTML += `
+                            <div class="bg-zinc-950/50 border border-zinc-800 rounded-xl p-3 flex justify-between items-center shadow-inner hover:bg-zinc-900 transition-colors">
+                                <div class="overflow-hidden pr-2">
+                                    <h4 class="text-sm font-bold text-white truncate">${p.name}</h4>
+                                    <p class="text-[9px] text-zinc-500 uppercase tracking-widest truncate">${p.role}</p>
+                                </div>
+                                <span class="bg-blue-900/30 text-blue-400 border border-blue-500/30 text-[9px] font-bold px-2 py-1 rounded truncate max-w-[100px] shrink-0">${p.franchise}</span>
+                            </div>
+                        `;
+                    });
+                }
+
+                loading.classList.add('hidden'); loading.classList.remove('flex');
+                content.classList.remove('hidden'); content.classList.add('flex');
+            } catch (err) {
+                console.error("AI Preview Error:", err);
+                closeAIPreview();
+                showToast("Tournament Preview is currently unavailable.");
+            }
+        };
+
+        window.closeAIPreview = () => {
+            const modal = document.getElementById('ai-preview-modal');
+            modal.classList.add('opacity-0');
+            modal.querySelector('.glass-panel').classList.add('scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 300);
+        };
 
         function getGuestName() {
             try { return localStorage.getItem('cricbid_guest_name') || "Guest"; } catch(e) { return "Guest"; }
@@ -1096,6 +1460,28 @@
             return result;
         };
 
+        const BUDGET_DEFAULT = 120.0;
+        const TIMER_SECONDS = 15;
+        
+        // Mock dataset added to ensure the auction works out of the box when testing in preview
+        const AUCTION_DATABASES = {
+            "T20": [
+                { name: "Virat Kohli", role: "Batsman", country: "IND", base: 2.0, set: "Marquee" },
+                { name: "Rashid Khan", role: "Spinner", country: "AFG", base: 2.0, set: "Marquee" },
+                { name: "Jasprit Bumrah", role: "Pacer", country: "IND", base: 2.0, set: "Marquee" },
+                { name: "Glenn Maxwell", role: "All-Rounder", country: "AUS", base: 1.5, set: "All-Rounders" },
+                { name: "Jos Buttler", role: "Wicketkeeper", country: "ENG", base: 1.5, set: "Wicketkeepers" }
+            ],
+            "ODI": [
+                { name: "Rohit Sharma", role: "Batsman", country: "IND", base: 2.0, set: "Marquee" },
+                { name: "Shakib Al Hasan", role: "All-Rounder", country: "BAN", base: 1.0, set: "All-Rounders" }
+            ],
+            "TEST": [
+                { name: "Steve Smith", role: "Batsman", country: "AUS", base: 2.0, set: "Marquee" },
+                { name: "Pat Cummins", role: "Pacer", country: "AUS", base: 2.0, set: "Pacers" }
+            ]
+        };
+
         buttons.create.addEventListener('click', async () => {
             const format = document.getElementById('format-input').value;
             if(!currentUser) return showToast("Authenticating... wait a moment.");
@@ -1197,72 +1583,6 @@
                 await updateDoc(doc(getUsersRef(), userId), { banned: true, isOnline: false });
                 showToast("Player banned successfully.");
             } catch(e) { console.error(e); showToast("Failed to ban player."); }
-        };
-
-        const BUDGET_DEFAULT = 120.0;
-        const TIMER_SECONDS = 15;
-        const AUCTION_DATABASES = {
-            "T20": [
-                { name: "Virat Kohli", role: "Batsman", country: "IND", base: 2.0, set: "Marquee" },
-                { name: "Jasprit Bumrah", role: "Pacer", country: "IND", base: 2.0, set: "Marquee" },
-                { name: "Jos Buttler", role: "WK Batsman", country: "ENG", base: 2.0, set: "Marquee" },
-                { name: "Travis Head", role: "Batsman", country: "AUS", base: 2.0, set: "Marquee" },
-                { name: "Heinrich Klaasen", role: "WK Batsman", country: "SA", base: 2.0, set: "Marquee" },
-                { name: "Pat Cummins", role: "Pacer", country: "AUS", base: 2.0, set: "Marquee" },
-                { name: "Rashid Khan", role: "Spinner", country: "AFG", base: 2.0, set: "Marquee" },
-                { name: "Nicholas Pooran", role: "WK Batsman", country: "WI", base: 2.0, set: "Marquee" },
-                { name: "Suryakumar Yadav", role: "Batsman", country: "IND", base: 2.0, set: "Marquee" },
-                { name: "Hardik Pandya", role: "All-Rounder", country: "IND", base: 2.0, set: "Marquee" },
-                { name: "Shubman Gill", role: "Batsman", country: "IND", base: 1.5, set: "Batsmen" },
-                { name: "Yashasvi Jaiswal", role: "Batsman", country: "IND", base: 1.5, set: "Batsmen" },
-                { name: "Ruturaj Gaikwad", role: "Batsman", country: "IND", base: 1.0, set: "Batsmen" },
-                { name: "Tilak Varma", role: "Batsman", country: "IND", base: 1.0, set: "Batsmen" },
-                { name: "Rinku Singh", role: "Batsman", country: "IND", base: 1.0, set: "Batsmen" },
-                { name: "Sai Sudharsan", role: "Batsman", country: "IND", base: 1.0, set: "Batsmen" },
-                { name: "Abhishek Sharma", role: "Batsman", country: "IND", base: 1.0, set: "Batsmen" },
-                { name: "David Miller", role: "Batsman", country: "SA", base: 1.0, set: "Batsmen" },
-                { name: "Faf du Plessis", role: "Batsman", country: "SA", base: 1.0, set: "Batsmen" },
-                { name: "Harry Brook", role: "Batsman", country: "ENG", base: 1.0, set: "Batsmen" },
-                { name: "Devon Conway", role: "Batsman", country: "NZ", base: 1.0, set: "Batsmen" },
-                { name: "Jake Fraser-McGurk", role: "Batsman", country: "AUS", base: 0.75, set: "Batsmen" },
-                { name: "Ryan Rickelton", role: "Batsman", country: "SA", base: 0.75, set: "Batsmen" },
-                { name: "Dewald Brevis", role: "Batsman", country: "SA", base: 0.75, set: "Batsmen" },
-                { name: "Rahul Tripathi", role: "Batsman", country: "IND", base: 0.5, set: "Batsmen" },
-                { name: "Mohammed Shami", role: "Pacer", country: "IND", base: 1.5, set: "Pacers" },
-                { name: "Mohammed Siraj", role: "Pacer", country: "IND", base: 1.5, set: "Pacers" },
-                { name: "Arshdeep Singh", role: "Pacer", country: "IND", base: 1.5, set: "Pacers" },
-                { name: "Mayank Yadav", role: "Pacer", country: "IND", base: 1.0, set: "Pacers" },
-                { name: "Harshit Rana", role: "Pacer", country: "IND", base: 0.75, set: "Pacers" },
-                { name: "Prasidh Krishna", role: "Pacer", country: "IND", base: 0.75, set: "Pacers" },
-                { name: "Matheesha Pathirana", role: "Pacer", country: "SL", base: 1.5, set: "Pacers" },
-                { name: "Kagiso Rabada", role: "Pacer", country: "SA", base: 1.5, set: "Pacers" },
-                { name: "Mitchell Starc", role: "Pacer", country: "AUS", base: 2.0, set: "Pacers" },
-                { name: "Josh Hazlewood", role: "Pacer", country: "AUS", base: 1.5, set: "Pacers" },
-                { name: "Gerald Coetzee", role: "Pacer", country: "SA", base: 1.0, set: "Pacers" },
-                { name: "Lockie Ferguson", role: "Pacer", country: "NZ", base: 1.0, set: "Pacers" },
-                { name: "Spencer Johnson", role: "Pacer", country: "AUS", base: 0.75, set: "Pacers" },
-                { name: "Nandre Burger", role: "Pacer", country: "SA", base: 0.75, set: "Pacers" },
-                { name: "Naveen-ul-Haq", role: "Pacer", country: "AFG", base: 0.75, set: "Pacers" },
-                { name: "KL Rahul", role: "WK Batsman", country: "IND", base: 1.5, set: "Wicketkeepers" },
-                { name: "Rishabh Pant", role: "WK Batsman", country: "IND", base: 2.0, set: "Wicketkeepers" },
-                { name: "Sanju Samson", role: "WK Batsman", country: "IND", base: 1.5, set: "Wicketkeepers" },
-                { name: "Ishan Kishan", role: "WK Batsman", country: "IND", base: 1.0, set: "Wicketkeepers" },
-                { name: "Dhruv Jurel", role: "WK Batsman", country: "IND", base: 0.75, set: "Wicketkeepers" },
-            ],
-            "ODI": [
-                { name: "Rohit Sharma", role: "Batsman", country: "India", base: 2.0, set: "Marquee" },
-                { name: "Quinton de Kock", role: "Wicketkeeper", country: "South Africa", base: 2.0, set: "Marquee" },
-                { name: "Trent Boult", role: "Pacer", country: "New Zealand", base: 2.0, set: "Marquee" },
-                { name: "Shakib Al Hasan", role: "All-Rounder", country: "Bangladesh", base: 1.5, set: "Marquee" },
-                { name: "Babar Azam", role: "Batsman", country: "Pakistan", base: 2.0, set: "Batsmen" }
-            ],
-            "TEST": [
-                { name: "Steve Smith", role: "Batsman", country: "Australia", base: 2.0, set: "Marquee" },
-                { name: "Joe Root", role: "Batsman", country: "England", base: 2.0, set: "Marquee" },
-                { name: "Ravichandran Ashwin", role: "Spinner", country: "India", base: 2.0, set: "Marquee" },
-                { name: "Nathan Lyon", role: "Spinner", country: "Australia", base: 1.5, set: "Spinners" },
-                { name: "James Anderson", role: "Pacer", country: "England", base: 1.5, set: "Pacers" }
-            ]
         };
 
         async function createRoom(roomId, format) {
@@ -1589,7 +1909,16 @@ Return a JSON object exactly matching the schema.
                     }
                 };
 
-                const apiKey = "";
+                const apiKey = typeof __gemini_api_key !== 'undefined' ? __gemini_api_key : "";
+                
+                if (!apiKey) {
+                    // FAST MOCK FALLBACK
+                    const fallback = getFallbackAnalytics(player);
+                    playerStatsCache[player.name] = fallback;
+                    if (roomData && playersData.find(p => p.order === roomData.currentAuctionIndex)?.name === player.name) { renderPlayerAnalyticsUI(player, fallback); }
+                    return fallback;
+                }
+
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
 
                 let result = null;
@@ -2491,7 +2820,7 @@ Return a JSON object exactly matching the schema.
                                 </div>
                             </div>`;
                     });
-                    if(myStats.length === 0) mySquadList.innerHTML = '<p class="text-xs text-zinc-500 italic">No players in your squad.</p>';
+                    if(myStats.length === 0) mySquadList.innerHTML = '<p class="text-xs text-zinc-500 italic p-2">No players in your squad.</p>';
                 } else {
                     mySquadWrapper.classList.add('hidden');
                 }
