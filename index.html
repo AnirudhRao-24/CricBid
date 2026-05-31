@@ -1042,7 +1042,10 @@
                         if (data.toUid === currentUser?.uid && Date.now() - data.timestamp < 30000) {
                             showToast(
                                 `${data.fromName} invited you to play!`, 
-                                `<button onclick="acceptInvite('${data.roomId}')" class="mt-2 w-full bg-white hover:bg-zinc-200 text-zinc-900 px-3 py-2 rounded-lg text-xs font-black uppercase tracking-widest shadow-md transition-colors">Join Room</button>`
+                                `<div class="flex gap-2 mt-2 w-full">
+                                    <button onclick="acceptInvite('${data.roomId}')" class="flex-1 bg-white hover:bg-zinc-200 text-zinc-900 px-3 py-2 rounded-lg text-xs font-black uppercase tracking-widest shadow-md transition-colors">Join</button>
+                                    <button onclick="rejectInvite()" class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 py-2 rounded-lg text-xs font-black uppercase tracking-widest border border-zinc-700 transition-colors">Reject</button>
+                                </div>`
                             );
                         }
                     }
@@ -1054,6 +1057,10 @@
             document.getElementById('toast').classList.remove('show');
             document.getElementById('room-code-input').value = roomId;
             document.getElementById('btn-join-room').click();
+        };
+
+        window.rejectInvite = () => {
+            document.getElementById('toast').classList.remove('show');
         };
 
         window.openInviteModal = () => {
