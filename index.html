@@ -40,6 +40,7 @@
                         'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
                         'fade-in': 'fadeIn 0.3s ease forwards',
                         'float': 'float 6s ease-in-out infinite',
+                        'float-up': 'floatUp 2s ease-out forwards',
                     },
                     keyframes: {
                         stamp: {
@@ -59,8 +60,8 @@
                             '50%': { transform: 'translateY(-10px)' }
                         },
                         floatUp: {
-                            '0%': { opacity: '1', transform: 'translateY(0) scale(1)' },
-                            '100%': { opacity: '0', transform: 'translateY(-150px) scale(1.5)' }
+                            '0%': { transform: 'translateY(0) scale(1)', opacity: '1' },
+                            '100%': { transform: 'translateY(-150px) scale(1.5)', opacity: '0' }
                         }
                     }
                 }
@@ -116,22 +117,6 @@
         }
         .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
         
-        .reaction-float {
-            position: fixed;
-            bottom: 120px;
-            right: 30px;
-            font-size: 2.5rem;
-            animation: floatUp 2.5s ease-out forwards;
-            pointer-events: none;
-            z-index: 10000;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
-        }
-
-        @keyframes floatUp {
-            0% { opacity: 1; transform: translateY(0) scale(1); }
-            100% { opacity: 0; transform: translateY(-150px) scale(1.5); }
-        }
-        
         input, select, textarea { font-size: 16px !important; }
         
         .mesh-bg {
@@ -149,7 +134,7 @@
         <div class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
             <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
         </div>
-        <span id="toast-msg" class="flex-1 text-sm leading-relaxed font-semibold">Notification message</span>
+        <span id="toast-msg" class="flex-1 text-sm leading-relaxed font-semibold flex flex-col">Notification message</span>
     </div>
 
     <!-- Modals -->
@@ -167,151 +152,105 @@
         </div>
     </div>
 
-    <div id="kick-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden flex-col items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-        <div class="glass-panel bg-zinc-900 p-8 rounded-3xl max-w-sm w-full text-center shadow-2xl transform scale-95 transition-transform duration-300" id="kick-modal-content">
-            <div class="w-16 h-16 sm:w-20 sm:h-20 bg-orange-500/10 rounded-3xl mx-auto mb-6 flex items-center justify-center text-orange-500 shadow-inner">
-                <svg class="w-8 h-8 sm:w-10 sm:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6"></path></svg>
-            </div>
-            <h2 class="text-xl sm:text-2xl font-display font-bold text-white mb-2">Kick Player</h2>
-            <p class="text-zinc-400 mb-8 text-xs sm:text-sm">Remove <span id="kick-player-name" class="font-bold text-white"></span> from the room?</p>
-            <div class="flex gap-3">
-                <button onclick="closeKickModal()" class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold py-3 sm:py-3.5 rounded-xl transition-colors">Cancel</button>
-                <button id="btn-confirm-kick" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 sm:py-3.5 rounded-xl transition-all shadow-[0_0_15px_rgba(249,115,22,0.4)]">Kick</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="ban-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden flex-col items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-        <div class="glass-panel bg-zinc-900 p-8 rounded-3xl max-w-sm w-full text-center shadow-2xl transform scale-95 transition-transform duration-300" id="ban-modal-content">
-            <div class="w-16 h-16 sm:w-20 sm:h-20 bg-red-600/10 rounded-3xl mx-auto mb-6 flex items-center justify-center text-red-500 shadow-inner">
-                <svg class="w-8 h-8 sm:w-10 sm:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
-            </div>
-            <h2 class="text-xl sm:text-2xl font-display font-bold text-white mb-2">Permanent Ban</h2>
-            <p class="text-zinc-400 mb-8 text-xs sm:text-sm">Permanently ban <span id="ban-player-name" class="font-bold text-white"></span>? They will not be able to rejoin.</p>
-            <div class="flex gap-3">
-                <button onclick="closeBanModal()" class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold py-3 sm:py-3.5 rounded-xl transition-colors">Cancel</button>
-                <button id="btn-confirm-ban" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 sm:py-3.5 rounded-xl transition-all shadow-[0_0_15px_rgba(220,38,38,0.4)]">Ban</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Invite Modal -->
-    <div id="invite-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[150] hidden flex-col items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-        <div class="glass-panel bg-zinc-900 p-8 rounded-3xl max-w-sm w-full text-center shadow-2xl transform scale-95 transition-transform duration-300" id="invite-modal-content">
-            <div class="w-16 h-16 sm:w-20 sm:h-20 bg-cric-accent/10 rounded-3xl mx-auto mb-4 flex items-center justify-center text-cric-accent shadow-inner animate-pulse">
-                <svg class="w-8 h-8 sm:w-10 sm:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
-            </div>
-            <h2 class="text-xl sm:text-2xl font-display font-black text-white mb-2 uppercase tracking-tight">Room Invite!</h2>
-            <p class="text-zinc-400 mb-6 text-sm">
-                <span id="invite-sender-name" class="font-bold text-white">Someone</span> has invited you to join their auction room.
-            </p>
-            <div class="bg-zinc-950 p-3 rounded-xl border border-zinc-800 mb-6 flex justify-between items-center shadow-inner">
-                <span class="text-xs text-zinc-500 font-bold uppercase tracking-widest">Room Code</span>
-                <span id="invite-room-code" class="font-display font-black text-cric-gold text-lg tracking-widest uppercase">---</span>
-            </div>
-            <div class="flex gap-3">
-                <button onclick="closeInviteModal()" class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold py-3 rounded-xl transition-colors text-sm">Ignore</button>
-                <button id="btn-accept-invite" class="flex-1 bg-cric-accent hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-all shadow-[0_0_20px_rgba(59,130,246,0.4)] text-sm active:scale-95">Accept & Join</button>
-            </div>
-        </div>
-    </div>
-
     <!-- ==================== SCREEN 1: LOBBY ==================== -->
     <div id="lobby-screen" class="flex flex-1 flex-col items-center justify-center p-4 sm:p-5 h-full overflow-y-auto mesh-bg w-full relative z-10 touch-scroll">
         <div class="glass-panel p-6 sm:p-12 rounded-[2rem] sm:rounded-[2.5rem] w-full max-w-[460px] text-center shadow-[0_30px_60px_rgba(0,0,0,0.6)] animate-fade-in-up relative overflow-hidden my-auto">
             <div class="absolute -top-32 -right-32 w-48 h-48 sm:w-64 sm:h-64 bg-cric-green/10 rounded-full blur-[60px] sm:blur-[80px] pointer-events-none"></div>
             <div class="absolute -bottom-32 -left-32 w-48 h-48 sm:w-64 sm:h-64 bg-cric-accent/10 rounded-full blur-[60px] sm:blur-[80px] pointer-events-none"></div>
             
-            <div class="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-cric-green to-emerald-800 rounded-[1.5rem] sm:rounded-[2rem] mx-auto mb-6 sm:mb-8 flex items-center justify-center shadow-[0_0_40px_rgba(16,185,129,0.3)] animate-float">
+            <div class="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-cric-green to-emerald-800 rounded-[1.5rem] sm:rounded-[2rem] mx-auto mb-6 flex items-center justify-center shadow-[0_0_40px_rgba(16,185,129,0.3)] animate-float">
                 <svg class="w-10 h-10 sm:w-12 sm:h-12 text-white drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
             
             <h1 class="text-3xl sm:text-5xl font-display font-black text-white mb-2 tracking-tight">CricBid<span class="text-cric-green">.</span></h1>
-            <p class="text-zinc-400 text-xs sm:text-sm mb-8 sm:mb-10 font-medium tracking-wide">ELITE MULTIPLAYER AUCTION</p>
+            <p class="text-zinc-400 text-xs sm:text-sm mb-8 font-medium tracking-wide">ELITE MULTIPLAYER AUCTION</p>
 
-            <!-- Login Section -->
-            <div id="login-section" class="flex flex-col gap-4 relative z-10 w-full mb-6">
-                <button id="btn-google-login" class="w-full flex items-center justify-center gap-3 bg-white hover:bg-zinc-200 text-zinc-950 font-bold py-3.5 sm:py-4 rounded-xl sm:rounded-2xl transition-all shadow-[0_10px_20px_rgba(255,255,255,0.1)] text-sm sm:text-base active:scale-95">
-                    <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-                    Continue with Google
-                </button>
-                <div class="relative flex items-center py-1 opacity-60">
-                    <div class="flex-grow border-t border-zinc-800"></div>
-                    <span class="flex-shrink-0 mx-3 text-zinc-500 text-[10px] font-bold uppercase tracking-widest">or</span>
-                    <div class="flex-grow border-t border-zinc-800"></div>
+            <div class="relative z-10 w-full">
+                
+                <!-- State 1: Login Options -->
+                <div id="login-section" class="flex flex-col gap-4">
+                    <button id="btn-google-login" class="w-full bg-white hover:bg-zinc-200 active:scale-95 text-zinc-950 font-bold py-3.5 rounded-2xl flex items-center justify-center gap-3 transition-all shadow-lg">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                        Continue with Google
+                    </button>
+                    
+                    <div class="relative flex items-center py-1 opacity-60">
+                        <div class="flex-grow border-t border-zinc-800"></div>
+                        <span class="flex-shrink-0 mx-4 text-zinc-500 text-[10px] font-bold uppercase tracking-widest">or</span>
+                        <div class="flex-grow border-t border-zinc-800"></div>
+                    </div>
+                    
+                    <button id="btn-guest-login" class="w-full bg-zinc-800 hover:bg-zinc-700 active:scale-95 text-white font-bold py-3.5 rounded-2xl transition-all border border-zinc-700">
+                        Play as Guest
+                    </button>
                 </div>
-                <button id="btn-anon-login" class="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3.5 rounded-xl transition-colors border border-zinc-700 text-sm active:scale-95">
-                    Play as Guest
-                </button>
-            </div>
 
-            <!-- Guest Name Section -->
-            <div id="guest-name-section" class="hidden flex-col gap-4 relative z-10 w-full mb-6 text-left">
-                <label class="block text-[10px] sm:text-xs font-bold text-zinc-400 ml-2 uppercase tracking-wider">Choose your Alias</label>
-                <input type="text" id="guest-name-input" placeholder="Enter your name" class="w-full bg-zinc-950/50 border border-zinc-800 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3.5 sm:py-4 text-white focus:outline-none focus:border-cric-green focus:bg-zinc-900/80 transition-all text-sm sm:text-base shadow-inner" autocomplete="off">
-                <button id="btn-confirm-guest" class="w-full bg-cric-green hover:bg-emerald-400 text-zinc-950 font-bold py-3.5 rounded-xl transition-colors shadow-[0_5px_15px_rgba(16,185,129,0.2)] text-sm active:scale-95">Continue</button>
-                <button id="btn-back-login" class="text-xs text-zinc-500 hover:text-white transition-colors mt-2 text-center">Back</button>
-            </div>
-
-            <div id="lobby-controls" class="space-y-4 sm:space-y-5 relative z-10 hidden">
-                <!-- User Profile Display -->
-                <div class="flex items-center gap-3 bg-zinc-900/80 border border-zinc-800 p-3 rounded-xl mb-4 shadow-inner">
-                    <img id="user-avatar" src="https://ui-avatars.com/api/?name=G&background=10b981&color=fff" class="w-10 h-10 rounded-full border border-zinc-700" alt="Avatar">
-                    <div class="text-left flex-1">
-                        <p class="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Logged in as</p>
-                        <p id="user-display-name" class="text-sm font-bold text-white truncate">Guest Manager</p>
+                <!-- State 2: Guest Name Entry -->
+                <div id="guest-name-section" class="hidden flex-col gap-4 text-left">
+                    <label class="block text-[10px] font-bold text-zinc-400 ml-2 uppercase tracking-wider">Choose your Alias</label>
+                    <input type="text" id="guest-name-input" placeholder="Enter your name" class="w-full bg-zinc-950/50 border border-zinc-800 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-cric-green focus:bg-zinc-900/80 transition-all shadow-inner">
+                    
+                    <div class="flex gap-3 mt-2">
+                        <button id="btn-back-login" class="w-1/3 bg-zinc-800 hover:bg-zinc-700 text-white font-bold rounded-2xl transition-all">Back</button>
+                        <button id="btn-confirm-guest" class="w-2/3 bg-cric-green hover:bg-emerald-400 text-zinc-950 font-bold py-3.5 rounded-2xl shadow-lg transition-all active:scale-95">Enter Lobby</button>
                     </div>
                 </div>
 
-                <div class="text-left group mt-2 mb-4" id="alias-wrapper">
-                    <label class="block text-[10px] sm:text-xs font-bold text-zinc-400 mb-2 ml-2 uppercase tracking-wider group-focus-within:text-cric-green transition-colors">Manager Alias</label>
-                    <input type="text" id="username-input" placeholder="Enter your name" class="w-full bg-zinc-950/50 border border-zinc-800 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3.5 sm:py-4 text-white focus:outline-none focus:border-cric-green focus:bg-zinc-900/80 transition-all placeholder:text-zinc-600 text-sm sm:text-base shadow-inner">
-                </div>
-                
-                <!-- Format Selector for Host -->
-                <div class="text-left group mt-4">
-                    <label class="block text-[10px] sm:text-xs font-bold text-zinc-400 mb-2 ml-2 uppercase tracking-wider group-focus-within:text-cric-green transition-colors">Auction Format (Host Only)</label>
-                    <div class="relative">
-                        <select id="format-input" class="w-full bg-zinc-950/50 border border-zinc-800 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3.5 sm:py-4 text-white focus:outline-none focus:border-cric-green focus:bg-zinc-900/80 transition-all text-sm sm:text-base shadow-inner appearance-none cursor-pointer font-bold">
-                            <option value="T20">T20 Format</option>
-                            <option value="ODI">ODI Format</option>
-                            <option value="TEST">Test/Legends Format</option>
-                        </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-zinc-400">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                <!-- State 3: Authenticated Dashboard -->
+                <div id="auth-lobby-menu" class="hidden flex-col">
+                    
+                    <!-- Profile Display -->
+                    <div class="flex items-center gap-3 bg-zinc-900/80 border border-zinc-800 p-3 rounded-2xl mb-6 shadow-inner text-left">
+                        <img id="user-avatar" src="" class="w-10 h-10 rounded-full border border-zinc-700" alt="Avatar">
+                        <div class="flex-1 overflow-hidden">
+                            <p class="text-[9px] text-zinc-500 font-bold uppercase tracking-wider">Logged in as</p>
+                            <p id="user-display-name" class="text-sm font-bold text-white truncate"></p>
+                        </div>
+                        <button id="btn-logout" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-colors active:scale-95">Switch</button>
+                    </div>
+
+                    <div class="text-left group mt-2 mb-4">
+                        <label class="block text-[10px] sm:text-xs font-bold text-zinc-400 mb-2 ml-2 uppercase tracking-wider group-focus-within:text-cric-green transition-colors">Auction Format</label>
+                        <div class="relative">
+                            <select id="format-input" class="w-full bg-zinc-950/50 border border-zinc-800 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3.5 sm:py-4 text-white focus:outline-none focus:border-cric-green focus:bg-zinc-900/80 transition-all text-sm sm:text-base shadow-inner appearance-none cursor-pointer font-bold">
+                                <option value="T20">T20 Format</option>
+                                <option value="ODI">ODI Format</option>
+                                <option value="TEST">Test/Legends Format</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-zinc-400">
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col gap-3">
+                        <button id="btn-create-room" class="w-full bg-white text-zinc-950 hover:bg-zinc-200 active:scale-[0.98] font-bold py-3.5 rounded-xl transition-all shadow-[0_10px_20px_rgba(255,255,255,0.1)] text-base">
+                            Host New Auction
+                        </button>
+                        
+                        <div class="relative flex items-center py-1 opacity-60">
+                            <div class="flex-grow border-t border-zinc-800"></div>
+                            <span class="flex-shrink-0 mx-3 text-zinc-500 text-[10px] font-bold uppercase tracking-widest">or join existing</span>
+                            <div class="flex-grow border-t border-zinc-800"></div>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <input type="text" id="room-code-input" placeholder="ROOM CODE" class="w-3/5 bg-zinc-950/50 border border-zinc-800 rounded-xl px-3 py-3.5 text-white focus:outline-none focus:border-zinc-500 uppercase text-center font-display tracking-widest font-bold placeholder:text-zinc-600 placeholder:font-normal text-sm shadow-inner">
+                            <button id="btn-join-room" class="w-2/5 bg-zinc-800 hover:bg-zinc-700 active:scale-[0.98] text-white font-bold py-3.5 rounded-xl transition-colors border border-zinc-700 text-sm shadow-lg">
+                                Enter
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Global Players Online for Invites -->
+                    <div class="mt-6 pt-4 border-t border-zinc-800/50 text-left">
+                        <p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2 px-1">Global Players Online</p>
+                        <div id="global-players-list" class="space-y-2 max-h-32 overflow-y-auto hide-scrollbar">
+                            <p class="text-xs text-zinc-600 italic px-1">Finding players...</p>
                         </div>
                     </div>
                 </div>
-                
-                <div class="pt-2 flex flex-col gap-3 sm:gap-4">
-                    <button id="btn-create-room" class="w-full bg-white text-zinc-950 hover:bg-zinc-200 active:scale-[0.98] font-bold py-3.5 sm:py-4 rounded-xl sm:rounded-2xl transition-all shadow-[0_10px_20px_rgba(255,255,255,0.1)] text-base sm:text-lg">
-                        Host New Auction
-                    </button>
-                    
-                    <div class="relative flex items-center py-1 sm:py-2 opacity-60">
-                        <div class="flex-grow border-t border-zinc-800"></div>
-                        <span class="flex-shrink-0 mx-3 sm:mx-4 text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-widest">or join existing</span>
-                        <div class="flex-grow border-t border-zinc-800"></div>
-                    </div>
 
-                    <div class="flex gap-2 sm:gap-3">
-                        <input type="text" id="room-code-input" placeholder="ROOM CODE" class="w-3/5 bg-zinc-950/50 border border-zinc-800 rounded-xl sm:rounded-2xl px-3 sm:px-4 py-3.5 sm:py-4 text-white focus:outline-none focus:border-zinc-500 uppercase text-center font-display tracking-widest font-bold placeholder:text-zinc-600 placeholder:font-normal text-sm sm:text-base shadow-inner">
-                        <button id="btn-join-room" class="w-2/5 bg-zinc-800 hover:bg-zinc-700 active:scale-[0.98] text-white font-bold py-3.5 sm:py-4 rounded-xl sm:rounded-2xl transition-colors border border-zinc-700 text-sm sm:text-base shadow-lg">
-                            Enter
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Social/Invites Panel -->
-                <div class="mt-6 pt-4 border-t border-zinc-800 text-left">
-                    <div class="flex justify-between items-center mb-3">
-                        <h3 class="text-xs font-bold text-zinc-400 uppercase tracking-widest">Global Players Online</h3>
-                        <span id="global-online-count" class="bg-cric-green/20 text-cric-green text-[9px] px-2 py-0.5 rounded-full font-bold">0</span>
-                    </div>
-                    <div id="global-users-list" class="space-y-2 max-h-40 overflow-y-auto hide-scrollbar border border-zinc-800/50 rounded-xl p-2 bg-zinc-950/30">
-                        <p class="text-xs text-zinc-600 italic text-center p-2">Loading players...</p>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -326,7 +265,6 @@
                     <span class="text-[9px] sm:text-xs text-zinc-500 font-bold uppercase tracking-widest">Room</span>
                     <span id="ui-room-code" class="text-white bg-zinc-800/50 px-2 py-0.5 sm:py-1 rounded-md border border-zinc-700/50 font-display font-bold tracking-widest text-[10px] sm:text-sm">---</span>
                 </div>
-                <!-- Format Badge -->
                 <div id="ui-format-badge" class="hidden text-[8px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded bg-blue-600/20 text-blue-400 border border-blue-500/30 uppercase tracking-widest">---</div>
                 <div class="h-4 sm:h-6 w-px bg-zinc-800"></div>
                 <div class="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-sm text-zinc-400 font-medium">
@@ -534,6 +472,9 @@
                 </div>
             </section>
 
+            <!-- Floating Reactions Container -->
+            <div id="reaction-container" class="absolute bottom-24 right-4 sm:right-10 w-24 h-64 pointer-events-none z-[100] overflow-hidden"></div>
+
             <!-- PANEL: Standings (Left on Desktop, Middle on Mobile) -->
             <aside id="standings-panel" class="flex flex-col w-full lg:w-[320px] xl:w-[360px] lg:h-full shrink-0 bg-zinc-950/80 border-t lg:border-t-0 lg:border-r border-zinc-800/80 p-4 z-10 order-2 lg:order-1 lg:overflow-y-auto hide-scrollbar">
                 <div class="sticky top-0 bg-zinc-950/95 backdrop-blur-xl pb-3 sm:pb-4 pt-1 sm:pt-2 z-10 mb-2">
@@ -592,19 +533,19 @@
             </aside>
         </main>
 
-        <!-- Floating Reactions Bar -->
-        <div class="fixed bottom-20 right-4 sm:bottom-28 sm:right-8 flex flex-col gap-2 z-[100] transition-transform" id="reaction-bar">
-            <button onclick="sendReaction('🔥')" class="w-10 h-10 sm:w-12 sm:h-12 bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 hover:scale-110 rounded-full shadow-lg flex items-center justify-center text-lg sm:text-xl transition-all active:scale-95">🔥</button>
-            <button onclick="sendReaction('👏')" class="w-10 h-10 sm:w-12 sm:h-12 bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 hover:scale-110 rounded-full shadow-lg flex items-center justify-center text-lg sm:text-xl transition-all active:scale-95">👏</button>
-            <button onclick="sendReaction('😂')" class="w-10 h-10 sm:w-12 sm:h-12 bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 hover:scale-110 rounded-full shadow-lg flex items-center justify-center text-lg sm:text-xl transition-all active:scale-95">😂</button>
-            <button onclick="sendReaction('😲')" class="w-10 h-10 sm:w-12 sm:h-12 bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 hover:scale-110 rounded-full shadow-lg flex items-center justify-center text-lg sm:text-xl transition-all active:scale-95">😲</button>
-        </div>
-
         <!-- Fixed Chat Button -->
         <button onclick="toggleDesktopChat()" id="btn-desktop-chat" class="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 w-14 h-14 sm:w-16 sm:h-16 bg-white hover:bg-zinc-200 text-zinc-950 rounded-full sm:rounded-[1.5rem] shadow-[0_10px_20px_rgba(255,255,255,0.15)] sm:shadow-[0_15px_30px_rgba(255,255,255,0.15)] flex items-center justify-center z-[105] transition-all hover:scale-105 active:scale-95 shrink-0 border border-zinc-200">
             <svg class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
             <span id="chat-badge" class="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-red-500 text-white text-[9px] sm:text-[10px] font-black w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center hidden shadow-md ring-2 sm:ring-4 ring-zinc-950">0</span>
         </button>
+
+        <!-- Live Reaction Buttons -->
+        <div id="reaction-buttons" class="fixed bottom-4 right-20 sm:bottom-8 sm:right-28 flex gap-1.5 sm:gap-2 z-[105] hidden">
+            <button onclick="sendReaction('🔥')" class="w-10 h-10 sm:w-12 sm:h-12 bg-zinc-900 border border-zinc-700 rounded-full shadow-lg text-lg hover:bg-zinc-800 hover:scale-110 active:scale-95 transition-all flex items-center justify-center">🔥</button>
+            <button onclick="sendReaction('😂')" class="w-10 h-10 sm:w-12 sm:h-12 bg-zinc-900 border border-zinc-700 rounded-full shadow-lg text-lg hover:bg-zinc-800 hover:scale-110 active:scale-95 transition-all flex items-center justify-center">😂</button>
+            <button onclick="sendReaction('👏')" class="w-10 h-10 sm:w-12 sm:h-12 bg-zinc-900 border border-zinc-700 rounded-full shadow-lg text-lg hover:bg-zinc-800 hover:scale-110 active:scale-95 transition-all flex items-center justify-center">👏</button>
+            <button onclick="sendReaction('😲')" class="w-10 h-10 sm:w-12 sm:h-12 bg-zinc-900 border border-zinc-700 rounded-full shadow-lg text-lg hover:bg-zinc-800 hover:scale-110 active:scale-95 transition-all flex items-center justify-center">😲</button>
+        </div>
 
     </div>
 
@@ -626,7 +567,6 @@
         </header>
 
         <main class="flex-1 flex flex-col lg:flex-row w-full overflow-hidden relative">
-            <!-- Left: Points Table -->
             <aside class="w-full lg:w-[350px] shrink-0 bg-zinc-950/80 border-r border-zinc-800/80 flex flex-col h-[40vh] lg:h-full">
                 <div class="p-4 border-b border-zinc-800/80 bg-zinc-900/30">
                     <h2 class="font-display font-bold text-white flex items-center gap-2 tracking-wide uppercase text-sm">
@@ -645,14 +585,11 @@
                                 <th class="pb-2 font-bold text-right w-12 pr-2">NRR</th>
                             </tr>
                         </thead>
-                        <tbody id="season-points-table" class="text-xs sm:text-sm">
-                            <!-- Injected -->
-                        </tbody>
+                        <tbody id="season-points-table" class="text-xs sm:text-sm"></tbody>
                     </table>
                 </div>
             </aside>
 
-            <!-- Center: Match Center -->
             <section class="flex-1 bg-zinc-950 flex flex-col h-[60vh] lg:h-full border-t lg:border-t-0 lg:border-r border-zinc-800/80">
                 <div class="p-4 border-b border-zinc-800/80 bg-zinc-900/30 flex justify-between items-center z-10">
                     <h2 class="font-display font-bold text-white flex items-center gap-2 tracking-wide uppercase text-sm">
@@ -666,19 +603,12 @@
                 
                 <div class="flex-1 overflow-y-auto hide-scrollbar p-4 relative">
                     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-cric-accent/5 rounded-full blur-[80px] pointer-events-none"></div>
-                    
-                    <div id="current-match-display" class="w-full max-w-2xl mx-auto mb-8 empty:hidden">
-                        <!-- Current Match Inject -->
-                    </div>
-
+                    <div id="current-match-display" class="w-full max-w-2xl mx-auto mb-8 empty:hidden"></div>
                     <h3 class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3 pl-1">Recent Results</h3>
-                    <div id="season-results-list" class="space-y-3 max-w-2xl mx-auto">
-                        <!-- Injected Results -->
-                    </div>
+                    <div id="season-results-list" class="space-y-3 max-w-2xl mx-auto"></div>
                 </div>
             </section>
 
-            <!-- Right: Leaderboards -->
             <aside class="w-full lg:w-[320px] shrink-0 bg-zinc-950/80 flex flex-col h-[40vh] lg:h-full border-t lg:border-t-0 border-zinc-800/80">
                 <div class="p-4 border-b border-zinc-800/80 bg-zinc-900/30">
                     <h2 class="font-display font-bold text-white flex items-center gap-2 tracking-wide uppercase text-sm">
@@ -686,8 +616,6 @@
                     </h2>
                 </div>
                 <div class="flex-1 overflow-y-auto hide-scrollbar p-4 space-y-6">
-                    
-                    <!-- Orange Cap -->
                     <div>
                         <div class="flex items-center gap-2 mb-3">
                             <div class="w-6 h-6 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-500/30">
@@ -695,12 +623,9 @@
                             </div>
                             <h3 class="text-xs font-bold text-orange-400 uppercase tracking-widest">Orange Cap (Runs)</h3>
                         </div>
-                        <div id="orange-cap-list" class="space-y-2">
-                            <!-- Injected -->
-                        </div>
+                        <div id="orange-cap-list" class="space-y-2"></div>
                     </div>
 
-                    <!-- Purple Cap -->
                     <div>
                         <div class="flex items-center gap-2 mb-3">
                             <div class="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center border border-purple-500/30">
@@ -708,19 +633,15 @@
                             </div>
                             <h3 class="text-xs font-bold text-purple-400 uppercase tracking-widest">Purple Cap (Wickets)</h3>
                         </div>
-                        <div id="purple-cap-list" class="space-y-2">
-                            <!-- Injected -->
-                        </div>
+                        <div id="purple-cap-list" class="space-y-2"></div>
                     </div>
 
-                    <!-- News / Events -->
                     <div>
                         <h3 class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3 border-t border-zinc-800/50 pt-4">Injury Updates</h3>
                         <div id="injury-list" class="space-y-2">
                             <p class="text-xs text-zinc-500 italic">No injuries reported yet.</p>
                         </div>
                     </div>
-
                 </div>
             </aside>
         </main>
@@ -761,41 +682,44 @@
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
         import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, onSnapshot, writeBatch, serverTimestamp, deleteDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-            apiKey: "AIzaSyCAd5OJKmVW2aSWgDogBg3lSpj1uzPxGrk",
-  authDomain: "cricbid-839eb.firebaseapp.com",
-  projectId: "cricbid-839eb",
-  storageBucket: "cricbid-839eb.firebasestorage.app",
-  messagingSenderId: "521652177425",
-  appId: "1:521652177425:web:c33adfb7ea97360d6affb0",
-  measurementId: "G-7WHCC3VSTW"
+            apiKey: "dummy-key-fallback",
+            authDomain: "cricbid-839eb.firebaseapp.com",
+            projectId: "cricbid-839eb",
+            storageBucket: "cricbid-839eb.firebasestorage.app",
+            messagingSenderId: "521652177425",
+            appId: "1:521652177425:web:c33adfb7ea97360d6affb0",
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // Database References
         const getRoomsRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'rooms');
         const getUsersRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'users');
         const getPlayersRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'players');
         const getChatRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'messages');
-        const getGlobalUsersRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'globalUsers');
+        const getPresenceRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'presence');
         const getInvitesRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'invites');
 
         let currentUser = null;
-        let globalProfile = { name: 'Guest Manager', photo: 'https://ui-avatars.com/api/?name=G&background=10b981&color=fff' };
         let currentRoomId = null;
         let myUserDocId = null;
+        let myPresenceId = null;
+        
         let roomData = null;
         let usersData = [];
         let playersData = [];
         let chatMessages = [];
+        let globalPlayers = [];
         let lastViewedMessageCount = 0;
+        
         let timerInterval = null;
         let failoverTimer = null;
         let playerToKick = null;
@@ -817,393 +741,9 @@
 
         let playerStatsCache = {};
         let activeFetches = {};
-        
-        let globalUsersUnsubscribe = null;
-        let invitesUnsubscribe = null;
-        let activeInviteId = null;
-
-        function listenToGlobalEvents(uid) {
-            if (globalUsersUnsubscribe) globalUsersUnsubscribe();
-            globalUsersUnsubscribe = onSnapshot(getGlobalUsersRef(), (snapshot) => {
-                const now = Date.now();
-                let globalOnline = [];
-                snapshot.forEach(docSnap => {
-                    const data = docSnap.data();
-                    // Consider online if heartbeat seen in last 60s
-                    if (data.lastActive && (now - data.lastActive < 60000)) {
-                        globalOnline.push(data);
-                    }
-                });
-                
-                const countEl = document.getElementById('global-online-count');
-                const listEl = document.getElementById('global-users-list');
-                if (countEl && listEl) {
-                    countEl.innerText = globalOnline.length;
-                    listEl.innerHTML = '';
-                    
-                    globalOnline.forEach(u => {
-                        if (u.uid === uid) return; // skip self
-                        
-                        const div = document.createElement('div');
-                        div.className = "flex justify-between items-center bg-zinc-900/50 p-2 rounded-lg border border-zinc-800/80";
-                        const canInvite = currentRoomId && u.currentRoom !== currentRoomId;
-                        
-                        div.innerHTML = `
-                            <div class="flex items-center gap-2 overflow-hidden">
-                                <img src="${u.photo || 'https://ui-avatars.com/api/?name='+encodeURIComponent(u.name)+'&background=3b82f6&color=fff'}" class="w-6 h-6 rounded-full border border-zinc-700" alt="avatar">
-                                <span class="text-xs font-bold text-white truncate max-w-[100px]">${u.name}</span>
-                            </div>
-                            ${canInvite ? `<button onclick="sendInvite('${u.uid}')" class="text-[9px] bg-cric-accent/20 hover:bg-cric-accent/40 text-blue-400 px-2 py-1 rounded transition-colors uppercase tracking-widest font-bold border border-cric-accent/30 active:scale-95">Invite</button>` : `<span class="text-[8px] text-zinc-500 uppercase font-bold tracking-widest px-1">In Room</span>`}
-                        `;
-                        listEl.appendChild(div);
-                    });
-                    
-                    if (globalOnline.length <= 1) {
-                        listEl.innerHTML = '<p class="text-xs text-zinc-600 italic text-center p-2">No other players online.</p>';
-                    }
-                }
-            });
-
-            if (invitesUnsubscribe) invitesUnsubscribe();
-            invitesUnsubscribe = onSnapshot(getInvitesRef(), (snapshot) => {
-                snapshot.docChanges().forEach((change) => {
-                    if (change.type === 'added') {
-                        const data = change.doc.data();
-                        const now = Date.now();
-                        // Show invite if it's for me and sent within the last 30 seconds
-                        if (data.receiverId === uid && (now - data.timestamp < 30000)) {
-                            showInviteModal(data);
-                        }
-                    }
-                });
-            });
-        }
-
-        window.sendInvite = async (receiverId) => {
-            if (!currentRoomId || !currentUser) return showToast("You must be in a room to send invites.");
-            try {
-                const me = usersData.find(u => u.userId === myUserDocId) || { username: globalProfile.name };
-                const inviteRef = doc(getInvitesRef());
-                await setDoc(inviteRef, {
-                    id: inviteRef.id,
-                    senderId: currentUser.uid,
-                    senderName: me.username,
-                    receiverId: receiverId,
-                    roomId: currentRoomId,
-                    timestamp: Date.now()
-                });
-                showToast("Invite sent successfully!");
-            } catch(e) {
-                console.error("Invite error:", e);
-                showToast("Failed to send invite.");
-            }
-        };
-
-        function showInviteModal(data) {
-            if (currentRoomId === data.roomId) return; 
-            activeInviteId = data.roomId;
-            document.getElementById('invite-sender-name').innerText = data.senderName;
-            document.getElementById('invite-room-code').innerText = data.roomId;
-            
-            const modal = document.getElementById('invite-modal');
-            const content = document.getElementById('invite-modal-content');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            setTimeout(() => { 
-                modal.classList.remove('opacity-0'); 
-                content.classList.remove('scale-95'); 
-                content.classList.add('scale-100'); 
-            }, 10);
-        }
-
-        window.closeInviteModal = () => {
-            const modal = document.getElementById('invite-modal');
-            const content = document.getElementById('invite-modal-content');
-            modal.classList.add('opacity-0'); 
-            content.classList.remove('scale-100'); 
-            content.classList.add('scale-95');
-            setTimeout(() => { 
-                modal.classList.add('hidden');
-                modal.classList.remove('flex'); 
-                activeInviteId = null; 
-            }, 300);
-        };
-
-        document.getElementById('btn-accept-invite')?.addEventListener('click', () => {
-            if (activeInviteId) {
-                const name = document.getElementById('username-input').value.trim() || globalProfile.name;
-                const targetRoom = activeInviteId;
-                closeInviteModal();
-                if (currentRoomId) {
-                     // Disconnect from current room before swapping
-                     if (myUserDocId) {
-                         transferHostRole(); 
-                         updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: false }).catch(()=>{});
-                     }
-                }
-                joinRoom(targetRoom, name);
-            }
-        });
-
-        window.sendReaction = async (emoji) => {
-            if(!currentUser || !currentRoomId) return;
-            try {
-                const msgRef = doc(getChatRef());
-                await setDoc(msgRef, {
-                    id: msgRef.id, roomId: currentRoomId,
-                    senderId: myUserDocId, senderName: 'Reaction',
-                    receiverId: 'all', receiverName: 'Everyone',
-                    text: emoji, isReaction: true, timestamp: Date.now()
-                });
-            } catch(e) { console.error("Reaction err:", e); }
-        };
-
-        window.spawnReactionElement = (emoji) => {
-            const reactionBar = document.getElementById('reaction-bar');
-            if(!reactionBar) return;
-            const el = document.createElement('div');
-            el.className = 'reaction-float';
-            el.innerText = emoji;
-            // Slight horizontal offset so they stack nicely
-            el.style.right = (20 + Math.random() * 40) + 'px';
-            document.body.appendChild(el);
-            setTimeout(() => { if(el.parentNode) el.remove(); }, 2500);
-        };
-
-        function processPrefetchQueue() {
-            if (!playersData || playersData.length === 0) return;
-            const upcoming = playersData.filter(p => p.status === 'upcoming').sort((a,b) => a.order - b.order);
-            for(let i = 0; i < Math.min(8, upcoming.length); i++) {
-                const p = upcoming[i];
-                if (!playerStatsCache[p.name] && !activeFetches[p.name]) {
-                    fetchRealPlayerStats(p).catch(()=>{});
-                }
-            }
-        }
-
-        function getHash(str) { let h=0; for(let i=0;i<str.length;i++) h=(h<<5)-h+str.charCodeAt(i); return Math.abs(h); }
-
-        function getFallbackAnalytics(player) {
-            const h = getHash(player.name);
-            
-            let baseMatches = 30;
-            if(player.set === "Marquee") baseMatches = 90;
-            else if(player.set === "Batsmen" || player.set === "Pacers") baseMatches = 50;
-            
-            const matches = baseMatches + (h % 40);
-            const base = player.basePrice;
-
-            let calculatedRating = 6.0;
-            if(base >= 2.0) calculatedRating = 8.5;
-            else if(base >= 1.5) calculatedRating = 7.5;
-            else if(base >= 1.0) calculatedRating = 6.5;
-
-            const aiRating = (calculatedRating + ((h % 15) / 10)).toFixed(1);
-            
-            const predMin = (base * (1 + (h % 5) * 0.3)).toFixed(2);
-            const predMax = (parseFloat(predMin) + 1.0 + ((h % 5) * 0.5)).toFixed(2);
-            
-            let form = [];
-            let stat1 = { label: 'Runs', val: 0 };
-            let stat2 = { label: 'Strike Rate', val: 0 };
-
-            if(player.role.includes('Batsman') || player.role.includes('Wicketkeeper')) {
-                stat1.val = matches * (20 + (h % 25));
-                stat2.val = (120 + (h % 45)).toFixed(1);
-                for(let i=0;i<5;i++) form.push( (h%(i*10+20)) + (i*15) + (i===2?'*':'') );
-            } else if(player.role.includes('Pacer') || player.role.includes('Spinner')) {
-                stat1 = { label: 'Wickets', val: matches + (h % 40) };
-                stat2 = { label: 'Economy', val: (6.0 + ((h % 30)/10)).toFixed(2) };
-                for(let i=0;i<5;i++) form.push( (h%(i*2+4)) + 'W' );
-            } else { // All-rounder
-                stat1 = { label: 'Runs', val: matches * (15 + (h % 20)) };
-                stat2 = { label: 'Wickets', val: Math.floor(matches * 0.8) + (h % 20) };
-                for(let i=0;i<5;i++) form.push( i%2===0 ? ((h%(i*10+20))*2) : ((h%(i*2+3))+'W') );
-            }
-            
-            return { matches, stat1, stat2, form, aiRating, predMin: parseFloat(predMin), predMax: parseFloat(predMax) };
-        }
-
-        async function fetchRealPlayerStats(player) {
-            if (playerStatsCache[player.name]) return playerStatsCache[player.name];
-            if (activeFetches[player.name]) return activeFetches[player.name];
-
-            const fetchPromise = (async () => {
-                const formatStr = roomData && roomData.format === 'TEST' ? 'Test' : (roomData && roomData.format === 'ODI' ? 'ODI' : 'T20I');
-                const prompt = `Act as an expert Cricket Analyst. Retrieve the real-world international career stats strictly for the ${formatStr} format only (DO NOT include domestic, franchise, or other formats) and recent ${formatStr} form for the cricketer "${player.name}". 
-Role: ${player.role}. Base Price: ${player.basePrice} Cr.
-Return a JSON object exactly matching the schema. 
-- matches: Total ${formatStr} matches played.
-- stat1Label: 'Runs' if batsman/all-rounder, 'Wickets' if bowler.
-- stat1Value: Total ${formatStr} runs or wickets.
-- stat2Label: 'Strike Rate' if batsman, 'Economy' if bowler.
-- stat2Value: Number value for SR or Economy.
-- form: Array of exactly 5 recent ${formatStr} scores or bowling figures as strings (e.g., ["45", "12", "0", "100*", "30"] or ["2/24", "1/30", "0/40", "3/15", "1/20"]).
-- aiRating: A score out of 10.0 reflecting their real-world current franchise value.
-- predictedValueMin: Minimum predicted auction price in Crores.
-- predictedValueMax: Maximum predicted auction price in Crores.`;
-
-                const payload = {
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: {
-                        responseMimeType: "application/json",
-                        responseSchema: {
-                            type: "OBJECT",
-                            properties: {
-                                "matches": { "type": "NUMBER" },
-                                "stat1Label": { "type": "STRING" },
-                                "stat1Value": { "type": "NUMBER" },
-                                "stat2Label": { "type": "STRING" },
-                                "stat2Value": { "type": "NUMBER" },
-                                "form": { "type": "ARRAY", "items": { "type": "STRING" } },
-                                "aiRating": { "type": "NUMBER" },
-                                "predictedValueMin": { "type": "NUMBER" },
-                                "predictedValueMax": { "type": "NUMBER" }
-                            },
-                            required: ["matches", "stat1Label", "stat1Value", "stat2Label", "stat2Value", "form", "aiRating", "predictedValueMin", "predictedValueMax"]
-                        }
-                    }
-                };
-
-                const apiKey = "";
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-
-                let result = null;
-                let retries = 5;
-                let delay = 1000;
-
-                for (let i = 0; i < retries; i++) {
-                    try {
-                        if (!apiKey) throw new Error("No API Key available in environment context.");
-                        const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                        if (!response.ok) throw new Error('API Error');
-                        result = await response.json();
-                        break;
-                    } catch (err) {
-                        if (i === retries - 1) {
-                            console.warn("AI Fetch Error/Skipped - using fallback:", err);
-                        } else {
-                            await new Promise(res => setTimeout(res, delay));
-                            delay *= 2;
-                        }
-                    }
-                }
-                
-                if (result && result.candidates && result.candidates.length > 0 && result.candidates[0].content?.parts?.[0]?.text) {
-                    try {
-                        const parsed = JSON.parse(result.candidates[0].content.parts[0].text);
-                        const analytics = {
-                            matches: parsed.matches,
-                            stat1: { label: parsed.stat1Label, val: parsed.stat1Value },
-                            stat2: { label: parsed.stat2Label, val: parsed.stat2Value },
-                            form: parsed.form,
-                            aiRating: parsed.aiRating.toFixed(1),
-                            predMin: parsed.predictedValueMin,
-                            predMax: parsed.predictedValueMax
-                        };
-                        playerStatsCache[player.name] = analytics;
-                        
-                        if (roomData && playersData.find(p => p.order === roomData.currentAuctionIndex)?.name === player.name) {
-                            renderPlayerAnalyticsUI(player, analytics);
-                        }
-                        return analytics;
-                    } catch (parseErr) {
-                        console.error("JSON parsing error", parseErr);
-                    }
-                }
-                
-                const fallback = getFallbackAnalytics(player);
-                playerStatsCache[player.name] = fallback;
-                if (roomData && playersData.find(p => p.order === roomData.currentAuctionIndex)?.name === player.name) {
-                    renderPlayerAnalyticsUI(player, fallback);
-                }
-                return fallback;
-            })();
-
-            activeFetches[player.name] = fetchPromise;
-            const result = await fetchPromise;
-            delete activeFetches[player.name];
-            return result;
-        }
-
-        function renderPlayerAnalyticsUI(currentPlayer, analytics) {
-            const statRating = document.getElementById('ui-stat-rating');
-            if (!statRating) return;
-
-            statRating.innerText = analytics.aiRating;
-            document.getElementById('ui-stat-predicted').innerText = `₹ ${analytics.predMin.toFixed(2)} - ${analytics.predMax.toFixed(2)} Cr`;
-            document.getElementById('ui-stat-matches').innerText = analytics.matches;
-            document.getElementById('ui-stat-l1').innerText = analytics.stat1.label;
-            document.getElementById('ui-stat-v1').innerText = analytics.stat1.val;
-            document.getElementById('ui-stat-l2').innerText = analytics.stat2.label;
-            document.getElementById('ui-stat-v2').innerText = analytics.stat2.val;
-            
-            let formHtml = '';
-            analytics.form.forEach(f => {
-                let fStr = String(f);
-                let color = fStr.includes('W') || fStr.includes('/') ? (parseInt(fStr)>1?'text-cric-green':'text-zinc-400') : (parseInt(fStr)>40?'text-cric-green':(parseInt(fStr)===0?'text-red-500':'text-zinc-400'));
-                formHtml += `<div class="bg-zinc-950 border border-zinc-800 flex-1 py-1.5 sm:py-2 rounded-lg text-center font-bold font-display text-[10px] sm:text-xs ${color} shadow-inner truncate px-1">${fStr}</div>`;
-            });
-            document.getElementById('ui-stat-form').innerHTML = formHtml;
-
-            const currentBidVal = roomData.currentBid > 0 ? roomData.currentBid : currentPlayer.basePrice;
-            const barCurrent = document.getElementById('ui-stat-bar-current');
-            const barPredicted = document.getElementById('ui-stat-bar-predicted');
-            const verdict = document.getElementById('ui-stat-verdict');
-            
-            const maxScale = analytics.predMax + 2.0;
-            const predCenter = (analytics.predMin + analytics.predMax) / 2;
-            
-            barPredicted.style.width = `${Math.min(100, (predCenter / maxScale) * 100)}%`;
-            barCurrent.style.width = `${Math.min(100, (currentBidVal / maxScale) * 100)}%`;
-            
-            if (currentBidVal < analytics.predMin) {
-                verdict.innerText = "Steal Deal!"; verdict.className = "text-[9px] sm:text-[11px] font-bold text-emerald-400 uppercase tracking-wider";
-                barCurrent.className = "absolute top-0 left-0 h-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.8)] transition-all duration-500 z-10";
-            } else if (currentBidVal > analytics.predMax) {
-                verdict.innerText = "Overpriced!"; verdict.className = "text-[9px] sm:text-[11px] font-bold text-red-500 uppercase tracking-wider";
-                barCurrent.className = "absolute top-0 left-0 h-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)] transition-all duration-500 z-10";
-            } else {
-                verdict.innerText = "Fair Value"; verdict.className = "text-[9px] sm:text-[11px] font-bold text-yellow-400 uppercase tracking-wider";
-                barCurrent.className = "absolute top-0 left-0 h-full bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.8)] transition-all duration-500 z-10";
-            }
-        }
-
-        const BUDGET_DEFAULT = 120.0;
-        const TIMER_SECONDS = 15;
-
-        const AUCTION_DATABASES = {
-            "T20": [
-                { name: "Virat Kohli", role: "Batsman", country: "India", base: 2.0, set: "Marquee" },
-                { name: "Jasprit Bumrah", role: "Pacer", country: "India", base: 2.0, set: "Marquee" },
-                { name: "Ben Stokes", role: "All-Rounder", country: "England", base: 2.0, set: "Marquee" },
-                { name: "Rashid Khan", role: "Spinner", country: "Afghanistan", base: 2.0, set: "Marquee" },
-                { name: "Heinrich Klaasen", role: "Wicketkeeper", country: "South Africa", base: 1.5, set: "Wicketkeepers" },
-                { name: "Travis Head", role: "Batsman", country: "Australia", base: 1.5, set: "Batsmen" },
-                { name: "Pat Cummins", role: "Pacer", country: "Australia", base: 2.0, set: "Pacers" },
-                { name: "Mitchell Starc", role: "Pacer", country: "Australia", base: 2.0, set: "Pacers" },
-                { name: "Glenn Maxwell", role: "All-Rounder", country: "Australia", base: 2.0, set: "All-Rounders" },
-                { name: "Sunil Narine", role: "Spinner", country: "West Indies", base: 1.5, set: "Spinners" },
-                { name: "Suryakumar Yadav", role: "Batsman", country: "India", base: 2.0, set: "Batsmen" }
-            ],
-            "ODI": [
-                { name: "Rohit Sharma", role: "Batsman", country: "India", base: 2.0, set: "Marquee" },
-                { name: "Quinton de Kock", role: "Wicketkeeper", country: "South Africa", base: 2.0, set: "Marquee" },
-                { name: "Trent Boult", role: "Pacer", country: "New Zealand", base: 2.0, set: "Marquee" },
-                { name: "Shakib Al Hasan", role: "All-Rounder", country: "Bangladesh", base: 1.5, set: "Marquee" },
-                { name: "Babar Azam", role: "Batsman", country: "Pakistan", base: 2.0, set: "Batsmen" }
-            ],
-            "TEST": [
-                { name: "Steve Smith", role: "Batsman", country: "Australia", base: 2.0, set: "Marquee" },
-                { name: "Joe Root", role: "Batsman", country: "England", base: 2.0, set: "Marquee" },
-                { name: "Ravichandran Ashwin", role: "Spinner", country: "India", base: 2.0, set: "Marquee" },
-                { name: "Nathan Lyon", role: "Spinner", country: "Australia", base: 1.5, set: "Spinners" },
-                { name: "James Anderson", role: "Pacer", country: "England", base: 1.5, set: "Pacers" }
-            ]
-        };
 
         const screens = { lobby: document.getElementById('lobby-screen'), auction: document.getElementById('auction-screen'), season: document.getElementById('season-screen') };
-        const inputs = { username: document.getElementById('username-input'), roomCode: document.getElementById('room-code-input') };
+        const inputs = { roomCode: document.getElementById('room-code-input') };
         const buttons = { create: document.getElementById('btn-create-room'), join: document.getElementById('btn-join-room'), leave: document.getElementById('btn-leave') };
         const ui = {
             roomCode: document.getElementById('ui-room-code'),
@@ -1236,133 +776,82 @@ Return a JSON object exactly matching the schema.
             confirm: document.getElementById('btn-confirm-exit')
         };
 
-        window.toggleDesktopChat = () => {
-            const panel = document.getElementById('chat-panel');
-            if(panel.classList.contains('hidden')) {
-                panel.classList.remove('hidden'); panel.classList.add('flex');
-                const badge = document.getElementById('chat-badge');
-                if(badge) { badge.classList.add('hidden'); badge.classList.remove('flex'); }
-                lastViewedMessageCount = chatMessages.length;
-                setTimeout(scrollToBottomChat, 100);
-            } else {
-                panel.classList.add('hidden'); panel.classList.remove('flex');
-            }
-        };
-
-        window.switchTab = (activeTab) => {
-            return; // Desktop view is forced, tabs are disabled
-        };
-
-        window.showToast = (msg) => {
+        window.showToast = (msg, actionHtml = '') => {
             const toast = document.getElementById('toast');
-            document.getElementById('toast-msg').innerText = msg;
+            document.getElementById('toast-msg').innerHTML = `<span class="block">${msg}</span>${actionHtml}`;
             toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3500);
+            setTimeout(() => toast.classList.remove('show'), actionHtml ? 8000 : 3500);
         };
 
-        window.sendReaction = async (emoji) => {
-            if(!currentUser || !currentRoomId) return;
-            try {
-                const msgRef = doc(getChatRef());
-                await setDoc(msgRef, {
-                    id: msgRef.id, roomId: currentRoomId,
-                    senderId: myUserDocId, senderName: 'Reaction',
-                    receiverId: 'all', receiverName: 'Everyone',
-                    text: emoji, isReaction: true, timestamp: Date.now()
-                });
-            } catch(e) { console.error("Reaction err:", e); }
-        };
-
-        window.spawnReactionElement = (emoji) => {
-            const el = document.createElement('div');
-            el.className = 'reaction-float';
-            el.innerText = emoji;
-            // Slight horizontal offset so they stack nicely
-            el.style.right = (20 + Math.random() * 40) + 'px';
-            document.body.appendChild(el);
-            setTimeout(() => { if(el.parentNode) el.remove(); }, 2500);
-        };
-
-        const formatMoney = (val) => val.toFixed(2);
-        const generateRoomCode = () => {
-            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-            let result = '';
-            for (let i = 0; i < 6; i++) { result += chars.charAt(Math.floor(Math.random() * chars.length)); }
-            return result;
-        };
-
+        // Added rule 3 fallback for scoped environments if they inject a custom token initially
         async function initAuth() {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    try {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } catch (customErr) {
-                        console.warn("Custom token mismatch. Waiting for manual login.");
-                    }
-                }
-                // Do not auto-login here. 
-                // Firebase will automatically trigger onAuthStateChanged if an existing session (Google or Guest) is found!
-            } catch (e) {
-                console.error("Auth error:", e);
-                showToast("Connection setup failed.");
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token && !auth.currentUser) {
+                try {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } catch(e) { console.warn("Custom token failed", e); }
             }
         }
-        
-        onAuthStateChanged(auth, async (user) => { 
-            currentUser = user; 
-            if(user) {
-                if(!user.isAnonymous && user.displayName) {
-                    globalProfile.name = user.displayName;
-                    globalProfile.photo = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName)}&background=3b82f6&color=fff`;
-                } else {
-                    const localName = document.getElementById('username-input').value.trim() || localStorage.getItem('cricbid_guest_name') || 'Guest Manager';
-                    localStorage.setItem('cricbid_guest_name', localName);
-                    globalProfile.name = localName;
-                    globalProfile.photo = `https://ui-avatars.com/api/?name=${encodeURIComponent(localName)}&background=10b981&color=fff`;
-                }
-                
-                document.getElementById('username-input').value = globalProfile.name;
-                document.getElementById('user-display-name').innerText = globalProfile.name;
-                document.getElementById('user-avatar').src = globalProfile.photo;
-                
-                document.getElementById('login-section').classList.add('hidden');
-                
-                const guestSection = document.getElementById('guest-name-section');
-                if (guestSection) {
-                    guestSection.classList.add('hidden');
-                    guestSection.classList.remove('flex');
-                }
-                
-                document.getElementById('lobby-controls').classList.remove('hidden');
+        initAuth();
 
-                // Register global presence
-                await setDoc(doc(getGlobalUsersRef(), user.uid), {
+        onAuthStateChanged(auth, async (user) => { 
+            currentUser = user;
+            if (user) {
+                // Show authenticated Lobby menu
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('guest-name-section').classList.add('hidden');
+                document.getElementById('guest-name-section').classList.remove('flex');
+                document.getElementById('auth-lobby-menu').classList.remove('hidden');
+                document.getElementById('auth-lobby-menu').classList.add('flex');
+
+                let displayName = user.displayName || localStorage.getItem('cricbid_guest_name') || "Guest User";
+                let photoUrl = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=10b981&color=fff`;
+
+                document.getElementById('user-display-name').innerText = displayName;
+                document.getElementById('user-avatar').src = photoUrl;
+
+                // Update global presence
+                myPresenceId = user.uid;
+                await setDoc(doc(getPresenceRef(), myPresenceId), {
                     uid: user.uid,
-                    name: globalProfile.name,
-                    photo: globalProfile.photo,
-                    lastActive: Date.now(),
-                    currentRoom: currentRoomId || null
+                    name: displayName,
+                    photo: photoUrl,
+                    isOnline: true,
+                    lastActive: Date.now()
                 });
-                
-                listenToGlobalEvents(user.uid);
+
+                listenToGlobalPresence();
+                listenToInvites();
+
             } else {
-                // User is not logged in. Ensure login options are shown.
+                // Show Login Screen
                 document.getElementById('login-section').classList.remove('hidden');
-                document.getElementById('lobby-controls').classList.add('hidden');
-                
-                const guestSection = document.getElementById('guest-name-section');
-                if (guestSection) {
-                    guestSection.classList.add('hidden');
-                    guestSection.classList.remove('flex');
+                document.getElementById('guest-name-section').classList.add('hidden');
+                document.getElementById('guest-name-section').classList.remove('flex');
+                document.getElementById('auth-lobby-menu').classList.add('hidden');
+                document.getElementById('auth-lobby-menu').classList.remove('flex');
+            }
+        });
+
+        document.getElementById('btn-google-login')?.addEventListener('click', async () => {
+            try {
+                const provider = new GoogleAuthProvider();
+                await signInWithPopup(auth, provider);
+            } catch(e) {
+                console.error("Google login error:", e);
+                if (e.code === 'auth/unauthorized-domain') {
+                    const domain = window.location.hostname || "null (sandbox)";
+                    showToast(`Google Login blocked. Please use 'Play as Guest' for testing, or add this domain in Firebase Auth Settings.`, 
+                              `<button onclick="document.getElementById('btn-guest-login').click(); document.getElementById('toast').classList.remove('show');" class="mt-2 w-full bg-zinc-800 hover:bg-zinc-700 text-white px-3 py-2 rounded-lg text-xs font-bold border border-zinc-700 transition-colors">Play as Guest Instead</button>`);
+                } else {
+                    showToast("Google Login cancelled or failed.");
                 }
             }
         });
 
-        document.getElementById('btn-anon-login').addEventListener('click', () => {
+        document.getElementById('btn-guest-login')?.addEventListener('click', () => {
             document.getElementById('login-section').classList.add('hidden');
             document.getElementById('guest-name-section').classList.remove('hidden');
             document.getElementById('guest-name-section').classList.add('flex');
-            document.getElementById('guest-name-input').focus();
         });
 
         document.getElementById('btn-back-login')?.addEventListener('click', () => {
@@ -1373,84 +862,149 @@ Return a JSON object exactly matching the schema.
 
         document.getElementById('btn-confirm-guest')?.addEventListener('click', async () => {
             const name = document.getElementById('guest-name-input').value.trim();
-            if (!name) return showToast("Please enter an alias!");
-            
-            document.getElementById('username-input').value = name;
+            if (!name) return showToast("Enter an alias!");
             localStorage.setItem('cricbid_guest_name', name);
-            
-            const btn = document.getElementById('btn-confirm-guest');
-            btn.innerText = 'Connecting...';
-            btn.disabled = true;
-            
             try {
                 await signInAnonymously(auth);
-            } catch(e) {
-                console.error(e);
-                showToast("Failed to connect.");
-                btn.innerText = 'Continue';
-                btn.disabled = false;
-            }
+            } catch(e) { console.error(e); showToast("Guest login failed."); }
         });
 
-        document.getElementById('guest-name-input')?.addEventListener('keypress', (e) => {
-            if(e.key === 'Enter') document.getElementById('btn-confirm-guest').click();
-        });
+        let unsubPresence, unsubInvites, unsubscribeRooms, unsubscribeUsers, unsubscribePlayers, unsubscribeChat;
+        
+        function stopAllListeners() {
+            if (unsubPresence) { unsubPresence(); unsubPresence = null; }
+            if (unsubInvites) { unsubInvites(); unsubInvites = null; }
+            if (unsubscribeRooms) { unsubscribeRooms(); unsubscribeRooms = null; }
+            if (unsubscribeUsers) { unsubscribeUsers(); unsubscribeUsers = null; }
+            if (unsubscribePlayers) { unsubscribePlayers(); unsubscribePlayers = null; }
+            if (unsubscribeChat) { unsubscribeChat(); unsubscribeChat = null; }
+            if (heartbeatInterval) { clearInterval(heartbeatInterval); heartbeatInterval = null; }
+        }
 
-        document.getElementById('btn-google-login')?.addEventListener('click', async () => {
+        document.getElementById('btn-logout')?.addEventListener('click', async () => {
             try {
-                const provider = new GoogleAuthProvider();
-                await signInWithPopup(auth, provider);
-            } catch(e) {
-                console.error("Google login error:", e);
-                if (e.code === 'auth/unauthorized-domain') {
-                    showToast(`Security Error: Please add "${window.location.hostname}" to Firebase Authorized Domains.`);
-                } else {
-                    showToast("Google Login cancelled or failed.");
+                if (myPresenceId && auth.currentUser) {
+                    await updateDoc(doc(getPresenceRef(), myPresenceId), { isOnline: false });
                 }
-            }
+                stopAllListeners();
+                await signOut(auth);
+                localStorage.removeItem('cricbid_guest_name');
+                showToast("Signed out successfully.");
+            } catch(e) { console.error("Sign out error", e); }
         });
 
-        document.getElementById('username-input')?.addEventListener('input', (e) => {
-            const newName = e.target.value.trim();
-            if(newName) {
-                globalProfile.name = newName;
-                document.getElementById('user-display-name').innerText = newName;
-                document.getElementById('user-avatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(newName)}&background=10b981&color=fff`;
-                if(currentUser && currentUser.isAnonymous) {
-                    localStorage.setItem('cricbid_guest_name', newName);
-                    updateDoc(doc(getGlobalUsersRef(), currentUser.uid), { name: newName, photo: globalProfile.photo }).catch(()=>{});
-                }
+        function listenToGlobalPresence() {
+            if (unsubPresence) return;
+            unsubPresence = onSnapshot(getPresenceRef(), (snapshot) => {
+                globalPlayers = [];
+                const now = Date.now();
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    if (data.uid !== currentUser?.uid && data.isOnline && (now - data.lastActive < 60000)) {
+                        globalPlayers.push(data);
+                    }
+                });
+                renderGlobalPlayers();
+            });
+        }
+
+        function renderGlobalPlayers() {
+            const container = document.getElementById('global-players-list');
+            if (!container) return;
+            container.innerHTML = '';
+            if (globalPlayers.length === 0) {
+                container.innerHTML = '<p class="text-xs text-zinc-600 italic px-1">No other players online right now.</p>';
+                return;
             }
-        });
+            globalPlayers.forEach(p => {
+                const div = document.createElement('div');
+                div.className = "flex justify-between items-center bg-zinc-900 border border-zinc-800 p-2.5 rounded-xl";
+                div.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <div class="w-2 h-2 rounded-full bg-cric-green shadow-[0_0_5px_#10b981]"></div>
+                        <img src="${p.photo}" class="w-6 h-6 rounded-full border border-zinc-700">
+                        <span class="text-xs font-bold text-zinc-300">${p.name}</span>
+                    </div>
+                    <button onclick="invitePlayer('${p.uid}')" class="text-[9px] bg-cric-accent/20 text-blue-400 hover:bg-cric-accent/40 border border-blue-500/30 px-3 py-1.5 rounded-lg transition-colors font-bold uppercase tracking-widest active:scale-95">Invite</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        window.invitePlayer = async (targetUid) => {
+            if (!currentRoomId) return showToast("You must Host or Join a room first to send invites!");
+            const myName = currentUser.displayName || localStorage.getItem('cricbid_guest_name') || "A player";
+            try {
+                const invRef = doc(getInvitesRef());
+                await setDoc(invRef, {
+                    id: invRef.id,
+                    fromName: myName,
+                    toUid: targetUid,
+                    roomId: currentRoomId,
+                    timestamp: Date.now()
+                });
+                showToast("Invite sent successfully!");
+            } catch(e) { console.error(e); }
+        };
+
+        function listenToInvites() {
+            if (unsubInvites) return;
+            unsubInvites = onSnapshot(getInvitesRef(), (snapshot) => {
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === 'added') {
+                        const data = change.doc.data();
+                        // Only show if sent to me within the last 30 seconds
+                        if (data.toUid === currentUser?.uid && Date.now() - data.timestamp < 30000) {
+                            showToast(
+                                `${data.fromName} invited you to play!`, 
+                                `<button onclick="acceptInvite('${data.roomId}')" class="mt-2 w-full bg-white hover:bg-zinc-200 text-zinc-900 px-3 py-2 rounded-lg text-xs font-black uppercase tracking-widest shadow-md transition-colors">Join Room</button>`
+                            );
+                        }
+                    }
+                });
+            });
+        }
+
+        window.acceptInvite = async (roomId) => {
+            document.getElementById('toast').classList.remove('show');
+            document.getElementById('room-code-input').value = roomId;
+            document.getElementById('btn-join-room').click();
+        };
+
+        const formatMoney = (val) => val.toFixed(2);
+        const generateRoomCode = () => {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let result = '';
+            for (let i = 0; i < 6; i++) { result += chars.charAt(Math.floor(Math.random() * chars.length)); }
+            return result;
+        };
 
         buttons.create.addEventListener('click', async () => {
-            const name = inputs.username.value.trim();
             const format = document.getElementById('format-input').value;
-            if(!name) return showToast("Enter your alias first!");
             if(!currentUser) return showToast("Authenticating... wait a moment.");
-            await createRoom(generateRoomCode(), name, format);
+            await createRoom(generateRoomCode(), format);
         });
 
         buttons.join.addEventListener('click', async () => {
-            const name = inputs.username.value.trim();
             const code = inputs.roomCode.value.trim().toUpperCase();
-            if(!name) return showToast("Enter your alias!");
             if(!code) return showToast("Enter a room code!");
             if(!currentUser) return showToast("Authenticating... wait a moment.");
-            await joinRoom(code, name);
+            await joinRoom(code);
         });
 
         buttons.leave.addEventListener('click', () => {
             modalElements.modal.classList.remove('hidden');
             setTimeout(() => { modalElements.modal.classList.remove('opacity-0'); modalElements.content.classList.remove('scale-95'); modalElements.content.classList.add('scale-100'); }, 10);
         });
+        
         modalElements.cancel.addEventListener('click', () => {
             modalElements.modal.classList.add('opacity-0');
             modalElements.content.classList.remove('scale-100'); modalElements.content.classList.add('scale-95');
             setTimeout(() => { modalElements.modal.classList.add('hidden'); }, 300);
         });
+        
         modalElements.confirm.addEventListener('click', async () => {
-            if (myUserDocId) {
+            if (myUserDocId && auth.currentUser) {
                 try {
                     await transferHostRole();
                     await updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: false });
@@ -1459,54 +1013,10 @@ Return a JSON object exactly matching the schema.
             window.location.reload();
         });
 
-        window.openKickModal = (userId, username) => {
-            playerToKick = userId;
-            document.getElementById('kick-player-name').innerText = username;
-            const modal = document.getElementById('kick-modal');
-            const content = document.getElementById('kick-modal-content');
-            modal.classList.remove('hidden');
-            setTimeout(() => { modal.classList.remove('opacity-0'); content.classList.remove('scale-95'); content.classList.add('scale-100'); }, 10);
-        };
-        window.closeKickModal = () => {
-            const modal = document.getElementById('kick-modal');
-            const content = document.getElementById('kick-modal-content');
-            modal.classList.add('opacity-0'); content.classList.remove('scale-100'); content.classList.add('scale-95');
-            setTimeout(() => { modal.classList.add('hidden'); playerToKick = null; }, 300);
-        };
-        document.getElementById('btn-confirm-kick').addEventListener('click', async () => {
-            if(playerToKick) {
-                try { await updateDoc(doc(getUsersRef(), playerToKick), { isOnline: false, kicked: true }); showToast("Player kicked."); } 
-                catch(e) { console.error(e); }
-            }
-            closeKickModal();
-        });
-
-        window.openBanModal = (userId, username) => {
-            playerToBan = userId;
-            document.getElementById('ban-player-name').innerText = username;
-            const modal = document.getElementById('ban-modal');
-            const content = document.getElementById('ban-modal-content');
-            modal.classList.remove('hidden');
-            setTimeout(() => { modal.classList.remove('opacity-0'); content.classList.remove('scale-95'); content.classList.add('scale-100'); }, 10);
-        };
-        window.closeBanModal = () => {
-            const modal = document.getElementById('ban-modal');
-            const content = document.getElementById('ban-modal-content');
-            modal.classList.add('opacity-0'); content.classList.remove('scale-100'); content.classList.add('scale-95');
-            setTimeout(() => { modal.classList.add('hidden'); playerToBan = null; }, 300);
-        };
-        document.getElementById('btn-confirm-ban').addEventListener('click', async () => {
-            if(playerToBan) {
-                try { await updateDoc(doc(getUsersRef(), playerToBan), { isOnline: false, banned: true }); showToast("Player permanently banned."); } 
-                catch(e) { console.error(e); }
-            }
-            closeBanModal();
-        });
-
-        window.addEventListener('beforeunload', () => { if (myUserDocId) { transferHostRole(); updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: false }).catch(() => {}); } });
-        document.addEventListener('visibilitychange', () => { if (myUserDocId) { const isVisible = document.visibilityState === 'visible'; updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: isVisible, lastActive: Date.now() }).catch(() => {}); } });
-        window.addEventListener('offline', () => { if (myUserDocId) updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: false }).catch(() => {}); });
-        window.addEventListener('online', () => { if (myUserDocId) updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: true, lastActive: Date.now() }).catch(() => {}); });
+        window.addEventListener('beforeunload', () => { if (myUserDocId && auth.currentUser) { transferHostRole(); updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: false }).catch(() => {}); } });
+        document.addEventListener('visibilitychange', () => { if (myUserDocId && auth.currentUser) { const isVisible = document.visibilityState === 'visible'; updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: isVisible, lastActive: Date.now() }).catch(() => {}); } });
+        window.addEventListener('offline', () => { if (myUserDocId && auth.currentUser) updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: false }).catch(() => {}); });
+        window.addEventListener('online', () => { if (myUserDocId && auth.currentUser) updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: true, lastActive: Date.now() }).catch(() => {}); });
 
         async function transferHostRole() {
             if (!usersData || !myUserDocId) return;
@@ -1529,8 +1039,9 @@ Return a JSON object exactly matching the schema.
                 }
             }
         }
+        
         window.transferHostTo = async (targetUserId) => {
-            if (!myUserDocId || !usersData) return;
+            if (!myUserDocId || !usersData || !auth.currentUser) return;
             const me = usersData.find(u => u.userId === myUserDocId);
             if (me && me.role === 'admin') {
                 const targetUser = usersData.find(u => u.userId === targetUserId);
@@ -1547,8 +1058,40 @@ Return a JSON object exactly matching the schema.
             }
         };
 
-        async function createRoom(roomId, username, format) {
-            if(!currentUser) return;
+        const BUDGET_DEFAULT = 120.0;
+        const TIMER_SECONDS = 15;
+        const AUCTION_DATABASES = {
+            "T20": [
+                { name: "Virat Kohli", role: "Batsman", country: "India", base: 2.0, set: "Marquee" },
+                { name: "Jasprit Bumrah", role: "Pacer", country: "India", base: 2.0, set: "Marquee" },
+                { name: "Ben Stokes", role: "All-Rounder", country: "England", base: 2.0, set: "Marquee" },
+                { name: "Rashid Khan", role: "Spinner", country: "Afghanistan", base: 2.0, set: "Marquee" },
+                { name: "Heinrich Klaasen", role: "Wicketkeeper", country: "South Africa", base: 1.5, set: "Wicketkeepers" },
+                { name: "Travis Head", role: "Batsman", country: "Australia", base: 1.5, set: "Batsmen" },
+                { name: "Pat Cummins", role: "Pacer", country: "Australia", base: 2.0, set: "Pacers" },
+                { name: "Mitchell Starc", role: "Pacer", country: "Australia", base: 2.0, set: "Pacers" },
+                { name: "Glenn Maxwell", role: "All-Rounder", country: "Australia", base: 2.0, set: "All-Rounders" },
+                { name: "Sunil Narine", role: "Spinner", country: "West Indies", base: 1.5, set: "Spinners" },
+                { name: "Suryakumar Yadav", role: "Batsman", country: "India", base: 2.0, set: "Batsmen" }
+            ],
+            "ODI": [
+                { name: "Rohit Sharma", role: "Batsman", country: "India", base: 2.0, set: "Marquee" },
+                { name: "Quinton de Kock", role: "Wicketkeeper", country: "South Africa", base: 2.0, set: "Marquee" },
+                { name: "Trent Boult", role: "Pacer", country: "New Zealand", base: 2.0, set: "Marquee" },
+                { name: "Shakib Al Hasan", role: "All-Rounder", country: "Bangladesh", base: 1.5, set: "Marquee" },
+                { name: "Babar Azam", role: "Batsman", country: "Pakistan", base: 2.0, set: "Batsmen" }
+            ],
+            "TEST": [
+                { name: "Steve Smith", role: "Batsman", country: "Australia", base: 2.0, set: "Marquee" },
+                { name: "Joe Root", role: "Batsman", country: "England", base: 2.0, set: "Marquee" },
+                { name: "Ravichandran Ashwin", role: "Spinner", country: "India", base: 2.0, set: "Marquee" },
+                { name: "Nathan Lyon", role: "Spinner", country: "Australia", base: 1.5, set: "Spinners" },
+                { name: "James Anderson", role: "Pacer", country: "England", base: 1.5, set: "Pacers" }
+            ]
+        };
+
+        async function createRoom(roomId, format) {
+            const username = currentUser.displayName || localStorage.getItem('cricbid_guest_name') || "Guest";
             try {
                 buttons.create.disabled = true; buttons.create.innerText = "Hosting...";
                 await setDoc(doc(getRoomsRef(), roomId), {
@@ -1578,8 +1121,8 @@ Return a JSON object exactly matching the schema.
             } catch(e) { console.error(e); showToast("Error creating room."); buttons.create.disabled = false; buttons.create.innerText = "Host New Auction"; }
         }
 
-        async function joinRoom(roomId, username) {
-            if(!currentUser) return;
+        async function joinRoom(roomId) {
+            const username = currentUser.displayName || localStorage.getItem('cricbid_guest_name') || "Guest";
             try {
                 buttons.join.disabled = true;
                 const roomsSnap = await getDocs(getRoomsRef());
@@ -1626,36 +1169,23 @@ Return a JSON object exactly matching the schema.
             screens.auction.classList.add('flex');
             ui.roomCode.innerText = roomId;
             
-            // Mark user as being inside a room
-            if(currentUser) {
-                updateDoc(doc(getGlobalUsersRef(), currentUser.uid), { currentRoom: roomId, lastActive: Date.now() }).catch(()=>{});
-            }
-            
+            // Show reaction buttons
+            document.getElementById('reaction-buttons').classList.remove('hidden');
+
             setupListeners(); initVoiceChat(); startHeartbeat();
         }
 
         function startHeartbeat() {
             if (heartbeatInterval) clearInterval(heartbeatInterval);
-            heartbeatInterval = setInterval(() => { 
-                if (myUserDocId && document.visibilityState === 'visible') { 
-                    updateDoc(doc(getUsersRef(), myUserDocId), { lastActive: Date.now() }).catch(()=>{}); 
-                } 
-                if (currentUser && document.visibilityState === 'visible') {
-                    updateDoc(doc(getGlobalUsersRef(), currentUser.uid), { lastActive: Date.now() }).catch(()=>{});
-                }
-            }, 10000); 
+            heartbeatInterval = setInterval(() => { if (myUserDocId && auth.currentUser && document.visibilityState === 'visible') { updateDoc(doc(getUsersRef(), myUserDocId), { lastActive: Date.now() }).catch(()=>{}); } }, 10000); 
         }
 
-        let unsubscribeRooms, unsubscribeUsers, unsubscribePlayers, unsubscribeChat;
         function setupListeners() {
             if(!currentUser) return;
             unsubscribeRooms = onSnapshot(getRoomsRef(), (snapshot) => {
                 snapshot.forEach(docSnap => { 
                     const data = docSnap.data(); 
-                    if(data.roomId === currentRoomId) { 
-                        roomData = data; 
-                        updateRoomUI(); 
-                    } 
+                    if(data.roomId === currentRoomId) { roomData = data; updateRoomUI(); } 
                 });
             }, (error) => { console.error("Room sync error", error) });
 
@@ -1721,29 +1251,239 @@ Return a JSON object exactly matching the schema.
             }, (error) => { console.error("Players sync error", error) });
 
             unsubscribeChat = onSnapshot(getChatRef(), (snapshot) => {
-                const allNormalMsgs = [];
-                
-                snapshot.docChanges().forEach((change) => {
+                const msgs = [];
+                snapshot.docChanges().forEach(change => {
                     const data = change.doc.data();
-                    if(data.roomId === currentRoomId && (data.receiverId === 'all' || data.senderId === myUserDocId || data.receiverId === myUserDocId)) { 
-                        if(data.isReaction) {
-                            if(change.type === 'added' && (Date.now() - data.timestamp < 5000)) {
-                                spawnReactionElement(data.text);
+                    if (data.roomId === currentRoomId) {
+                        // Handle Live Reactions
+                        if (change.type === 'added' && data.type === 'reaction') {
+                            if (Date.now() - data.timestamp < 5000 && data.senderId !== myUserDocId) {
+                                animateReaction(data.emoji);
                             }
                         }
                     }
                 });
 
+                // Populate regular text messages
                 snapshot.forEach(docSnap => {
                     const data = docSnap.data();
-                    if(data.roomId === currentRoomId && !data.isReaction && (data.receiverId === 'all' || data.senderId === myUserDocId || data.receiverId === myUserDocId)) {
-                        allNormalMsgs.push(data);
+                    if(data.roomId === currentRoomId && !data.type) {
+                        if(data.receiverId === 'all' || data.senderId === myUserDocId || data.receiverId === myUserDocId) { msgs.push(data); }
                     }
                 });
-                
-                chatMessages = allNormalMsgs.sort((a,b) => a.timestamp - b.timestamp);
+                chatMessages = msgs.sort((a,b) => a.timestamp - b.timestamp);
                 updateChatUI();
             }, (error) => { console.error("Chat sync error", error) });
+        }
+
+        window.sendReaction = (emoji) => {
+            if (!currentRoomId || !myUserDocId || !auth.currentUser) return;
+            const msgRef = doc(getChatRef());
+            setDoc(msgRef, {
+                id: msgRef.id, roomId: currentRoomId, senderId: myUserDocId, 
+                type: 'reaction', emoji: emoji, timestamp: Date.now()
+            }).catch(console.error);
+            animateReaction(emoji); // Animate for self instantly
+        };
+
+        function animateReaction(emoji) {
+            const container = document.getElementById('reaction-container');
+            if (!container) return;
+            const el = document.createElement('div');
+            el.className = 'absolute bottom-0 text-3xl sm:text-4xl animate-float-up opacity-100 pointer-events-none drop-shadow-lg';
+            el.innerText = emoji;
+            // Randomize horizontal placement
+            el.style.left = (Math.random() * 40) + 'px';
+            container.appendChild(el);
+            setTimeout(() => el.remove(), 2000);
+        }
+
+        function processPrefetchQueue() {
+            if (!playersData || playersData.length === 0) return;
+            const upcoming = playersData.filter(p => p.status === 'upcoming').sort((a,b) => a.order - b.order);
+            for(let i = 0; i < Math.min(8, upcoming.length); i++) {
+                const p = upcoming[i];
+                if (!playerStatsCache[p.name] && !activeFetches[p.name]) {
+                    fetchRealPlayerStats(p).catch(()=>{});
+                }
+            }
+        }
+
+        function getHash(str) { let h=0; for(let i=0;i<str.length;i++) h=(h<<5)-h+str.charCodeAt(i); return Math.abs(h); }
+
+        function getFallbackAnalytics(player) {
+            const h = getHash(player.name);
+            let baseMatches = 30;
+            if(player.set === "Marquee") baseMatches = 90;
+            else if(player.set === "Batsmen" || player.set === "Pacers") baseMatches = 50;
+            
+            const matches = baseMatches + (h % 40);
+            const base = player.basePrice;
+
+            let calculatedRating = 6.0;
+            if(base >= 2.0) calculatedRating = 8.5;
+            else if(base >= 1.5) calculatedRating = 7.5;
+            else if(base >= 1.0) calculatedRating = 6.5;
+
+            const aiRating = (calculatedRating + ((h % 15) / 10)).toFixed(1);
+            const predMin = (base * (1 + (h % 5) * 0.3)).toFixed(2);
+            const predMax = (parseFloat(predMin) + 1.0 + ((h % 5) * 0.5)).toFixed(2);
+            
+            let form = [];
+            let stat1 = { label: 'Runs', val: 0 };
+            let stat2 = { label: 'Strike Rate', val: 0 };
+
+            if(player.role.includes('Batsman') || player.role.includes('Wicketkeeper')) {
+                stat1.val = matches * (20 + (h % 25));
+                stat2.val = (120 + (h % 45)).toFixed(1);
+                for(let i=0;i<5;i++) form.push( (h%(i*10+20)) + (i*15) + (i===2?'*':'') );
+            } else if(player.role.includes('Pacer') || player.role.includes('Spinner')) {
+                stat1 = { label: 'Wickets', val: matches + (h % 40) };
+                stat2 = { label: 'Economy', val: (6.0 + ((h % 30)/10)).toFixed(2) };
+                for(let i=0;i<5;i++) form.push( (h%(i*2+4)) + 'W' );
+            } else { // All-rounder
+                stat1 = { label: 'Runs', val: matches * (15 + (h % 20)) };
+                stat2 = { label: 'Wickets', val: Math.floor(matches * 0.8) + (h % 20) };
+                for(let i=0;i<5;i++) form.push( i%2===0 ? ((h%(i*10+20))*2) : ((h%(i*2+3))+'W') );
+            }
+            
+            return { matches, stat1, stat2, form, aiRating, predMin: parseFloat(predMin), predMax: parseFloat(predMax) };
+        }
+
+        async function fetchRealPlayerStats(player) {
+            if (playerStatsCache[player.name]) return playerStatsCache[player.name];
+            if (activeFetches[player.name]) return activeFetches[player.name];
+
+            const fetchPromise = (async () => {
+                const formatStr = roomData && roomData.format === 'TEST' ? 'Test' : (roomData && roomData.format === 'ODI' ? 'ODI' : 'T20I');
+                const prompt = `Act as an expert Cricket Analyst. Retrieve the real-world international career stats strictly for the ${formatStr} format only (DO NOT include domestic, franchise, or other formats) and recent ${formatStr} form for the cricketer "${player.name}". 
+Role: ${player.role}. Base Price: ${player.basePrice} Cr.
+Return a JSON object exactly matching the schema. 
+- matches: Total ${formatStr} matches played.
+- stat1Label: 'Runs' if batsman/all-rounder, 'Wickets' if bowler.
+- stat1Value: Total ${formatStr} runs or wickets.
+- stat2Label: 'Strike Rate' if batsman, 'Economy' if bowler.
+- stat2Value: Number value for SR or Economy.
+- form: Array of exactly 5 recent ${formatStr} scores or bowling figures as strings.
+- aiRating: A score out of 10.0 reflecting their real-world current franchise value.
+- predictedValueMin: Minimum predicted auction price in Crores.
+- predictedValueMax: Maximum predicted auction price in Crores.`;
+
+                const payload = {
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "OBJECT",
+                            properties: {
+                                "matches": { "type": "NUMBER" },
+                                "stat1Label": { "type": "STRING" },
+                                "stat1Value": { "type": "NUMBER" },
+                                "stat2Label": { "type": "STRING" },
+                                "stat2Value": { "type": "NUMBER" },
+                                "form": { "type": "ARRAY", "items": { "type": "STRING" } },
+                                "aiRating": { "type": "NUMBER" },
+                                "predictedValueMin": { "type": "NUMBER" },
+                                "predictedValueMax": { "type": "NUMBER" }
+                            },
+                            required: ["matches", "stat1Label", "stat1Value", "stat2Label", "stat2Value", "form", "aiRating", "predictedValueMin", "predictedValueMax"]
+                        }
+                    }
+                };
+
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+                let result = null;
+                let retries = 5;
+                let delay = 1000;
+
+                for (let i = 0; i < retries; i++) {
+                    try {
+                        if (!apiKey) throw new Error("No API Key available in environment context.");
+                        const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                        if (!response.ok) throw new Error('API Error');
+                        result = await response.json();
+                        break;
+                    } catch (err) {
+                        if (i === retries - 1) { console.warn("AI Fetch Error/Skipped - using fallback:", err); } 
+                        else { await new Promise(res => setTimeout(res, delay)); delay *= 2; }
+                    }
+                }
+                
+                if (result && result.candidates && result.candidates.length > 0 && result.candidates[0].content?.parts?.[0]?.text) {
+                    try {
+                        const parsed = JSON.parse(result.candidates[0].content.parts[0].text);
+                        const analytics = {
+                            matches: parsed.matches,
+                            stat1: { label: parsed.stat1Label, val: parsed.stat1Value },
+                            stat2: { label: parsed.stat2Label, val: parsed.stat2Value },
+                            form: parsed.form,
+                            aiRating: parsed.aiRating.toFixed(1),
+                            predMin: parsed.predictedValueMin,
+                            predMax: parsed.predictedValueMax
+                        };
+                        playerStatsCache[player.name] = analytics;
+                        if (roomData && playersData.find(p => p.order === roomData.currentAuctionIndex)?.name === player.name) {
+                            renderPlayerAnalyticsUI(player, analytics);
+                        }
+                        return analytics;
+                    } catch (parseErr) { console.error("JSON parsing error", parseErr); }
+                }
+                
+                const fallback = getFallbackAnalytics(player);
+                playerStatsCache[player.name] = fallback;
+                if (roomData && playersData.find(p => p.order === roomData.currentAuctionIndex)?.name === player.name) { renderPlayerAnalyticsUI(player, fallback); }
+                return fallback;
+            })();
+
+            activeFetches[player.name] = fetchPromise;
+            const result = await fetchPromise;
+            delete activeFetches[player.name];
+            return result;
+        }
+
+        function renderPlayerAnalyticsUI(currentPlayer, analytics) {
+            const statRating = document.getElementById('ui-stat-rating');
+            if (!statRating) return;
+
+            statRating.innerText = analytics.aiRating;
+            document.getElementById('ui-stat-predicted').innerText = `₹ ${analytics.predMin.toFixed(2)} - ${analytics.predMax.toFixed(2)} Cr`;
+            document.getElementById('ui-stat-matches').innerText = analytics.matches;
+            document.getElementById('ui-stat-l1').innerText = analytics.stat1.label;
+            document.getElementById('ui-stat-v1').innerText = analytics.stat1.val;
+            document.getElementById('ui-stat-l2').innerText = analytics.stat2.label;
+            document.getElementById('ui-stat-v2').innerText = analytics.stat2.val;
+            
+            let formHtml = '';
+            analytics.form.forEach(f => {
+                let fStr = String(f);
+                let color = fStr.includes('W') || fStr.includes('/') ? (parseInt(fStr)>1?'text-cric-green':'text-zinc-400') : (parseInt(fStr)>40?'text-cric-green':(parseInt(fStr)===0?'text-red-500':'text-zinc-400'));
+                formHtml += `<div class="bg-zinc-950 border border-zinc-800 flex-1 py-1.5 sm:py-2 rounded-lg text-center font-bold font-display text-[10px] sm:text-xs ${color} shadow-inner truncate px-1">${fStr}</div>`;
+            });
+            document.getElementById('ui-stat-form').innerHTML = formHtml;
+
+            const currentBidVal = roomData.currentBid > 0 ? roomData.currentBid : currentPlayer.basePrice;
+            const barCurrent = document.getElementById('ui-stat-bar-current');
+            const barPredicted = document.getElementById('ui-stat-bar-predicted');
+            const verdict = document.getElementById('ui-stat-verdict');
+            
+            const maxScale = analytics.predMax + 2.0;
+            const predCenter = (analytics.predMin + analytics.predMax) / 2;
+            
+            barPredicted.style.width = `${Math.min(100, (predCenter / maxScale) * 100)}%`;
+            barCurrent.style.width = `${Math.min(100, (currentBidVal / maxScale) * 100)}%`;
+            
+            if (currentBidVal < analytics.predMin) {
+                verdict.innerText = "Steal Deal!"; verdict.className = "text-[9px] sm:text-[11px] font-bold text-emerald-400 uppercase tracking-wider";
+                barCurrent.className = "absolute top-0 left-0 h-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.8)] transition-all duration-500 z-10";
+            } else if (currentBidVal > analytics.predMax) {
+                verdict.innerText = "Overpriced!"; verdict.className = "text-[9px] sm:text-[11px] font-bold text-red-500 uppercase tracking-wider";
+                barCurrent.className = "absolute top-0 left-0 h-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)] transition-all duration-500 z-10";
+            } else {
+                verdict.innerText = "Fair Value"; verdict.className = "text-[9px] sm:text-[11px] font-bold text-yellow-400 uppercase tracking-wider";
+                barCurrent.className = "absolute top-0 left-0 h-full bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.8)] transition-all duration-500 z-10";
+            }
         }
 
         function updateVideoGallery() {
@@ -1904,12 +1644,14 @@ Return a JSON object exactly matching the schema.
                 screens.auction.classList.add('hidden'); screens.auction.classList.remove('flex');
                 screens.season.classList.remove('hidden'); screens.season.classList.add('flex');
                 seasonData = roomData.season || null;
+                document.getElementById('reaction-buttons').classList.add('hidden');
                 updateSeasonUI();
                 return; 
             } else {
                 screens.season.classList.add('hidden'); screens.season.classList.remove('flex');
                 if (currentRoomId && screens.lobby.classList.contains('hidden')) {
                     screens.auction.classList.remove('hidden'); screens.auction.classList.add('flex');
+                    document.getElementById('reaction-buttons').classList.remove('hidden');
                 }
             }
 
@@ -2056,555 +1798,18 @@ Return a JSON object exactly matching the schema.
             }
         }
 
-        async function initializeSeason() {
-            if (!currentUser || !roomData) return;
-            const teams = usersData.filter(u => playersData.some(p => p.ownerId === u.userId));
-            if (teams.length < 2) return showToast("Need at least 2 teams with players to start Season.");
-
-            const matches = [];
-            let matchId = 0;
-            for (let i = 0; i < teams.length; i++) {
-                for (let j = i + 1; j < teams.length; j++) {
-                    matches.push({ id: matchId++, t1: teams[i].userId, t2: teams[j].userId, winner: null, summary: '', isPlayed: false, type: 'league' });
-                    matches.push({ id: matchId++, t1: teams[j].userId, t2: teams[i].userId, winner: null, summary: '', isPlayed: false, type: 'league' });
-                }
-            }
-            matches.sort(() => Math.random() - 0.5);
-
-            const standings = {};
-            teams.forEach(t => standings[t.userId] = { p: 0, w: 0, l: 0, pts: 0, nrr: 0, name: t.username });
-
-            const stats = {};
-            playersData.filter(p => p.ownerId).forEach(p => {
-                stats[p.playerId] = { runs: 0, wickets: 0, injuredFor: 0, name: p.name, owner: p.ownerId, role: p.role, set: p.set };
-            });
-
-            const initialSeason = {
-                phase: 'league',
-                matches: matches,
-                currentMatchIndex: 0,
-                standings: standings,
-                playerStats: stats,
-                injuries: []
-            };
-
-            try {
-                await updateDoc(doc(getRoomsRef(), currentRoomId), { status: 'season', season: initialSeason });
-            } catch (e) { console.error("Season Init Err", e); showToast("Failed to start season"); }
-        }
-
-        document.getElementById('btn-sim-next')?.addEventListener('click', async () => {
-            if (!seasonData || roomData.status !== 'season') return;
-            await simulateNextMatch();
-        });
-
-        document.getElementById('btn-sim-all')?.addEventListener('click', async () => {
-            if (!seasonData || roomData.status !== 'season') return;
-            for(let i=0; i<5; i++) {
-                if (seasonData.phase === 'league' || seasonData.phase === 'playoffs') {
-                    await simulateNextMatch();
-                } else { break; }
-            }
-        });
-
-        async function simulateNextMatch() {
-            const sd = JSON.parse(JSON.stringify(seasonData)); 
-            const mIdx = sd.currentMatchIndex;
-            
-            if (mIdx >= sd.matches.length) {
-                if (sd.phase === 'league') return handleLeagueEnd(sd);
-                if (sd.phase === 'playoffs') return handlePlayoffsEnd(sd);
-                return;
-            }
-
-            if (sd.phase === 'league' && mIdx === Math.floor(sd.matches.filter(m=>m.type==='league').length / 2)) {
-                sd.phase = 'transfer';
-                await updateDoc(doc(getRoomsRef(), currentRoomId), { 'season.phase': 'transfer' });
-                return;
-            }
-
-            const match = sd.matches[mIdx];
-            const t1 = usersData.find(u => u.userId === match.t1);
-            const t2 = usersData.find(u => u.userId === match.t2);
-
-            const t1Players = playersData.filter(p => p.ownerId === match.t1 && (!sd.playerStats[p.playerId] || sd.playerStats[p.playerId].injuredFor <= 0));
-            const t2Players = playersData.filter(p => p.ownerId === match.t2 && (!sd.playerStats[p.playerId] || sd.playerStats[p.playerId].injuredFor <= 0));
-
-            Object.values(sd.playerStats).forEach(ps => { if(ps.injuredFor > 0) ps.injuredFor--; });
-
-            const getStr = (teamPlayers) => teamPlayers.reduce((sum, p) => sum + parseFloat((playerStatsCache[p.name] || getFallbackAnalytics(p)).aiRating), 0);
-            const str1 = getStr(t1Players) || 1;
-            const str2 = getStr(t2Players) || 1;
-
-            const roll1 = str1 * (0.8 + Math.random() * 0.4);
-            const roll2 = str2 * (0.8 + Math.random() * 0.4);
-
-            const winner = roll1 > roll2 ? match.t1 : match.t2;
-            const loser = winner === match.t1 ? match.t2 : match.t1;
-            
-            match.winner = winner;
-            match.isPlayed = true;
-
-            const margin = Math.floor(Math.random() * 40) + 5;
-            const isChasing = Math.random() > 0.5;
-            if (isChasing) {
-                const wktMargin = Math.floor(Math.random() * 7) + 2;
-                match.summary = `${usersData.find(u=>u.userId===winner).username} won by ${wktMargin} wkts`;
-            } else {
-                match.summary = `${usersData.find(u=>u.userId===winner).username} won by ${margin} runs`;
-            }
-
-            sd.standings[winner].p++; sd.standings[winner].w++; sd.standings[winner].pts += 2;
-            sd.standings[loser].p++; sd.standings[loser].l++;
-            
-            const nrrDiff = margin * 0.01;
-            sd.standings[winner].nrr += nrrDiff; sd.standings[loser].nrr -= nrrDiff;
-
-            distributeMatchStats(t1Players, t2Players, sd.playerStats);
-
-            const checkInjury = (teamPlayers) => {
-                if(Math.random() < 0.03 && teamPlayers.length > 0) {
-                    const victim = teamPlayers[Math.floor(Math.random() * teamPlayers.length)];
-                    sd.playerStats[victim.playerId].injuredFor = 3; 
-                    sd.injuries.unshift(`${victim.name} (${usersData.find(u=>u.userId===victim.ownerId).username}) injured for 3 matches.`);
-                    if (sd.injuries.length > 10) sd.injuries.pop();
-                }
-            };
-            checkInjury(t1Players); checkInjury(t2Players);
-
-            sd.currentMatchIndex++;
-
-            try {
-                await updateDoc(doc(getRoomsRef(), currentRoomId), { season: sd });
-            } catch(e) { console.error("Sim error", e); }
-        }
-
-        function distributeMatchStats(t1, t2, statsObj) {
-            const distribute = (players, oppPlayers) => {
-                let totalRuns = Math.floor(Math.random() * 80) + 140;
-                let runCandidates = players.filter(p => p.role.includes('Batsman') || p.role.includes('All-Rounder'));
-                if(runCandidates.length === 0) runCandidates = players;
-                
-                for(let r=0; r<totalRuns; r+=Math.floor(Math.random()*20)+5) {
-                    if (runCandidates.length > 0) {
-                        const batter = runCandidates[Math.floor(Math.random() * runCandidates.length)];
-                        const runsScored = Math.floor(Math.random() * 30) + 5;
-                        statsObj[batter.playerId].runs += runsScored;
-                    }
-                }
-
-                let totalWkts = Math.floor(Math.random() * 7) + 4;
-                let bowlCandidates = oppPlayers.filter(p => p.role.includes('Pacer') || p.role.includes('Spinner') || p.role.includes('All-Rounder'));
-                if(bowlCandidates.length === 0) bowlCandidates = oppPlayers;
-
-                for(let w=0; w<totalWkts; w++) {
-                    if (bowlCandidates.length > 0) {
-                        const bowler = bowlCandidates[Math.floor(Math.random() * bowlCandidates.length)];
-                        statsObj[bowler.playerId].wickets += 1;
-                    }
-                }
-            };
-            distribute(t1, t2);
-            distribute(t2, t1);
-        }
-
-        async function handleLeagueEnd(sd) {
-            const teams = Object.entries(sd.standings).map(([id, data]) => ({ id, ...data }));
-            teams.sort((a,b) => b.pts - a.pts || b.nrr - a.nrr);
-            
-            if (teams.length < 4) {
-                sd.phase = 'finished';
-                await updateDoc(doc(getRoomsRef(), currentRoomId), { season: sd });
-                showToast("Season Over! Not enough teams for playoffs.");
-                return;
-            }
-
-            const top4 = teams.slice(0, 4);
-            const mStart = sd.matches.length;
-            
-            sd.matches.push({ id: mStart, t1: top4[0].id, t2: top4[1].id, type: 'Qualifier 1', winner: null, isPlayed: false, summary: '' });
-            sd.matches.push({ id: mStart+1, t1: top4[2].id, t2: top4[3].id, type: 'Eliminator', winner: null, isPlayed: false, summary: '' });
-            
-            sd.phase = 'playoffs';
-            try { await updateDoc(doc(getRoomsRef(), currentRoomId), { season: sd }); showToast("League Phase Ended! Playoffs Begin."); } 
-            catch(e) { console.error(e); }
-        }
-
-        async function handlePlayoffsEnd(sd) {
-            const pMatches = sd.matches.filter(m => m.type !== 'league');
-            const unplayed = pMatches.find(m => !m.isPlayed);
-            
-            if (!unplayed) {
-                const q1 = pMatches.find(m => m.type === 'Qualifier 1');
-                const elim = pMatches.find(m => m.type === 'Eliminator');
-                const q2 = pMatches.find(m => m.type === 'Qualifier 2');
-                const final = pMatches.find(m => m.type === 'Final');
-
-                if (q1.isPlayed && elim.isPlayed && !q2) {
-                    const q1Loser = q1.winner === q1.t1 ? q1.t2 : q1.t1;
-                    sd.matches.push({ id: sd.matches.length, t1: q1Loser, t2: elim.winner, type: 'Qualifier 2', winner: null, isPlayed: false, summary: '' });
-                } else if (q2 && q2.isPlayed && !final) {
-                    sd.matches.push({ id: sd.matches.length, t1: q1.winner, t2: q2.winner, type: 'Final', winner: null, isPlayed: false, summary: '' });
-                } else if (final && final.isPlayed) {
-                    sd.phase = 'finished';
-                    showToast(`🏆 ${sd.standings[final.winner].name} wins the Season!`);
-                }
-                await updateDoc(doc(getRoomsRef(), currentRoomId), { season: sd });
-            }
-        }
-
-        function updateSeasonUI() {
-            if (!seasonData) return;
-            const isHost = usersData.find(u => u.userId === myUserDocId)?.role === 'admin';
-
-            const hostControls = document.getElementById('season-host-controls');
-            if (isHost && seasonData.phase !== 'finished') {
-                hostControls.classList.remove('hidden'); hostControls.classList.add('flex');
-                
-                if (seasonData.phase === 'transfer') {
-                    hostControls.innerHTML = `<button onclick="openTransferWindow()" class="bg-blue-500 hover:bg-blue-400 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-[0_0_10px_rgba(59,130,246,0.5)] animate-pulse">Open Transfer Window</button>`;
-                } else {
-                    hostControls.innerHTML = `
-                        <button id="btn-sim-next" class="bg-white text-zinc-950 hover:bg-zinc-200 px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-md">Simulate Match</button>
-                        <button id="btn-sim-all" class="bg-zinc-800 text-white hover:bg-zinc-700 px-4 py-1.5 rounded-lg text-xs font-bold transition-all border border-zinc-700">Simulate 5</button>
-                    `;
-                    document.getElementById('btn-sim-next').addEventListener('click', simulateNextMatch);
-                    document.getElementById('btn-sim-all').addEventListener('click', async () => { for(let i=0;i<5;i++) await simulateNextMatch(); });
-                }
-            } else {
-                hostControls.classList.add('hidden'); hostControls.classList.remove('flex');
-            }
-
-            document.getElementById('ui-season-phase').innerText = seasonData.phase.toUpperCase();
-
-            const ptBody = document.getElementById('season-points-table');
-            ptBody.innerHTML = '';
-            const sortedTeams = Object.entries(seasonData.standings).sort((a,b) => b[1].pts - a[1].pts || b[1].nrr - a[1].nrr);
-            
-            sortedTeams.forEach(([id, t], idx) => {
-                const isMe = id === myUserDocId;
-                const row = document.createElement('tr');
-                row.className = `border-b border-zinc-800/30 hover:bg-zinc-800/30 transition-colors ${isMe ? 'bg-cric-green/10 border-l-2 border-l-cric-green' : ''} ${idx < 4 ? 'bg-blue-500/5' : ''}`;
-                row.innerHTML = `
-                    <td class="py-2.5 pl-2 font-bold text-white flex items-center gap-1.5">
-                        <span class="text-[9px] text-zinc-500 w-3">${idx+1}</span> 
-                        <span class="truncate max-w-[100px] sm:max-w-[150px]">${t.name}</span>
-                        ${idx < 4 ? '<span class="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_5px_rgba(59,130,246,0.8)]" title="Playoff Spot"></span>' : ''}
-                    </td>
-                    <td class="py-2.5 text-center text-zinc-400 font-medium">${t.p}</td>
-                    <td class="py-2.5 text-center text-emerald-400 font-bold">${t.w}</td>
-                    <td class="py-2.5 text-center text-red-400 font-bold">${t.l}</td>
-                    <td class="py-2.5 text-center text-white font-black">${t.pts}</td>
-                    <td class="py-2.5 text-right pr-2 text-zinc-400 font-display">${t.nrr > 0 ? '+'+t.nrr.toFixed(2) : t.nrr.toFixed(2)}</td>
-                `;
-                ptBody.appendChild(row);
-            });
-
-            const pStatsArr = Object.values(seasonData.playerStats);
-            
-            const orangeList = document.getElementById('orange-cap-list');
-            orangeList.innerHTML = '';
-            pStatsArr.sort((a,b) => b.runs - a.runs).slice(0,5).forEach((p, idx) => {
-                orangeList.innerHTML += `
-                    <div class="flex justify-between items-center bg-zinc-900/50 border border-zinc-800 p-2 rounded-lg ${idx===0 ? 'border-orange-500/50 shadow-[0_0_10px_rgba(249,115,22,0.1)]' : ''}">
-                        <div class="flex items-center gap-2 overflow-hidden">
-                            <span class="text-xs font-black ${idx===0 ? 'text-orange-500' : 'text-zinc-600'}">#${idx+1}</span>
-                            <div class="truncate">
-                                <p class="text-sm font-bold text-zinc-200 truncate">${p.name}</p>
-                                <p class="text-[9px] text-zinc-500 uppercase tracking-widest truncate">${usersData.find(u=>u.userId===p.owner)?.username}</p>
-                            </div>
-                        </div>
-                        <span class="font-display font-black text-white ml-2 bg-zinc-950 px-2 py-0.5 rounded border border-zinc-800">${p.runs}</span>
-                    </div>
-                `;
-            });
-
-            const purpleList = document.getElementById('purple-cap-list');
-            purpleList.innerHTML = '';
-            pStatsArr.sort((a,b) => b.wickets - a.wickets).slice(0,5).forEach((p, idx) => {
-                purpleList.innerHTML += `
-                    <div class="flex justify-between items-center bg-zinc-900/50 border border-zinc-800 p-2 rounded-lg ${idx===0 ? 'border-purple-500/50 shadow-[0_0_10px_rgba(168,85,247,0.1)]' : ''}">
-                        <div class="flex items-center gap-2 overflow-hidden">
-                            <span class="text-xs font-black ${idx===0 ? 'text-purple-500' : 'text-zinc-600'}">#${idx+1}</span>
-                            <div class="truncate">
-                                <p class="text-sm font-bold text-zinc-200 truncate">${p.name}</p>
-                                <p class="text-[9px] text-zinc-500 uppercase tracking-widest truncate">${usersData.find(u=>u.userId===p.owner)?.username}</p>
-                            </div>
-                        </div>
-                        <span class="font-display font-black text-white ml-2 bg-zinc-950 px-2 py-0.5 rounded border border-zinc-800">${p.wickets}</span>
-                    </div>
-                `;
-            });
-
-            const injList = document.getElementById('injury-list');
-            injList.innerHTML = '';
-            if (seasonData.injuries && seasonData.injuries.length > 0) {
-                seasonData.injuries.forEach(inj => {
-                    injList.innerHTML += `<div class="bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] p-2 rounded-md font-medium">⚠️ ${inj}</div>`;
-                });
-            } else {
-                injList.innerHTML = `<p class="text-xs text-zinc-500 italic">No injuries reported yet.</p>`;
-            }
-
-            const currentMatchDiv = document.getElementById('current-match-display');
-            const resultsList = document.getElementById('season-results-list');
-            resultsList.innerHTML = '';
-
-            const currentMatch = seasonData.matches[seasonData.currentMatchIndex];
-            
-            if (seasonData.phase === 'transfer') {
-                currentMatchDiv.innerHTML = `
-                    <div class="bg-blue-900/20 border border-blue-500/40 rounded-2xl p-6 text-center shadow-[0_0_30px_rgba(59,130,246,0.15)] animate-pulse-fast">
-                        <span class="text-4xl mb-2 block">🔄</span>
-                        <h3 class="text-xl font-display font-black text-blue-400 uppercase tracking-widest mb-1">Transfer Window Open</h3>
-                        <p class="text-zinc-400 text-sm">Teams are trading players. Awaiting Host to proceed.</p>
-                    </div>
-                `;
-            } else if (currentMatch && seasonData.phase !== 'finished') {
-                const t1Name = usersData.find(u=>u.userId===currentMatch.t1)?.username;
-                const t2Name = usersData.find(u=>u.userId===currentMatch.t2)?.username;
-                const matchType = currentMatch.type === 'league' ? `Match ${seasonData.currentMatchIndex + 1}` : currentMatch.type;
-                
-                currentMatchDiv.innerHTML = `
-                    <div class="bg-gradient-to-b from-zinc-900 to-zinc-950 border border-zinc-700/50 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
-                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent opacity-50"></div>
-                        <p class="text-center text-[10px] font-bold text-red-500 uppercase tracking-widest mb-4">UP NEXT • ${matchType}</p>
-                        <div class="flex justify-between items-center gap-4">
-                            <div class="flex-1 text-center">
-                                <div class="w-12 h-12 sm:w-16 sm:h-16 mx-auto bg-zinc-800 rounded-full flex items-center justify-center font-display font-bold text-xl sm:text-2xl text-zinc-300 border border-zinc-700 shadow-inner mb-2">${t1Name.charAt(0)}</div>
-                                <p class="font-bold text-white text-sm sm:text-base truncate">${t1Name}</p>
-                            </div>
-                            <div class="shrink-0 text-center">
-                                <span class="text-xs sm:text-sm font-black italic text-zinc-600 px-3 py-1 bg-zinc-950 rounded-full border border-zinc-800">VS</span>
-                            </div>
-                            <div class="flex-1 text-center">
-                                <div class="w-12 h-12 sm:w-16 sm:h-16 mx-auto bg-zinc-800 rounded-full flex items-center justify-center font-display font-bold text-xl sm:text-2xl text-zinc-300 border border-zinc-700 shadow-inner mb-2">${t2Name.charAt(0)}</div>
-                                <p class="font-bold text-white text-sm sm:text-base truncate">${t2Name}</p>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            } else if (seasonData.phase === 'finished') {
-                const finalMatch = seasonData.matches.find(m => m.type === 'Final');
-                const winnerName = usersData.find(u=>u.userId===finalMatch.winner)?.username;
-                currentMatchDiv.innerHTML = `
-                    <div class="bg-gradient-to-b from-emerald-900/30 to-zinc-950 border border-emerald-500/40 rounded-2xl p-6 text-center shadow-[0_0_40px_rgba(16,185,129,0.2)]">
-                        <span class="text-5xl mb-3 block animate-float">🏆</span>
-                        <h3 class="text-2xl font-display font-black text-white mb-1">Season Champions</h3>
-                        <p class="text-xl font-bold text-emerald-400">${winnerName}</p>
-                    </div>
-                `;
-            }
-
-            const playedMatches = seasonData.matches.filter(m => m.isPlayed).reverse();
-            playedMatches.forEach(m => {
-                const t1 = usersData.find(u=>u.userId===m.t1);
-                const t2 = usersData.find(u=>u.userId===m.t2);
-                if(!t1 || !t2) return;
-                
-                const isT1Winner = m.winner === m.t1;
-                
-                resultsList.innerHTML += `
-                    <div class="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm">
-                        <div class="flex items-center justify-center sm:justify-start gap-3 flex-1">
-                            <span class="${isT1Winner ? 'text-white font-bold' : 'text-zinc-500'} text-right flex-1 truncate">${t1.username}</span>
-                            <span class="text-[10px] font-black text-zinc-700 bg-zinc-950 px-1.5 py-0.5 rounded border border-zinc-800">VS</span>
-                            <span class="${!isT1Winner ? 'text-white font-bold' : 'text-zinc-500'} text-left flex-1 truncate">${t2.username}</span>
-                        </div>
-                        <div class="text-[10px] sm:text-xs text-cric-green font-bold bg-cric-green/10 border border-cric-green/20 px-2.5 py-1 rounded-md text-center shrink-0">
-                            ${m.summary}
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        window.openTransferWindow = () => {
-            selectedTransferRelease = null; selectedTransferSign = null;
-            document.getElementById('btn-confirm-transfer').disabled = true;
-            renderTransferLists();
-            
-            const modal = document.getElementById('transfer-modal');
-            modal.classList.remove('hidden');
-            setTimeout(() => modal.classList.remove('opacity-0'), 10);
-        };
-
-        function renderTransferLists() {
-            const myPlayersList = document.getElementById('transfer-my-players');
-            const unsoldList = document.getElementById('transfer-unsold-players');
-            myPlayersList.innerHTML = ''; unsoldList.innerHTML = '';
-
-            const myPlayers = playersData.filter(p => p.ownerId === myUserDocId);
-            const unsoldPlayers = playersData.filter(p => p.status === 'unsold');
-
-            myPlayers.forEach(p => {
-                const stat = seasonData.playerStats[p.playerId];
-                const isInj = stat && stat.injuredFor > 0;
-                
-                const div = document.createElement('div');
-                div.className = `p-2.5 rounded-lg border cursor-pointer transition-all flex justify-between items-center ${selectedTransferRelease === p.playerId ? 'border-red-500 bg-red-500/20' : 'border-zinc-800 bg-zinc-900 hover:border-zinc-600'}`;
-                div.innerHTML = `
-                    <div>
-                        <p class="text-sm font-bold text-white">${p.name}</p>
-                        <p class="text-[9px] text-zinc-500 uppercase">${p.role}</p>
-                    </div>
-                    ${isInj ? '<span class="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded font-bold">INJURED</span>' : ''}
-                `;
-                div.onclick = () => { selectedTransferRelease = p.playerId; renderTransferLists(); checkTransferValid(); };
-                myPlayersList.appendChild(div);
-            });
-
-            if(myPlayers.length === 0) myPlayersList.innerHTML = '<p class="text-xs text-zinc-500 italic p-2">No players owned.</p>';
-
-            unsoldPlayers.forEach(p => {
-                const div = document.createElement('div');
-                div.className = `p-2.5 rounded-lg border cursor-pointer transition-all flex justify-between items-center ${selectedTransferSign === p.playerId ? 'border-cric-green bg-cric-green/20' : 'border-zinc-800 bg-zinc-900 hover:border-zinc-600'}`;
-                div.innerHTML = `
-                    <div>
-                        <p class="text-sm font-bold text-white">${p.name}</p>
-                        <p class="text-[9px] text-zinc-500 uppercase">${p.role}</p>
-                    </div>
-                    <span class="font-display font-black text-xs text-zinc-400">₹${p.base}</span>
-                `;
-                div.onclick = () => { selectedTransferSign = p.playerId; renderTransferLists(); checkTransferValid(); };
-                unsoldList.appendChild(div);
-            });
-            if(unsoldPlayers.length === 0) unsoldList.innerHTML = '<p class="text-xs text-zinc-500 italic p-2">No unsold players available.</p>';
-        }
-
-        function checkTransferValid() {
-            document.getElementById('btn-confirm-transfer').disabled = !(selectedTransferRelease && selectedTransferSign);
-        }
-
-        document.getElementById('btn-confirm-transfer').addEventListener('click', async () => {
-            if (!selectedTransferRelease || !selectedTransferSign) return;
-            const releaseP = playersData.find(p => p.playerId === selectedTransferRelease);
-            const signP = playersData.find(p => p.playerId === selectedTransferSign);
-            const me = usersData.find(u => u.userId === myUserDocId);
-            
-            const budgetDiff = releaseP.basePrice - signP.basePrice;
-            if (me.budget + budgetDiff < 0) return showToast("Insufficient budget for this swap.");
-
-            try {
-                const batch = writeBatch(db);
-                batch.update(doc(getPlayersRef(), releaseP.playerId), { status: 'unsold', ownerId: null, soldPrice: null });
-                batch.update(doc(getPlayersRef(), signP.playerId), { status: 'sold', ownerId: myUserDocId, soldPrice: signP.basePrice });
-                batch.update(doc(getUsersRef(), myUserDocId), { budget: me.budget + budgetDiff });
-                
-                let newSd = JSON.parse(JSON.stringify(seasonData));
-                newSd.playerStats[signP.playerId] = { runs: 0, wickets: 0, injuredFor: 0, name: signP.name, owner: myUserDocId, role: signP.role, set: signP.set };
-                newSd.injuries.unshift(`${me.username} signed ${signP.name} replacing ${releaseP.name}.`);
-                
-                if(me.role === 'admin') newSd.phase = 'league';
-                
-                batch.update(doc(getRoomsRef(), currentRoomId), { season: newSd });
-                await batch.commit();
-
-                document.getElementById('transfer-modal').classList.add('hidden');
-                showToast("Transfer Successful!");
-            } catch(e) { console.error("Transfer Error", e); showToast("Failed to process transfer."); }
-        });
-
-        function updateChatUI() {
-            const container = document.getElementById('chat-messages'); if (!container) return;
-            const chatPanel = document.getElementById('chat-panel');
-            const isHiddenDesktop = chatPanel.classList.contains('hidden');
-            
-            if (chatMessages.length > lastViewedMessageCount) {
-                if (isHiddenDesktop) {
-                    const unread = chatMessages.length - lastViewedMessageCount;
-                    const badge = document.getElementById('chat-badge'); 
-                    if(badge) { badge.innerText = unread > 9 ? '9+' : unread; badge.classList.remove('hidden'); badge.classList.add('flex'); }
-                } else { lastViewedMessageCount = chatMessages.length; }
-            }
-            
-            container.innerHTML = '';
-            
-            chatMessages.forEach(msg => {
-                const isMe = msg.senderId === myUserDocId;
-                const isWhisper = msg.receiverId !== 'all';
-                const isWhisperToMe = isWhisper && msg.receiverId === myUserDocId;
-                
-                const div = document.createElement('div');
-                div.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} w-full mb-3 sm:mb-4`;
-                
-                let labelText = isMe ? 'You' : msg.senderName;
-                if (isWhisper) { labelText = isWhisperToMe ? `Whisper from ${msg.senderName}` : `Whisper to ${msg.receiverName}`; }
-                
-                let bubbleClasses = isMe 
-                    ? 'bg-zinc-800 text-white rounded-xl sm:rounded-[1.25rem] rounded-tr-sm border border-zinc-700' 
-                    : 'bg-zinc-900 text-white rounded-xl sm:rounded-[1.25rem] rounded-tl-sm border border-zinc-800';
-                    
-                if (isWhisper) {
-                    bubbleClasses = isMe
-                        ? 'bg-purple-900/80 text-white rounded-xl sm:rounded-[1.25rem] rounded-tr-sm border border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.15)]'
-                        : 'bg-purple-950/80 text-purple-100 rounded-xl sm:rounded-[1.25rem] rounded-tl-sm border border-purple-500/30';
-                }
-                
-                div.innerHTML = `<span class="text-[8px] sm:text-[9px] font-bold uppercase tracking-widest ${isWhisper ? 'text-purple-400' : 'text-zinc-500'} mb-1 sm:mb-1.5 mx-1">${labelText}</span><div class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-md inline-block max-w-[85%] break-words leading-relaxed ${bubbleClasses}">${msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>`;
-                container.appendChild(div);
-            });
-            scrollToBottomChat();
-        }
-
-        function scrollToBottomChat() { const container = document.getElementById('chat-messages'); if(container) { container.scrollTop = container.scrollHeight; } }
-
-        window.sendChatMessage = async () => {
-            const input = document.getElementById('chat-input'); const text = input.value.trim();
-            if(!text || !currentUser || !currentRoomId) return;
+        function updateChatRecipients() {
             const select = document.getElementById('chat-recipient');
-            const receiverId = select.value; const receiverName = receiverId === 'all' ? 'Everyone' : select.options[select.selectedIndex].text.replace('Whisper: ', '');
-            const me = usersData.find(u => u.userId === myUserDocId); if(!me) return;
-            
-            try {
-                input.value = ''; 
-                const msgRef = doc(getChatRef());
-                await setDoc(msgRef, { id: msgRef.id, roomId: currentRoomId, senderId: myUserDocId, senderName: me.username, receiverId: receiverId, receiverName: receiverName, text: text, timestamp: Date.now() });
-                document.getElementById('emoji-picker')?.classList.add('hidden');
-            } catch(e) { console.error("Chat send error:", e); showToast("Failed to send message"); }
-        };
-
-        setTimeout(() => {
-            const chatInput = document.getElementById('chat-input'); const sendBtn = document.getElementById('btn-send-chat');
-            const emojiToggle = document.getElementById('btn-emoji-toggle'); const emojiPicker = document.getElementById('emoji-picker'); const emojiGrid = document.getElementById('emoji-grid');
-            if(chatInput && sendBtn) { chatInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') sendChatMessage(); }); sendBtn.addEventListener('click', sendChatMessage); }
-
-            const emojis = ['😀', '😂', '😎', '😍', '😊', '🙌', '👍', '🔥', '🎉', '💯', '🏏', '🏆', '💰', '🚀', '👀', '🤯', '😱', '👏', '🤝', '💪', '🤔', '🤨', '🤫', '🥱', '🥺', '😡', '🤬', '🤮', '💔', '📈'];
-            if (emojiGrid) {
-                emojis.forEach(emoji => {
-                    const btn = document.createElement('button'); btn.className = "hover:bg-zinc-700 rounded p-1.5 transition-colors flex items-center justify-center"; btn.innerText = emoji;
-                    btn.onclick = (e) => { e.preventDefault(); if (chatInput) { chatInput.value += emoji; chatInput.focus(); } };
-                    emojiGrid.appendChild(btn);
-                });
-            }
-
-            if (emojiToggle && emojiPicker) {
-                emojiToggle.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); emojiPicker.classList.toggle('hidden'); });
-                document.addEventListener('click', (e) => { if (!emojiPicker.contains(e.target) && !emojiToggle.contains(e.target)) { emojiPicker.classList.add('hidden'); } });
-                emojiPicker.addEventListener('click', (e) => { e.stopPropagation(); });
-            }
-        }, 1000);
-
-        function startTimer(endTime) {
-            stopTimer();
-            timerInterval = setInterval(() => {
-                const now = Date.now(); const diff = Math.max(0, endTime - now); const seconds = Math.ceil(diff / 1000);
-                ui.timer.innerText = seconds.toString().padStart(2, '0');
-                if(seconds <= 5) { ui.timer.classList.add('text-red-500'); ui.timer.classList.remove('text-white'); } else { ui.timer.classList.remove('text-red-500'); ui.timer.classList.add('text-white'); }
-                if(diff <= 0) { stopTimer(); handleTimerEnd(); }
-            }, 100);
-        }
-
-        function stopTimer() { if(timerInterval) clearInterval(timerInterval); }
-
-        async function handleTimerEnd() {
-            const me = usersData.find(u => u.userId === myUserDocId);
-            if(me && me.role === 'admin' && roomData.status === 'active') {
-                const currentPlayer = playersData.find(p => p.order === roomData.currentAuctionIndex);
-                if(!currentPlayer || currentPlayer.status !== 'auctioning') return;
-                if(roomData.currentBidder) await markPlayerSold(currentPlayer.playerId, roomData.currentBid, roomData.currentBidder);
-                else await markPlayerUnsold(currentPlayer.playerId);
-            }
+            if(!select) return;
+            const currentVal = select.value;
+            select.innerHTML = '<option value="all">Public Chat</option>';
+            usersData.forEach(u => {
+                if(u.userId !== myUserDocId && u._computedOnline) {
+                    const opt = document.createElement('option');
+                    opt.value = u.userId; opt.innerText = `Whisper: ${u.username}`; select.appendChild(opt);
+                }
+            });
+            if([...select.options].some(o => o.value === currentVal)) select.value = currentVal;
         }
 
         window.placeBid = async (amount) => {
@@ -2722,76 +1927,27 @@ Return a JSON object exactly matching the schema.
             } catch(e) { console.error("Unsold err:", e); }
         }
 
-        function updateChatRecipients() {
-            const select = document.getElementById('chat-recipient');
-            if(!select) return;
-            const currentVal = select.value;
-            select.innerHTML = '<option value="all">Public Chat</option>';
-            usersData.forEach(u => {
-                if(u.userId !== myUserDocId && u._computedOnline) {
-                    const opt = document.createElement('option');
-                    opt.value = u.userId; opt.innerText = `Whisper: ${u.username}`; select.appendChild(opt);
-                }
-            });
-            if([...select.options].some(o => o.value === currentVal)) select.value = currentVal;
+        function startTimer(endTime) {
+            stopTimer();
+            timerInterval = setInterval(() => {
+                const now = Date.now(); const diff = Math.max(0, endTime - now); const seconds = Math.ceil(diff / 1000);
+                ui.timer.innerText = seconds.toString().padStart(2, '0');
+                if(seconds <= 5) { ui.timer.classList.add('text-red-500'); ui.timer.classList.remove('text-white'); } else { ui.timer.classList.remove('text-red-500'); ui.timer.classList.add('text-white'); }
+                if(diff <= 0) { stopTimer(); handleTimerEnd(); }
+            }, 100);
         }
 
-        async function initVoiceChat() {
-            try {
-                try { localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: { facingMode: "user" } }); } 
-                catch (camErr) { console.warn("Camera failed, audio only."); localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false }); }
-                
-                const localVid = document.getElementById('local-video'); if (localVid) localVid.srcObject = localStream;
-                localStream.getAudioTracks().forEach(track => track.enabled = false); localStream.getVideoTracks().forEach(track => track.enabled = false);
+        function stopTimer() { if(timerInterval) clearInterval(timerInterval); }
 
-                try {
-                    peer = new Peer();
-                    peer.on('open', (id) => { myPeerId = id; if (myUserDocId) { updateDoc(doc(getUsersRef(), myUserDocId), { peerId: myPeerId }).catch(console.error); } });
-                    peer.on('call', (call) => { call.answer(localStream); handleCallStream(call); });
-                    peer.on('error', (err) => { if (err.type === 'network' || String(err).includes('SecurityError') || String(err).includes('WebSocket')) { showToast("Video blocked by browser policy. Deploy to test."); } else if (err.type !== 'peer-unavailable') { console.warn("PeerJS:", err); } });
-                } catch (peerErr) { console.error("PeerJS init failed:", peerErr); }
-            } catch (err) { console.error("Media err:", err); }
-        }
-
-        function makeCall(remotePeerId) {
-            if (!localStream || !peer || peer.destroyed) return;
-            try { const call = peer.call(remotePeerId, localStream); if (call) handleCallStream(call); } 
-            catch(e) { console.warn("Call failed:", e); }
-        }
-
-        function handleCallStream(call) {
-            connectedPeers.add(call.peer);
-            call.on('stream', (remoteStream) => { activeStreams.set(call.peer, remoteStream); updateVideoGallery(); });
-            call.on('close', () => { connectedPeers.delete(call.peer); activeStreams.delete(call.peer); updateVideoGallery(); });
-        }
-
-        document.getElementById('btn-mic')?.addEventListener('click', () => {
-            if (!localStream || localStream.getAudioTracks().length === 0) return showToast("Mic unavailable!");
-            isMicMuted = !isMicMuted; localStream.getAudioTracks().forEach(t => t.enabled = !isMicMuted);
-            const btn = document.getElementById('btn-mic'); const iconOn = document.getElementById('icon-mic-on'); const iconOff = document.getElementById('icon-mic-off');
-            if (isMicMuted) { iconOn.classList.add('hidden'); iconOff.classList.remove('hidden'); btn.classList.add('bg-red-500/10', 'text-red-400'); btn.classList.remove('bg-cric-green/20', 'text-cric-green'); } 
-            else { iconOn.classList.remove('hidden'); iconOff.classList.add('hidden'); btn.classList.remove('bg-red-500/10', 'text-red-400'); btn.classList.add('bg-cric-green/20', 'text-cric-green'); }
-        });
-
-        document.getElementById('btn-video')?.addEventListener('click', async () => {
-            if (!localStream) return;
-            if (localStream.getVideoTracks().length === 0) {
-                try {
-                    const vidStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
-                    localStream.addTrack(vidStream.getVideoTracks()[0]);
-                    const localVid = document.getElementById('local-video'); if (localVid) localVid.srcObject = localStream;
-                } catch (e) { return showToast("Camera denied!"); }
+        async function handleTimerEnd() {
+            const me = usersData.find(u => u.userId === myUserDocId);
+            if(me && me.role === 'admin' && roomData.status === 'active') {
+                const currentPlayer = playersData.find(p => p.order === roomData.currentAuctionIndex);
+                if(!currentPlayer || currentPlayer.status !== 'auctioning') return;
+                if(roomData.currentBidder) await markPlayerSold(currentPlayer.playerId, roomData.currentBid, roomData.currentBidder);
+                else await markPlayerUnsold(currentPlayer.playerId);
             }
-            isVideoMuted = !isVideoMuted; localStream.getVideoTracks().forEach(t => t.enabled = !isVideoMuted);
-            const btn = document.getElementById('btn-video'); const iconOn = document.getElementById('icon-video-on'); const iconOff = document.getElementById('icon-video-off'); const localVid = document.getElementById('local-video');
-            if (isVideoMuted) {
-                iconOn.classList.add('hidden'); iconOff.classList.remove('hidden'); btn.classList.add('bg-red-500/10', 'text-red-400'); btn.classList.remove('bg-cric-green/20', 'text-cric-green');
-                if(localVid) { localVid.classList.replace('opacity-100', 'opacity-30'); localVid.classList.add('grayscale'); }
-            } else {
-                iconOn.classList.remove('hidden'); iconOff.classList.add('hidden'); btn.classList.remove('bg-red-500/10', 'text-red-400'); btn.classList.add('bg-cric-green/20', 'text-cric-green');
-                if(localVid) { localVid.classList.replace('opacity-30', 'opacity-100'); localVid.classList.remove('grayscale'); }
-            }
-        });
+        }
 
         function triggerConfetti() {
             var duration = 3 * 1000; var animationEnd = Date.now() + duration;
@@ -2806,8 +1962,476 @@ Return a JSON object exactly matching the schema.
             }, 250);
         }
 
-        // Kickoff
-        initAuth();
+        async function initializeSeason() {
+            if (!currentUser || !roomData) return;
+            const teams = usersData.filter(u => playersData.some(p => p.ownerId === u.userId));
+            if (teams.length < 2) return showToast("Need at least 2 teams with players to start Season.");
+
+            const matches = [];
+            let matchId = 0;
+            for (let i = 0; i < teams.length; i++) {
+                for (let j = i + 1; j < teams.length; j++) {
+                    matches.push({ id: matchId++, t1: teams[i].userId, t2: teams[j].userId, winner: null, summary: '', isPlayed: false, type: 'league' });
+                    matches.push({ id: matchId++, t1: teams[j].userId, t2: teams[i].userId, winner: null, summary: '', isPlayed: false, type: 'league' });
+                }
+            }
+            matches.sort(() => Math.random() - 0.5);
+
+            const standings = {};
+            teams.forEach(t => standings[t.userId] = { p: 0, w: 0, l: 0, pts: 0, nrr: 0, name: t.username });
+
+            const stats = {};
+            playersData.filter(p => p.ownerId).forEach(p => {
+                stats[p.playerId] = { runs: 0, wickets: 0, injuredFor: 0, name: p.name, owner: p.ownerId, role: p.role, set: p.set };
+            });
+
+            const initialSeason = {
+                phase: 'league',
+                matches: matches,
+                currentMatchIndex: 0,
+                standings: standings,
+                playerStats: stats,
+                injuries: []
+            };
+
+            try { await updateDoc(doc(getRoomsRef(), currentRoomId), { status: 'season', season: initialSeason }); } 
+            catch (e) { console.error("Season Init Err", e); showToast("Failed to start season"); }
+        }
+
+        document.getElementById('btn-sim-next')?.addEventListener('click', async () => {
+            if (!seasonData || roomData.status !== 'season') return;
+            await simulateNextMatch();
+        });
+
+        document.getElementById('btn-sim-all')?.addEventListener('click', async () => {
+            if (!seasonData || roomData.status !== 'season') return;
+            for(let i=0; i<5; i++) {
+                if (seasonData.phase === 'league' || seasonData.phase === 'playoffs') {
+                    await simulateNextMatch();
+                } else { break; }
+            }
+        });
+
+        async function simulateNextMatch() {
+            const sd = JSON.parse(JSON.stringify(seasonData)); 
+            const mIdx = sd.currentMatchIndex;
+            
+            if (mIdx >= sd.matches.length) {
+                if (sd.phase === 'league') return handleLeagueEnd(sd);
+                if (sd.phase === 'playoffs') return handlePlayoffsEnd(sd);
+                return;
+            }
+
+            if (sd.phase === 'league' && mIdx === Math.floor(sd.matches.filter(m=>m.type==='league').length / 2)) {
+                sd.phase = 'transfer';
+                await updateDoc(doc(getRoomsRef(), currentRoomId), { 'season.phase': 'transfer' });
+                return;
+            }
+
+            const match = sd.matches[mIdx];
+            const t1 = usersData.find(u => u.userId === match.t1);
+            const t2 = usersData.find(u => u.userId === match.t2);
+
+            const t1Players = playersData.filter(p => p.ownerId === match.t1 && (!sd.playerStats[p.playerId] || sd.playerStats[p.playerId].injuredFor <= 0));
+            const t2Players = playersData.filter(p => p.ownerId === match.t2 && (!sd.playerStats[p.playerId] || sd.playerStats[p.playerId].injuredFor <= 0));
+
+            Object.values(sd.playerStats).forEach(ps => { if(ps.injuredFor > 0) ps.injuredFor--; });
+
+            const getStr = (teamPlayers) => teamPlayers.reduce((sum, p) => sum + parseFloat((playerStatsCache[p.name] || getFallbackAnalytics(p)).aiRating), 0);
+            const str1 = getStr(t1Players) || 1;
+            const str2 = getStr(t2Players) || 1;
+
+            const roll1 = str1 * (0.8 + Math.random() * 0.4);
+            const roll2 = str2 * (0.8 + Math.random() * 0.4);
+
+            const winner = roll1 > roll2 ? match.t1 : match.t2;
+            const loser = winner === match.t1 ? match.t2 : match.t1;
+            
+            match.winner = winner; match.isPlayed = true;
+
+            const margin = Math.floor(Math.random() * 40) + 5;
+            const isChasing = Math.random() > 0.5;
+            if (isChasing) {
+                const wktMargin = Math.floor(Math.random() * 7) + 2;
+                match.summary = `${usersData.find(u=>u.userId===winner).username} won by ${wktMargin} wkts`;
+            } else {
+                match.summary = `${usersData.find(u=>u.userId===winner).username} won by ${margin} runs`;
+            }
+
+            sd.standings[winner].p++; sd.standings[winner].w++; sd.standings[winner].pts += 2;
+            sd.standings[loser].p++; sd.standings[loser].l++;
+            
+            const nrrDiff = margin * 0.01;
+            sd.standings[winner].nrr += nrrDiff; sd.standings[loser].nrr -= nrrDiff;
+
+            distributeMatchStats(t1Players, t2Players, sd.playerStats);
+
+            const checkInjury = (teamPlayers) => {
+                if(Math.random() < 0.03 && teamPlayers.length > 0) {
+                    const victim = teamPlayers[Math.floor(Math.random() * teamPlayers.length)];
+                    sd.playerStats[victim.playerId].injuredFor = 3; 
+                    sd.injuries.unshift(`${victim.name} (${usersData.find(u=>u.userId===victim.ownerId).username}) injured for 3 matches.`);
+                    if (sd.injuries.length > 10) sd.injuries.pop();
+                }
+            };
+            checkInjury(t1Players); checkInjury(t2Players);
+
+            sd.currentMatchIndex++;
+
+            try { await updateDoc(doc(getRoomsRef(), currentRoomId), { season: sd }); } 
+            catch(e) { console.error("Sim error", e); }
+        }
+
+        function distributeMatchStats(t1, t2, statsObj) {
+            const distribute = (players, oppPlayers) => {
+                let totalRuns = Math.floor(Math.random() * 80) + 140;
+                let runCandidates = players.filter(p => p.role.includes('Batsman') || p.role.includes('All-Rounder'));
+                if(runCandidates.length === 0) runCandidates = players;
+                
+                for(let r=0; r<totalRuns; r+=Math.floor(Math.random()*20)+5) {
+                    if (runCandidates.length > 0) {
+                        const batter = runCandidates[Math.floor(Math.random() * runCandidates.length)];
+                        statsObj[batter.playerId].runs += Math.floor(Math.random() * 30) + 5;
+                    }
+                }
+
+                let totalWkts = Math.floor(Math.random() * 7) + 4;
+                let bowlCandidates = oppPlayers.filter(p => p.role.includes('Pacer') || p.role.includes('Spinner') || p.role.includes('All-Rounder'));
+                if(bowlCandidates.length === 0) bowlCandidates = oppPlayers;
+
+                for(let w=0; w<totalWkts; w++) {
+                    if (bowlCandidates.length > 0) {
+                        const bowler = bowlCandidates[Math.floor(Math.random() * bowlCandidates.length)];
+                        statsObj[bowler.playerId].wickets += 1;
+                    }
+                }
+            };
+            distribute(t1, t2); distribute(t2, t1);
+        }
+
+        async function handleLeagueEnd(sd) {
+            const teams = Object.entries(sd.standings).map(([id, data]) => ({ id, ...data }));
+            teams.sort((a,b) => b.pts - a.pts || b.nrr - a.nrr);
+            
+            if (teams.length < 4) {
+                sd.phase = 'finished';
+                await updateDoc(doc(getRoomsRef(), currentRoomId), { season: sd });
+                showToast("Season Over! Not enough teams for playoffs."); return;
+            }
+
+            const top4 = teams.slice(0, 4);
+            const mStart = sd.matches.length;
+            
+            sd.matches.push({ id: mStart, t1: top4[0].id, t2: top4[1].id, type: 'Qualifier 1', winner: null, isPlayed: false, summary: '' });
+            sd.matches.push({ id: mStart+1, t1: top4[2].id, t2: top4[3].id, type: 'Eliminator', winner: null, isPlayed: false, summary: '' });
+            
+            sd.phase = 'playoffs';
+            try { await updateDoc(doc(getRoomsRef(), currentRoomId), { season: sd }); showToast("League Phase Ended! Playoffs Begin."); } 
+            catch(e) { console.error(e); }
+        }
+
+        async function handlePlayoffsEnd(sd) {
+            const pMatches = sd.matches.filter(m => m.type !== 'league');
+            const unplayed = pMatches.find(m => !m.isPlayed);
+            
+            if (!unplayed) {
+                const q1 = pMatches.find(m => m.type === 'Qualifier 1');
+                const elim = pMatches.find(m => m.type === 'Eliminator');
+                const q2 = pMatches.find(m => m.type === 'Qualifier 2');
+                const final = pMatches.find(m => m.type === 'Final');
+
+                if (q1.isPlayed && elim.isPlayed && !q2) {
+                    const q1Loser = q1.winner === q1.t1 ? q1.t2 : q1.t1;
+                    sd.matches.push({ id: sd.matches.length, t1: q1Loser, t2: elim.winner, type: 'Qualifier 2', winner: null, isPlayed: false, summary: '' });
+                } else if (q2 && q2.isPlayed && !final) {
+                    sd.matches.push({ id: sd.matches.length, t1: q1.winner, t2: q2.winner, type: 'Final', winner: null, isPlayed: false, summary: '' });
+                } else if (final && final.isPlayed) {
+                    sd.phase = 'finished';
+                    showToast(`🏆 ${sd.standings[final.winner].name} wins the Season!`);
+                }
+                await updateDoc(doc(getRoomsRef(), currentRoomId), { season: sd });
+            }
+        }
+
+        function updateSeasonUI() {
+            if (!seasonData) return;
+            const isHost = usersData.find(u => u.userId === myUserDocId)?.role === 'admin';
+            const hostControls = document.getElementById('season-host-controls');
+            if (isHost && seasonData.phase !== 'finished') {
+                hostControls.classList.remove('hidden'); hostControls.classList.add('flex');
+                if (seasonData.phase === 'transfer') {
+                    hostControls.innerHTML = `<button onclick="openTransferWindow()" class="bg-blue-500 hover:bg-blue-400 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-[0_0_10px_rgba(59,130,246,0.5)] animate-pulse">Open Transfer Window</button>`;
+                } else {
+                    hostControls.innerHTML = `<button id="btn-sim-next" class="bg-white text-zinc-950 hover:bg-zinc-200 px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-md">Simulate Match</button>
+                                              <button id="btn-sim-all" class="bg-zinc-800 text-white hover:bg-zinc-700 px-4 py-1.5 rounded-lg text-xs font-bold transition-all border border-zinc-700">Simulate 5</button>`;
+                    document.getElementById('btn-sim-next').addEventListener('click', simulateNextMatch);
+                    document.getElementById('btn-sim-all').addEventListener('click', async () => { for(let i=0;i<5;i++) await simulateNextMatch(); });
+                }
+            } else { hostControls.classList.add('hidden'); hostControls.classList.remove('flex'); }
+
+            document.getElementById('ui-season-phase').innerText = seasonData.phase.toUpperCase();
+
+            const ptBody = document.getElementById('season-points-table');
+            ptBody.innerHTML = '';
+            const sortedTeams = Object.entries(seasonData.standings).sort((a,b) => b[1].pts - a[1].pts || b[1].nrr - a[1].nrr);
+            
+            sortedTeams.forEach(([id, t], idx) => {
+                const isMe = id === myUserDocId;
+                const row = document.createElement('tr');
+                row.className = `border-b border-zinc-800/30 hover:bg-zinc-800/30 transition-colors ${isMe ? 'bg-cric-green/10 border-l-2 border-l-cric-green' : ''} ${idx < 4 ? 'bg-blue-500/5' : ''}`;
+                row.innerHTML = `
+                    <td class="py-2.5 pl-2 font-bold text-white flex items-center gap-1.5">
+                        <span class="text-[9px] text-zinc-500 w-3">${idx+1}</span> 
+                        <span class="truncate max-w-[100px] sm:max-w-[150px]">${t.name}</span>
+                        ${idx < 4 ? '<span class="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_5px_rgba(59,130,246,0.8)]" title="Playoff Spot"></span>' : ''}
+                    </td>
+                    <td class="py-2.5 text-center text-zinc-400 font-medium">${t.p}</td>
+                    <td class="py-2.5 text-center text-emerald-400 font-bold">${t.w}</td>
+                    <td class="py-2.5 text-center text-red-400 font-bold">${t.l}</td>
+                    <td class="py-2.5 text-center text-white font-black">${t.pts}</td>
+                    <td class="py-2.5 text-right pr-2 text-zinc-400 font-display">${t.nrr > 0 ? '+'+t.nrr.toFixed(2) : t.nrr.toFixed(2)}</td>
+                `;
+                ptBody.appendChild(row);
+            });
+
+            const pStatsArr = Object.values(seasonData.playerStats);
+            const orangeList = document.getElementById('orange-cap-list');
+            orangeList.innerHTML = '';
+            pStatsArr.sort((a,b) => b.runs - a.runs).slice(0,5).forEach((p, idx) => {
+                orangeList.innerHTML += `
+                    <div class="flex justify-between items-center bg-zinc-900/50 border border-zinc-800 p-2 rounded-lg ${idx===0 ? 'border-orange-500/50 shadow-[0_0_10px_rgba(249,115,22,0.1)]' : ''}">
+                        <div class="flex items-center gap-2 overflow-hidden"><span class="text-xs font-black ${idx===0 ? 'text-orange-500' : 'text-zinc-600'}">#${idx+1}</span>
+                            <div class="truncate"><p class="text-sm font-bold text-zinc-200 truncate">${p.name}</p><p class="text-[9px] text-zinc-500 uppercase tracking-widest truncate">${usersData.find(u=>u.userId===p.owner)?.username}</p></div>
+                        </div><span class="font-display font-black text-white ml-2 bg-zinc-950 px-2 py-0.5 rounded border border-zinc-800">${p.runs}</span>
+                    </div>`;
+            });
+
+            const purpleList = document.getElementById('purple-cap-list');
+            purpleList.innerHTML = '';
+            pStatsArr.sort((a,b) => b.wickets - a.wickets).slice(0,5).forEach((p, idx) => {
+                purpleList.innerHTML += `
+                    <div class="flex justify-between items-center bg-zinc-900/50 border border-zinc-800 p-2 rounded-lg ${idx===0 ? 'border-purple-500/50 shadow-[0_0_10px_rgba(168,85,247,0.1)]' : ''}">
+                        <div class="flex items-center gap-2 overflow-hidden"><span class="text-xs font-black ${idx===0 ? 'text-purple-500' : 'text-zinc-600'}">#${idx+1}</span>
+                            <div class="truncate"><p class="text-sm font-bold text-zinc-200 truncate">${p.name}</p><p class="text-[9px] text-zinc-500 uppercase tracking-widest truncate">${usersData.find(u=>u.userId===p.owner)?.username}</p></div>
+                        </div><span class="font-display font-black text-white ml-2 bg-zinc-950 px-2 py-0.5 rounded border border-zinc-800">${p.wickets}</span>
+                    </div>`;
+            });
+
+            const injList = document.getElementById('injury-list');
+            injList.innerHTML = '';
+            if (seasonData.injuries && seasonData.injuries.length > 0) {
+                seasonData.injuries.forEach(inj => { injList.innerHTML += `<div class="bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] p-2 rounded-md font-medium">⚠️ ${inj}</div>`; });
+            } else { injList.innerHTML = `<p class="text-xs text-zinc-500 italic">No injuries reported yet.</p>`; }
+
+            const currentMatchDiv = document.getElementById('current-match-display');
+            const resultsList = document.getElementById('season-results-list');
+            resultsList.innerHTML = '';
+
+            const currentMatch = seasonData.matches[seasonData.currentMatchIndex];
+            if (seasonData.phase === 'transfer') {
+                currentMatchDiv.innerHTML = `
+                    <div class="bg-blue-900/20 border border-blue-500/40 rounded-2xl p-6 text-center shadow-[0_0_30px_rgba(59,130,246,0.15)] animate-pulse-fast">
+                        <span class="text-4xl mb-2 block">🔄</span><h3 class="text-xl font-display font-black text-blue-400 uppercase tracking-widest mb-1">Transfer Window Open</h3>
+                        <p class="text-zinc-400 text-sm">Teams are trading players. Awaiting Host to proceed.</p>
+                    </div>`;
+            } else if (currentMatch && seasonData.phase !== 'finished') {
+                const t1Name = usersData.find(u=>u.userId===currentMatch.t1)?.username;
+                const t2Name = usersData.find(u=>u.userId===currentMatch.t2)?.username;
+                const matchType = currentMatch.type === 'league' ? `Match ${seasonData.currentMatchIndex + 1}` : currentMatch.type;
+                
+                currentMatchDiv.innerHTML = `
+                    <div class="bg-gradient-to-b from-zinc-900 to-zinc-950 border border-zinc-700/50 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent opacity-50"></div>
+                        <p class="text-center text-[10px] font-bold text-red-500 uppercase tracking-widest mb-4">UP NEXT • ${matchType}</p>
+                        <div class="flex justify-between items-center gap-4">
+                            <div class="flex-1 text-center"><div class="w-12 h-12 sm:w-16 sm:h-16 mx-auto bg-zinc-800 rounded-full flex items-center justify-center font-display font-bold text-xl sm:text-2xl text-zinc-300 border border-zinc-700 shadow-inner mb-2">${t1Name.charAt(0)}</div><p class="font-bold text-white text-sm sm:text-base truncate">${t1Name}</p></div>
+                            <div class="shrink-0 text-center"><span class="text-xs sm:text-sm font-black italic text-zinc-600 px-3 py-1 bg-zinc-950 rounded-full border border-zinc-800">VS</span></div>
+                            <div class="flex-1 text-center"><div class="w-12 h-12 sm:w-16 sm:h-16 mx-auto bg-zinc-800 rounded-full flex items-center justify-center font-display font-bold text-xl sm:text-2xl text-zinc-300 border border-zinc-700 shadow-inner mb-2">${t2Name.charAt(0)}</div><p class="font-bold text-white text-sm sm:text-base truncate">${t2Name}</p></div>
+                        </div>
+                    </div>`;
+            } else if (seasonData.phase === 'finished') {
+                const finalMatch = seasonData.matches.find(m => m.type === 'Final');
+                const winnerName = usersData.find(u=>u.userId===finalMatch.winner)?.username;
+                currentMatchDiv.innerHTML = `
+                    <div class="bg-gradient-to-b from-emerald-900/30 to-zinc-950 border border-emerald-500/40 rounded-2xl p-6 text-center shadow-[0_0_40px_rgba(16,185,129,0.2)]">
+                        <span class="text-5xl mb-3 block animate-float">🏆</span><h3 class="text-2xl font-display font-black text-white mb-1">Season Champions</h3><p class="text-xl font-bold text-emerald-400">${winnerName}</p>
+                    </div>`;
+            }
+
+            const playedMatches = seasonData.matches.filter(m => m.isPlayed).reverse();
+            playedMatches.forEach(m => {
+                const t1 = usersData.find(u=>u.userId===m.t1); const t2 = usersData.find(u=>u.userId===m.t2);
+                if(!t1 || !t2) return;
+                const isT1Winner = m.winner === m.t1;
+                
+                resultsList.innerHTML += `
+                    <div class="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm">
+                        <div class="flex items-center justify-center sm:justify-start gap-3 flex-1">
+                            <span class="${isT1Winner ? 'text-white font-bold' : 'text-zinc-500'} text-right flex-1 truncate">${t1.username}</span>
+                            <span class="text-[10px] font-black text-zinc-700 bg-zinc-950 px-1.5 py-0.5 rounded border border-zinc-800">VS</span>
+                            <span class="${!isT1Winner ? 'text-white font-bold' : 'text-zinc-500'} text-left flex-1 truncate">${t2.username}</span>
+                        </div>
+                        <div class="text-[10px] sm:text-xs text-cric-green font-bold bg-cric-green/10 border border-cric-green/20 px-2.5 py-1 rounded-md text-center shrink-0">${m.summary}</div>
+                    </div>`;
+            });
+        }
+
+        window.openTransferWindow = () => {
+            selectedTransferRelease = null; selectedTransferSign = null;
+            document.getElementById('btn-confirm-transfer').disabled = true;
+            renderTransferLists();
+            const modal = document.getElementById('transfer-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.remove('opacity-0'), 10);
+        };
+
+        function renderTransferLists() {
+            const myPlayersList = document.getElementById('transfer-my-players');
+            const unsoldList = document.getElementById('transfer-unsold-players');
+            myPlayersList.innerHTML = ''; unsoldList.innerHTML = '';
+
+            const myPlayers = playersData.filter(p => p.ownerId === myUserDocId);
+            const unsoldPlayers = playersData.filter(p => p.status === 'unsold');
+
+            myPlayers.forEach(p => {
+                const stat = seasonData.playerStats[p.playerId];
+                const isInj = stat && stat.injuredFor > 0;
+                const div = document.createElement('div');
+                div.className = `p-2.5 rounded-lg border cursor-pointer transition-all flex justify-between items-center ${selectedTransferRelease === p.playerId ? 'border-red-500 bg-red-500/20' : 'border-zinc-800 bg-zinc-900 hover:border-zinc-600'}`;
+                div.innerHTML = `<div><p class="text-sm font-bold text-white">${p.name}</p><p class="text-[9px] text-zinc-500 uppercase">${p.role}</p></div>${isInj ? '<span class="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded font-bold">INJURED</span>' : ''}`;
+                div.onclick = () => { selectedTransferRelease = p.playerId; renderTransferLists(); checkTransferValid(); };
+                myPlayersList.appendChild(div);
+            });
+            if(myPlayers.length === 0) myPlayersList.innerHTML = '<p class="text-xs text-zinc-500 italic p-2">No players owned.</p>';
+
+            unsoldPlayers.forEach(p => {
+                const div = document.createElement('div');
+                div.className = `p-2.5 rounded-lg border cursor-pointer transition-all flex justify-between items-center ${selectedTransferSign === p.playerId ? 'border-cric-green bg-cric-green/20' : 'border-zinc-800 bg-zinc-900 hover:border-zinc-600'}`;
+                div.innerHTML = `<div><p class="text-sm font-bold text-white">${p.name}</p><p class="text-[9px] text-zinc-500 uppercase">${p.role}</p></div><span class="font-display font-black text-xs text-zinc-400">₹${p.base}</span>`;
+                div.onclick = () => { selectedTransferSign = p.playerId; renderTransferLists(); checkTransferValid(); };
+                unsoldList.appendChild(div);
+            });
+            if(unsoldPlayers.length === 0) unsoldList.innerHTML = '<p class="text-xs text-zinc-500 italic p-2">No unsold players available.</p>';
+        }
+
+        function checkTransferValid() { document.getElementById('btn-confirm-transfer').disabled = !(selectedTransferRelease && selectedTransferSign); }
+
+        document.getElementById('btn-confirm-transfer').addEventListener('click', async () => {
+            if (!selectedTransferRelease || !selectedTransferSign) return;
+            const releaseP = playersData.find(p => p.playerId === selectedTransferRelease); const signP = playersData.find(p => p.playerId === selectedTransferSign);
+            const me = usersData.find(u => u.userId === myUserDocId);
+            const budgetDiff = releaseP.basePrice - signP.basePrice;
+            if (me.budget + budgetDiff < 0) return showToast("Insufficient budget for this swap.");
+
+            try {
+                const batch = writeBatch(db);
+                batch.update(doc(getPlayersRef(), releaseP.playerId), { status: 'unsold', ownerId: null, soldPrice: null });
+                batch.update(doc(getPlayersRef(), signP.playerId), { status: 'sold', ownerId: myUserDocId, soldPrice: signP.basePrice });
+                batch.update(doc(getUsersRef(), myUserDocId), { budget: me.budget + budgetDiff });
+                
+                let newSd = JSON.parse(JSON.stringify(seasonData));
+                newSd.playerStats[signP.playerId] = { runs: 0, wickets: 0, injuredFor: 0, name: signP.name, owner: myUserDocId, role: signP.role, set: signP.set };
+                newSd.injuries.unshift(`${me.username} signed ${signP.name} replacing ${releaseP.name}.`);
+                if(me.role === 'admin') newSd.phase = 'league';
+                
+                batch.update(doc(getRoomsRef(), currentRoomId), { season: newSd });
+                await batch.commit();
+
+                document.getElementById('transfer-modal').classList.add('hidden');
+                showToast("Transfer Successful!");
+            } catch(e) { console.error("Transfer Error", e); showToast("Failed to process transfer."); }
+        });
+
+        function updateChatUI() {
+            const container = document.getElementById('chat-messages'); if (!container) return;
+            const chatPanel = document.getElementById('chat-panel');
+            const isHiddenDesktop = chatPanel.classList.contains('hidden');
+            
+            if (chatMessages.length > lastViewedMessageCount) {
+                if (isHiddenDesktop) {
+                    const unread = chatMessages.length - lastViewedMessageCount;
+                    const badge = document.getElementById('chat-badge'); 
+                    if(badge) { badge.innerText = unread > 9 ? '9+' : unread; badge.classList.remove('hidden'); badge.classList.add('flex'); }
+                } else { lastViewedMessageCount = chatMessages.length; }
+            }
+            
+            container.innerHTML = '';
+            chatMessages.forEach(msg => {
+                const isMe = msg.senderId === myUserDocId;
+                const isWhisper = msg.receiverId !== 'all';
+                const isWhisperToMe = isWhisper && msg.receiverId === myUserDocId;
+                
+                const div = document.createElement('div');
+                div.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} w-full mb-3 sm:mb-4`;
+                
+                let labelText = isMe ? 'You' : msg.senderName;
+                if (isWhisper) { labelText = isWhisperToMe ? `Whisper from ${msg.senderName}` : `Whisper to ${msg.receiverName}`; }
+                
+                let bubbleClasses = isMe 
+                    ? 'bg-zinc-800 text-white rounded-xl sm:rounded-[1.25rem] rounded-tr-sm border border-zinc-700' 
+                    : 'bg-zinc-900 text-white rounded-xl sm:rounded-[1.25rem] rounded-tl-sm border border-zinc-800';
+                    
+                if (isWhisper) {
+                    bubbleClasses = isMe
+                        ? 'bg-purple-900/80 text-white rounded-xl sm:rounded-[1.25rem] rounded-tr-sm border border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.15)]'
+                        : 'bg-purple-950/80 text-purple-100 rounded-xl sm:rounded-[1.25rem] rounded-tl-sm border border-purple-500/30';
+                }
+                
+                div.innerHTML = `<span class="text-[8px] sm:text-[9px] font-bold uppercase tracking-widest ${isWhisper ? 'text-purple-400' : 'text-zinc-500'} mb-1 sm:mb-1.5 mx-1">${labelText}</span><div class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-md inline-block max-w-[85%] break-words leading-relaxed ${bubbleClasses}">${msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>`;
+                container.appendChild(div);
+            });
+            scrollToBottomChat();
+        }
+
+        function scrollToBottomChat() { const container = document.getElementById('chat-messages'); if(container) { container.scrollTop = container.scrollHeight; } }
+
+        window.toggleDesktopChat = () => {
+            const panel = document.getElementById('chat-panel');
+            if(panel.classList.contains('hidden')) {
+                panel.classList.remove('hidden'); panel.classList.add('flex');
+                const badge = document.getElementById('chat-badge');
+                if(badge) { badge.classList.add('hidden'); badge.classList.remove('flex'); }
+                lastViewedMessageCount = chatMessages.length;
+                setTimeout(scrollToBottomChat, 100);
+            } else { panel.classList.add('hidden'); panel.classList.remove('flex'); }
+        };
+
+        window.sendChatMessage = async () => {
+            const input = document.getElementById('chat-input'); const text = input.value.trim();
+            if(!text || !currentUser || !currentRoomId) return;
+            const select = document.getElementById('chat-recipient');
+            const receiverId = select.value; const receiverName = receiverId === 'all' ? 'Everyone' : select.options[select.selectedIndex].text.replace('Whisper: ', '');
+            const me = usersData.find(u => u.userId === myUserDocId); if(!me) return;
+            
+            try {
+                input.value = ''; 
+                const msgRef = doc(getChatRef());
+                await setDoc(msgRef, { id: msgRef.id, roomId: currentRoomId, senderId: myUserDocId, senderName: me.username, receiverId: receiverId, receiverName: receiverName, text: text, timestamp: Date.now() });
+                document.getElementById('emoji-picker')?.classList.add('hidden');
+            } catch(e) { console.error("Chat send error:", e); showToast("Failed to send message"); }
+        };
+
+        setTimeout(() => {
+            const chatInput = document.getElementById('chat-input'); const sendBtn = document.getElementById('btn-send-chat');
+            const emojiToggle = document.getElementById('btn-emoji-toggle'); const emojiPicker = document.getElementById('emoji-picker'); const emojiGrid = document.getElementById('emoji-grid');
+            if(chatInput && sendBtn) { chatInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') sendChatMessage(); }); sendBtn.addEventListener('click', sendChatMessage); }
+
+            const emojis = ['😀', '😂', '😎', '😍', '😊', '🙌', '👍', '🔥', '🎉', '💯', '🏏', '🏆', '💰', '🚀', '👀', '🤯', '😱', '👏', '🤝', '💪', '🤔', '🤨', '🤫', '🥱', '🥺', '😡', '🤬', '🤮', '💔', '📈'];
+            if (emojiGrid) {
+                emojis.forEach(emoji => {
+                    const btn = document.createElement('button'); btn.className = "hover:bg-zinc-700 rounded p-1.5 transition-colors flex items-center justify-center"; btn.innerText = emoji;
+                    btn.onclick = (e) => { e.preventDefault(); if (chatInput) { chatInput.value += emoji; chatInput.focus(); } };
+                    emojiGrid.appendChild(btn);
+                });
+            }
+
+            if (emojiToggle && emojiPicker) {
+                emojiToggle.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); emojiPicker.classList.toggle('hidden'); });
+                document.addEventListener('click', (e) => { if (!emojiPicker.contains(e.target) && !emojiToggle.contains(e.target)) { emojiPicker.classList.add('hidden'); } });
+                emojiPicker.addEventListener('click', (e) => { e.stopPropagation(); });
+            }
+        }, 1000);
+
     </script>
 </body>
 </html>
