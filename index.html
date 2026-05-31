@@ -57,6 +57,10 @@
                         float: {
                             '0%, 100%': { transform: 'translateY(0)' },
                             '50%': { transform: 'translateY(-10px)' }
+                        },
+                        floatUp: {
+                            '0%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+                            '100%': { opacity: '0', transform: 'translateY(-150px) scale(1.5)' }
                         }
                     }
                 }
@@ -111,6 +115,22 @@
             opacity: 0; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 9999;
         }
         .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        
+        .reaction-float {
+            position: fixed;
+            bottom: 120px;
+            right: 30px;
+            font-size: 2.5rem;
+            animation: floatUp 2.5s ease-out forwards;
+            pointer-events: none;
+            z-index: 10000;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-150px) scale(1.5); }
+        }
         
         input, select, textarea { font-size: 16px !important; }
         
@@ -175,6 +195,27 @@
         </div>
     </div>
 
+    <!-- Invite Modal -->
+    <div id="invite-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[150] hidden flex-col items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="glass-panel bg-zinc-900 p-8 rounded-3xl max-w-sm w-full text-center shadow-2xl transform scale-95 transition-transform duration-300" id="invite-modal-content">
+            <div class="w-16 h-16 sm:w-20 sm:h-20 bg-cric-accent/10 rounded-3xl mx-auto mb-4 flex items-center justify-center text-cric-accent shadow-inner animate-pulse">
+                <svg class="w-8 h-8 sm:w-10 sm:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+            </div>
+            <h2 class="text-xl sm:text-2xl font-display font-black text-white mb-2 uppercase tracking-tight">Room Invite!</h2>
+            <p class="text-zinc-400 mb-6 text-sm">
+                <span id="invite-sender-name" class="font-bold text-white">Someone</span> has invited you to join their auction room.
+            </p>
+            <div class="bg-zinc-950 p-3 rounded-xl border border-zinc-800 mb-6 flex justify-between items-center shadow-inner">
+                <span class="text-xs text-zinc-500 font-bold uppercase tracking-widest">Room Code</span>
+                <span id="invite-room-code" class="font-display font-black text-cric-gold text-lg tracking-widest uppercase">---</span>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="closeInviteModal()" class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold py-3 rounded-xl transition-colors text-sm">Ignore</button>
+                <button id="btn-accept-invite" class="flex-1 bg-cric-accent hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-all shadow-[0_0_20px_rgba(59,130,246,0.4)] text-sm active:scale-95">Accept & Join</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ==================== SCREEN 1: LOBBY ==================== -->
     <div id="lobby-screen" class="flex flex-1 flex-col items-center justify-center p-4 sm:p-5 h-full overflow-y-auto mesh-bg w-full relative z-10 touch-scroll">
         <div class="glass-panel p-6 sm:p-12 rounded-[2rem] sm:rounded-[2.5rem] w-full max-w-[460px] text-center shadow-[0_30px_60px_rgba(0,0,0,0.6)] animate-fade-in-up relative overflow-hidden my-auto">
@@ -188,8 +229,41 @@
             <h1 class="text-3xl sm:text-5xl font-display font-black text-white mb-2 tracking-tight">CricBid<span class="text-cric-green">.</span></h1>
             <p class="text-zinc-400 text-xs sm:text-sm mb-8 sm:mb-10 font-medium tracking-wide">ELITE MULTIPLAYER AUCTION</p>
 
-            <div class="space-y-4 sm:space-y-5 relative z-10">
-                <div class="text-left group">
+            <!-- Login Section -->
+            <div id="login-section" class="flex flex-col gap-4 relative z-10 w-full mb-6">
+                <button id="btn-google-login" class="w-full flex items-center justify-center gap-3 bg-white hover:bg-zinc-200 text-zinc-950 font-bold py-3.5 sm:py-4 rounded-xl sm:rounded-2xl transition-all shadow-[0_10px_20px_rgba(255,255,255,0.1)] text-sm sm:text-base active:scale-95">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                    Continue with Google
+                </button>
+                <div class="relative flex items-center py-1 opacity-60">
+                    <div class="flex-grow border-t border-zinc-800"></div>
+                    <span class="flex-shrink-0 mx-3 text-zinc-500 text-[10px] font-bold uppercase tracking-widest">or</span>
+                    <div class="flex-grow border-t border-zinc-800"></div>
+                </div>
+                <button id="btn-anon-login" class="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3.5 rounded-xl transition-colors border border-zinc-700 text-sm active:scale-95">
+                    Play as Guest
+                </button>
+            </div>
+
+            <!-- Guest Name Section -->
+            <div id="guest-name-section" class="hidden flex-col gap-4 relative z-10 w-full mb-6 text-left">
+                <label class="block text-[10px] sm:text-xs font-bold text-zinc-400 ml-2 uppercase tracking-wider">Choose your Alias</label>
+                <input type="text" id="guest-name-input" placeholder="Enter your name" class="w-full bg-zinc-950/50 border border-zinc-800 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3.5 sm:py-4 text-white focus:outline-none focus:border-cric-green focus:bg-zinc-900/80 transition-all text-sm sm:text-base shadow-inner" autocomplete="off">
+                <button id="btn-confirm-guest" class="w-full bg-cric-green hover:bg-emerald-400 text-zinc-950 font-bold py-3.5 rounded-xl transition-colors shadow-[0_5px_15px_rgba(16,185,129,0.2)] text-sm active:scale-95">Continue</button>
+                <button id="btn-back-login" class="text-xs text-zinc-500 hover:text-white transition-colors mt-2 text-center">Back</button>
+            </div>
+
+            <div id="lobby-controls" class="space-y-4 sm:space-y-5 relative z-10 hidden">
+                <!-- User Profile Display -->
+                <div class="flex items-center gap-3 bg-zinc-900/80 border border-zinc-800 p-3 rounded-xl mb-4 shadow-inner">
+                    <img id="user-avatar" src="https://ui-avatars.com/api/?name=G&background=10b981&color=fff" class="w-10 h-10 rounded-full border border-zinc-700" alt="Avatar">
+                    <div class="text-left flex-1">
+                        <p class="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Logged in as</p>
+                        <p id="user-display-name" class="text-sm font-bold text-white truncate">Guest Manager</p>
+                    </div>
+                </div>
+
+                <div class="text-left group mt-2 mb-4" id="alias-wrapper">
                     <label class="block text-[10px] sm:text-xs font-bold text-zinc-400 mb-2 ml-2 uppercase tracking-wider group-focus-within:text-cric-green transition-colors">Manager Alias</label>
                     <input type="text" id="username-input" placeholder="Enter your name" class="w-full bg-zinc-950/50 border border-zinc-800 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3.5 sm:py-4 text-white focus:outline-none focus:border-cric-green focus:bg-zinc-900/80 transition-all placeholder:text-zinc-600 text-sm sm:text-base shadow-inner">
                 </div>
@@ -225,6 +299,17 @@
                         <button id="btn-join-room" class="w-2/5 bg-zinc-800 hover:bg-zinc-700 active:scale-[0.98] text-white font-bold py-3.5 sm:py-4 rounded-xl sm:rounded-2xl transition-colors border border-zinc-700 text-sm sm:text-base shadow-lg">
                             Enter
                         </button>
+                    </div>
+                </div>
+                
+                <!-- Social/Invites Panel -->
+                <div class="mt-6 pt-4 border-t border-zinc-800 text-left">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-xs font-bold text-zinc-400 uppercase tracking-widest">Global Players Online</h3>
+                        <span id="global-online-count" class="bg-cric-green/20 text-cric-green text-[9px] px-2 py-0.5 rounded-full font-bold">0</span>
+                    </div>
+                    <div id="global-users-list" class="space-y-2 max-h-40 overflow-y-auto hide-scrollbar border border-zinc-800/50 rounded-xl p-2 bg-zinc-950/30">
+                        <p class="text-xs text-zinc-600 italic text-center p-2">Loading players...</p>
                     </div>
                 </div>
             </div>
@@ -507,6 +592,14 @@
             </aside>
         </main>
 
+        <!-- Floating Reactions Bar -->
+        <div class="fixed bottom-20 right-4 sm:bottom-28 sm:right-8 flex flex-col gap-2 z-[100] transition-transform" id="reaction-bar">
+            <button onclick="sendReaction('🔥')" class="w-10 h-10 sm:w-12 sm:h-12 bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 hover:scale-110 rounded-full shadow-lg flex items-center justify-center text-lg sm:text-xl transition-all active:scale-95">🔥</button>
+            <button onclick="sendReaction('👏')" class="w-10 h-10 sm:w-12 sm:h-12 bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 hover:scale-110 rounded-full shadow-lg flex items-center justify-center text-lg sm:text-xl transition-all active:scale-95">👏</button>
+            <button onclick="sendReaction('😂')" class="w-10 h-10 sm:w-12 sm:h-12 bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 hover:scale-110 rounded-full shadow-lg flex items-center justify-center text-lg sm:text-xl transition-all active:scale-95">😂</button>
+            <button onclick="sendReaction('😲')" class="w-10 h-10 sm:w-12 sm:h-12 bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 hover:scale-110 rounded-full shadow-lg flex items-center justify-center text-lg sm:text-xl transition-all active:scale-95">😲</button>
+        </div>
+
         <!-- Fixed Chat Button -->
         <button onclick="toggleDesktopChat()" id="btn-desktop-chat" class="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 w-14 h-14 sm:w-16 sm:h-16 bg-white hover:bg-zinc-200 text-zinc-950 rounded-full sm:rounded-[1.5rem] shadow-[0_10px_20px_rgba(255,255,255,0.15)] sm:shadow-[0_15px_30px_rgba(255,255,255,0.15)] flex items-center justify-center z-[105] transition-all hover:scale-105 active:scale-95 shrink-0 border border-zinc-200">
             <svg class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
@@ -668,19 +761,18 @@
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
         import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, onSnapshot, writeBatch, serverTimestamp, deleteDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-          apiKey: "AIzaSyCAd5OJKmVW2aSWgDogBg3lSpj1uzPxGrk",
-          authDomain: "cricbid-839eb.firebaseapp.com",
-          projectId: "cricbid-839eb",
-          storageBucket: "cricbid-839eb.firebasestorage.app",
-          messagingSenderId: "521652177425",
-          appId: "1:521652177425:web:c33adfb7ea97360d6affb0",
-          measurementId: "G-7WHCC3VSTW"
+            apiKey: "dummy-key-fallback",
+            authDomain: "cricbid.firebaseapp.com",
+            projectId: "cricbid",
+            storageBucket: "cricbid.firebasestorage.app",
+            messagingSenderId: "123456",
+            appId: "1:123456:web:abcdef123"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -691,8 +783,11 @@
         const getUsersRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'users');
         const getPlayersRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'players');
         const getChatRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'messages');
+        const getGlobalUsersRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'globalUsers');
+        const getInvitesRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'invites');
 
         let currentUser = null;
+        let globalProfile = { name: 'Guest Manager', photo: 'https://ui-avatars.com/api/?name=G&background=10b981&color=fff' };
         let currentRoomId = null;
         let myUserDocId = null;
         let roomData = null;
@@ -721,10 +816,161 @@
 
         let playerStatsCache = {};
         let activeFetches = {};
+        
+        let globalUsersUnsubscribe = null;
+        let invitesUnsubscribe = null;
+        let activeInviteId = null;
+
+        function listenToGlobalEvents(uid) {
+            if (globalUsersUnsubscribe) globalUsersUnsubscribe();
+            globalUsersUnsubscribe = onSnapshot(getGlobalUsersRef(), (snapshot) => {
+                const now = Date.now();
+                let globalOnline = [];
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    // Consider online if heartbeat seen in last 60s
+                    if (data.lastActive && (now - data.lastActive < 60000)) {
+                        globalOnline.push(data);
+                    }
+                });
+                
+                const countEl = document.getElementById('global-online-count');
+                const listEl = document.getElementById('global-users-list');
+                if (countEl && listEl) {
+                    countEl.innerText = globalOnline.length;
+                    listEl.innerHTML = '';
+                    
+                    globalOnline.forEach(u => {
+                        if (u.uid === uid) return; // skip self
+                        
+                        const div = document.createElement('div');
+                        div.className = "flex justify-between items-center bg-zinc-900/50 p-2 rounded-lg border border-zinc-800/80";
+                        const canInvite = currentRoomId && u.currentRoom !== currentRoomId;
+                        
+                        div.innerHTML = `
+                            <div class="flex items-center gap-2 overflow-hidden">
+                                <img src="${u.photo || 'https://ui-avatars.com/api/?name='+encodeURIComponent(u.name)+'&background=3b82f6&color=fff'}" class="w-6 h-6 rounded-full border border-zinc-700" alt="avatar">
+                                <span class="text-xs font-bold text-white truncate max-w-[100px]">${u.name}</span>
+                            </div>
+                            ${canInvite ? `<button onclick="sendInvite('${u.uid}')" class="text-[9px] bg-cric-accent/20 hover:bg-cric-accent/40 text-blue-400 px-2 py-1 rounded transition-colors uppercase tracking-widest font-bold border border-cric-accent/30 active:scale-95">Invite</button>` : `<span class="text-[8px] text-zinc-500 uppercase font-bold tracking-widest px-1">In Room</span>`}
+                        `;
+                        listEl.appendChild(div);
+                    });
+                    
+                    if (globalOnline.length <= 1) {
+                        listEl.innerHTML = '<p class="text-xs text-zinc-600 italic text-center p-2">No other players online.</p>';
+                    }
+                }
+            });
+
+            if (invitesUnsubscribe) invitesUnsubscribe();
+            invitesUnsubscribe = onSnapshot(getInvitesRef(), (snapshot) => {
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type === 'added') {
+                        const data = change.doc.data();
+                        const now = Date.now();
+                        // Show invite if it's for me and sent within the last 30 seconds
+                        if (data.receiverId === uid && (now - data.timestamp < 30000)) {
+                            showInviteModal(data);
+                        }
+                    }
+                });
+            });
+        }
+
+        window.sendInvite = async (receiverId) => {
+            if (!currentRoomId || !currentUser) return showToast("You must be in a room to send invites.");
+            try {
+                const me = usersData.find(u => u.userId === myUserDocId) || { username: globalProfile.name };
+                const inviteRef = doc(getInvitesRef());
+                await setDoc(inviteRef, {
+                    id: inviteRef.id,
+                    senderId: currentUser.uid,
+                    senderName: me.username,
+                    receiverId: receiverId,
+                    roomId: currentRoomId,
+                    timestamp: Date.now()
+                });
+                showToast("Invite sent successfully!");
+            } catch(e) {
+                console.error("Invite error:", e);
+                showToast("Failed to send invite.");
+            }
+        };
+
+        function showInviteModal(data) {
+            if (currentRoomId === data.roomId) return; 
+            activeInviteId = data.roomId;
+            document.getElementById('invite-sender-name').innerText = data.senderName;
+            document.getElementById('invite-room-code').innerText = data.roomId;
+            
+            const modal = document.getElementById('invite-modal');
+            const content = document.getElementById('invite-modal-content');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => { 
+                modal.classList.remove('opacity-0'); 
+                content.classList.remove('scale-95'); 
+                content.classList.add('scale-100'); 
+            }, 10);
+        }
+
+        window.closeInviteModal = () => {
+            const modal = document.getElementById('invite-modal');
+            const content = document.getElementById('invite-modal-content');
+            modal.classList.add('opacity-0'); 
+            content.classList.remove('scale-100'); 
+            content.classList.add('scale-95');
+            setTimeout(() => { 
+                modal.classList.add('hidden');
+                modal.classList.remove('flex'); 
+                activeInviteId = null; 
+            }, 300);
+        };
+
+        document.getElementById('btn-accept-invite')?.addEventListener('click', () => {
+            if (activeInviteId) {
+                const name = document.getElementById('username-input').value.trim() || globalProfile.name;
+                const targetRoom = activeInviteId;
+                closeInviteModal();
+                if (currentRoomId) {
+                     // Disconnect from current room before swapping
+                     if (myUserDocId) {
+                         transferHostRole(); 
+                         updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: false }).catch(()=>{});
+                     }
+                }
+                joinRoom(targetRoom, name);
+            }
+        });
+
+        window.sendReaction = async (emoji) => {
+            if(!currentUser || !currentRoomId) return;
+            try {
+                const msgRef = doc(getChatRef());
+                await setDoc(msgRef, {
+                    id: msgRef.id, roomId: currentRoomId,
+                    senderId: myUserDocId, senderName: 'Reaction',
+                    receiverId: 'all', receiverName: 'Everyone',
+                    text: emoji, isReaction: true, timestamp: Date.now()
+                });
+            } catch(e) { console.error("Reaction err:", e); }
+        };
+
+        window.spawnReactionElement = (emoji) => {
+            const reactionBar = document.getElementById('reaction-bar');
+            if(!reactionBar) return;
+            const el = document.createElement('div');
+            el.className = 'reaction-float';
+            el.innerText = emoji;
+            // Slight horizontal offset so they stack nicely
+            el.style.right = (20 + Math.random() * 40) + 'px';
+            document.body.appendChild(el);
+            setTimeout(() => { if(el.parentNode) el.remove(); }, 2500);
+        };
 
         function processPrefetchQueue() {
             if (!playersData || playersData.length === 0) return;
-            // Pre-fetch up to 8 upcoming players immediately in the background
             const upcoming = playersData.filter(p => p.status === 'upcoming').sort((a,b) => a.order - b.order);
             for(let i = 0; i < Math.min(8, upcoming.length); i++) {
                 const p = upcoming[i];
@@ -739,7 +985,6 @@
         function getFallbackAnalytics(player) {
             const h = getHash(player.name);
             
-            // Intelligently weight matches based on the category/set
             let baseMatches = 30;
             if(player.set === "Marquee") baseMatches = 90;
             else if(player.set === "Batsmen" || player.set === "Pacers") baseMatches = 50;
@@ -747,7 +992,6 @@
             const matches = baseMatches + (h % 40);
             const base = player.basePrice;
 
-            // Rating logic dynamically weighted by base price reality
             let calculatedRating = 6.0;
             if(base >= 2.0) calculatedRating = 8.5;
             else if(base >= 1.5) calculatedRating = 7.5;
@@ -755,7 +999,6 @@
 
             const aiRating = (calculatedRating + ((h % 15) / 10)).toFixed(1);
             
-            // Pred logic strictly tied to actual initial base price boundaries
             const predMin = (base * (1 + (h % 5) * 0.3)).toFixed(2);
             const predMax = (parseFloat(predMin) + 1.0 + ((h % 5) * 0.5)).toFixed(2);
             
@@ -830,13 +1073,14 @@ Return a JSON object exactly matching the schema.
 
                 for (let i = 0; i < retries; i++) {
                     try {
+                        if (!apiKey) throw new Error("No API Key available in environment context.");
                         const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                         if (!response.ok) throw new Error('API Error');
                         result = await response.json();
                         break;
                     } catch (err) {
                         if (i === retries - 1) {
-                            console.error("AI Fetch Error:", err);
+                            console.warn("AI Fetch Error/Skipped - using fallback:", err);
                         } else {
                             await new Promise(res => setTimeout(res, delay));
                             delay *= 2;
@@ -929,30 +1173,31 @@ Return a JSON object exactly matching the schema.
 
         const AUCTION_DATABASES = {
             "T20": [
-                { name: "Virat Kohli", role: "Batsman", country: "IND", base: 2.0, set: "Marquee" },
-                { name: "Rashid Khan", role: "Spinner", country: "AFG", base: 2.0, set: "Marquee" },
-                { name: "Glenn Maxwell", role: "All-Rounder", country: "AUS", base: 2.0, set: "Marquee" },
-                { name: "Jasprit Bumrah", role: "Pacer", country: "IND", base: 2.0, set: "Marquee" },
-                { name: "Suryakumar Yadav", role: "Batsman", country: "IND", base: 1.5, set: "Batsmen" },
-                { name: "Trent Boult", role: "Pacer", country: "NZ", base: 1.5, set: "Pacers" },
-                { name: "Sunil Narine", role: "All-Rounder", country: "WI", base: 1.5, set: "All-Rounders" },
-                { name: "Heinrich Klaasen", role: "Wicketkeeper", country: "SA", base: 1.5, set: "Wicketkeepers" },
-                { name: "Rinku Singh", role: "Batsman", country: "IND", base: 1.0, set: "Batsmen" },
-                { name: "Nicholas Pooran", role: "Wicketkeeper", country: "WI", base: 1.5, set: "Wicketkeepers" }
+                { name: "Virat Kohli", role: "Batsman", country: "India", base: 2.0, set: "Marquee" },
+                { name: "Jasprit Bumrah", role: "Pacer", country: "India", base: 2.0, set: "Marquee" },
+                { name: "Ben Stokes", role: "All-Rounder", country: "England", base: 2.0, set: "Marquee" },
+                { name: "Rashid Khan", role: "Spinner", country: "Afghanistan", base: 2.0, set: "Marquee" },
+                { name: "Heinrich Klaasen", role: "Wicketkeeper", country: "South Africa", base: 1.5, set: "Wicketkeepers" },
+                { name: "Travis Head", role: "Batsman", country: "Australia", base: 1.5, set: "Batsmen" },
+                { name: "Pat Cummins", role: "Pacer", country: "Australia", base: 2.0, set: "Pacers" },
+                { name: "Mitchell Starc", role: "Pacer", country: "Australia", base: 2.0, set: "Pacers" },
+                { name: "Glenn Maxwell", role: "All-Rounder", country: "Australia", base: 2.0, set: "All-Rounders" },
+                { name: "Sunil Narine", role: "Spinner", country: "West Indies", base: 1.5, set: "Spinners" },
+                { name: "Suryakumar Yadav", role: "Batsman", country: "India", base: 2.0, set: "Batsmen" }
             ],
             "ODI": [
-                { name: "Babar Azam", role: "Batsman", country: "PAK", base: 2.0, set: "Marquee" },
-                { name: "Shubman Gill", role: "Batsman", country: "IND", base: 1.5, set: "Batsmen" },
-                { name: "Mohammed Shami", role: "Pacer", country: "IND", base: 1.5, set: "Pacers" },
-                { name: "Adam Zampa", role: "Spinner", country: "AUS", base: 1.5, set: "Spinners" },
-                { name: "Quinton de Kock", role: "Wicketkeeper", country: "SA", base: 2.0, set: "Marquee" }
+                { name: "Rohit Sharma", role: "Batsman", country: "India", base: 2.0, set: "Marquee" },
+                { name: "Quinton de Kock", role: "Wicketkeeper", country: "South Africa", base: 2.0, set: "Marquee" },
+                { name: "Trent Boult", role: "Pacer", country: "New Zealand", base: 2.0, set: "Marquee" },
+                { name: "Shakib Al Hasan", role: "All-Rounder", country: "Bangladesh", base: 1.5, set: "Marquee" },
+                { name: "Babar Azam", role: "Batsman", country: "Pakistan", base: 2.0, set: "Batsmen" }
             ],
             "TEST": [
-                { name: "Steve Smith", role: "Batsman", country: "AUS", base: 2.0, set: "Marquee" },
-                { name: "Pat Cummins", role: "All-Rounder", country: "AUS", base: 2.0, set: "Marquee" },
-                { name: "Ravichandran Ashwin", role: "Spinner", country: "IND", base: 1.5, set: "Spinners" },
-                { name: "Joe Root", role: "Batsman", country: "ENG", base: 2.0, set: "Marquee" },
-                { name: "Kagiso Rabada", role: "Pacer", country: "SA", base: 1.5, set: "Pacers" }
+                { name: "Steve Smith", role: "Batsman", country: "Australia", base: 2.0, set: "Marquee" },
+                { name: "Joe Root", role: "Batsman", country: "England", base: 2.0, set: "Marquee" },
+                { name: "Ravichandran Ashwin", role: "Spinner", country: "India", base: 2.0, set: "Marquee" },
+                { name: "Nathan Lyon", role: "Spinner", country: "Australia", base: 1.5, set: "Spinners" },
+                { name: "James Anderson", role: "Pacer", country: "England", base: 1.5, set: "Pacers" }
             ]
         };
 
@@ -1014,6 +1259,29 @@ Return a JSON object exactly matching the schema.
             setTimeout(() => toast.classList.remove('show'), 3500);
         };
 
+        window.sendReaction = async (emoji) => {
+            if(!currentUser || !currentRoomId) return;
+            try {
+                const msgRef = doc(getChatRef());
+                await setDoc(msgRef, {
+                    id: msgRef.id, roomId: currentRoomId,
+                    senderId: myUserDocId, senderName: 'Reaction',
+                    receiverId: 'all', receiverName: 'Everyone',
+                    text: emoji, isReaction: true, timestamp: Date.now()
+                });
+            } catch(e) { console.error("Reaction err:", e); }
+        };
+
+        window.spawnReactionElement = (emoji) => {
+            const el = document.createElement('div');
+            el.className = 'reaction-float';
+            el.innerText = emoji;
+            // Slight horizontal offset so they stack nicely
+            el.style.right = (20 + Math.random() * 40) + 'px';
+            document.body.appendChild(el);
+            setTimeout(() => { if(el.parentNode) el.remove(); }, 2500);
+        };
+
         const formatMoney = (val) => val.toFixed(2);
         const generateRoomCode = () => {
             const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -1029,17 +1297,109 @@ Return a JSON object exactly matching the schema.
                         await signInWithCustomToken(auth, __initial_auth_token);
                     } catch (customErr) {
                         console.warn("Custom token mismatch. Falling back to Anonymous Auth.");
-                        await signInAnonymously(auth);
                     }
                 } else {
-                    await signInAnonymously(auth);
+                    const savedName = localStorage.getItem('cricbid_guest_name');
+                    if(savedName) {
+                        await signInAnonymously(auth);
+                    }
                 }
             } catch (e) {
                 console.error("Auth error:", e);
                 showToast("Connection failed. Check if Anonymous Auth is enabled in Firebase.");
             }
         }
-        onAuthStateChanged(auth, (user) => { currentUser = user; });
+        
+        onAuthStateChanged(auth, async (user) => { 
+            currentUser = user; 
+            if(user) {
+                if(!user.isAnonymous && user.displayName) {
+                    globalProfile.name = user.displayName;
+                    globalProfile.photo = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName)}&background=3b82f6&color=fff`;
+                } else {
+                    const localName = document.getElementById('username-input').value.trim() || localStorage.getItem('cricbid_guest_name') || 'Guest Manager';
+                    localStorage.setItem('cricbid_guest_name', localName);
+                    globalProfile.name = localName;
+                    globalProfile.photo = `https://ui-avatars.com/api/?name=${encodeURIComponent(localName)}&background=10b981&color=fff`;
+                }
+                
+                document.getElementById('username-input').value = globalProfile.name;
+                document.getElementById('user-display-name').innerText = globalProfile.name;
+                document.getElementById('user-avatar').src = globalProfile.photo;
+                
+                document.getElementById('login-section').classList.add('hidden');
+                
+                const guestSection = document.getElementById('guest-name-section');
+                if (guestSection) {
+                    guestSection.classList.add('hidden');
+                    guestSection.classList.remove('flex');
+                }
+                
+                document.getElementById('lobby-controls').classList.remove('hidden');
+
+                // Register global presence
+                await setDoc(doc(getGlobalUsersRef(), user.uid), {
+                    uid: user.uid,
+                    name: globalProfile.name,
+                    photo: globalProfile.photo,
+                    lastActive: Date.now(),
+                    currentRoom: currentRoomId || null
+                });
+                
+                listenToGlobalEvents(user.uid);
+            }
+        });
+
+        document.getElementById('btn-anon-login').addEventListener('click', () => {
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('guest-name-section').classList.remove('hidden');
+            document.getElementById('guest-name-section').classList.add('flex');
+            document.getElementById('guest-name-input').focus();
+        });
+
+        document.getElementById('btn-back-login')?.addEventListener('click', () => {
+            document.getElementById('guest-name-section').classList.add('hidden');
+            document.getElementById('guest-name-section').classList.remove('flex');
+            document.getElementById('login-section').classList.remove('hidden');
+        });
+
+        document.getElementById('btn-confirm-guest')?.addEventListener('click', async () => {
+            const name = document.getElementById('guest-name-input').value.trim();
+            if (!name) return showToast("Please enter an alias!");
+            
+            document.getElementById('username-input').value = name;
+            localStorage.setItem('cricbid_guest_name', name);
+            
+            const btn = document.getElementById('btn-confirm-guest');
+            btn.innerText = 'Connecting...';
+            btn.disabled = true;
+            
+            try {
+                await signInAnonymously(auth);
+            } catch(e) {
+                console.error(e);
+                showToast("Failed to connect.");
+                btn.innerText = 'Continue';
+                btn.disabled = false;
+            }
+        });
+
+        document.getElementById('guest-name-input')?.addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') document.getElementById('btn-confirm-guest').click();
+        });
+
+        document.getElementById('username-input')?.addEventListener('input', (e) => {
+            const newName = e.target.value.trim();
+            if(newName) {
+                globalProfile.name = newName;
+                document.getElementById('user-display-name').innerText = newName;
+                document.getElementById('user-avatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(newName)}&background=10b981&color=fff`;
+                if(currentUser && currentUser.isAnonymous) {
+                    localStorage.setItem('cricbid_guest_name', newName);
+                    updateDoc(doc(getGlobalUsersRef(), currentUser.uid), { name: newName, photo: globalProfile.photo }).catch(()=>{});
+                }
+            }
+        });
 
         buttons.create.addEventListener('click', async () => {
             const name = inputs.username.value.trim();
@@ -1243,12 +1603,25 @@ Return a JSON object exactly matching the schema.
             screens.auction.classList.remove('hidden');
             screens.auction.classList.add('flex');
             ui.roomCode.innerText = roomId;
+            
+            // Mark user as being inside a room
+            if(currentUser) {
+                updateDoc(doc(getGlobalUsersRef(), currentUser.uid), { currentRoom: roomId, lastActive: Date.now() }).catch(()=>{});
+            }
+            
             setupListeners(); initVoiceChat(); startHeartbeat();
         }
 
         function startHeartbeat() {
             if (heartbeatInterval) clearInterval(heartbeatInterval);
-            heartbeatInterval = setInterval(() => { if (myUserDocId && document.visibilityState === 'visible') { updateDoc(doc(getUsersRef(), myUserDocId), { lastActive: Date.now() }).catch(()=>{}); } }, 10000); 
+            heartbeatInterval = setInterval(() => { 
+                if (myUserDocId && document.visibilityState === 'visible') { 
+                    updateDoc(doc(getUsersRef(), myUserDocId), { lastActive: Date.now() }).catch(()=>{}); 
+                } 
+                if (currentUser && document.visibilityState === 'visible') {
+                    updateDoc(doc(getGlobalUsersRef(), currentUser.uid), { lastActive: Date.now() }).catch(()=>{});
+                }
+            }, 10000); 
         }
 
         let unsubscribeRooms, unsubscribeUsers, unsubscribePlayers, unsubscribeChat;
@@ -1326,12 +1699,27 @@ Return a JSON object exactly matching the schema.
             }, (error) => { console.error("Players sync error", error) });
 
             unsubscribeChat = onSnapshot(getChatRef(), (snapshot) => {
-                const msgs = [];
+                const allNormalMsgs = [];
+                
+                snapshot.docChanges().forEach((change) => {
+                    const data = change.doc.data();
+                    if(data.roomId === currentRoomId && (data.receiverId === 'all' || data.senderId === myUserDocId || data.receiverId === myUserDocId)) { 
+                        if(data.isReaction) {
+                            if(change.type === 'added' && (Date.now() - data.timestamp < 5000)) {
+                                spawnReactionElement(data.text);
+                            }
+                        }
+                    }
+                });
+
                 snapshot.forEach(docSnap => {
                     const data = docSnap.data();
-                    if(data.roomId === currentRoomId && (data.receiverId === 'all' || data.senderId === myUserDocId || data.receiverId === myUserDocId)) { msgs.push(data); }
+                    if(data.roomId === currentRoomId && !data.isReaction && (data.receiverId === 'all' || data.senderId === myUserDocId || data.receiverId === myUserDocId)) {
+                        allNormalMsgs.push(data);
+                    }
                 });
-                chatMessages = msgs.sort((a,b) => a.timestamp - b.timestamp);
+                
+                chatMessages = allNormalMsgs.sort((a,b) => a.timestamp - b.timestamp);
                 updateChatUI();
             }, (error) => { console.error("Chat sync error", error) });
         }
@@ -1576,7 +1964,6 @@ Return a JSON object exactly matching the schema.
                     fetchRealPlayerStats(currentPlayer);
                 }
 
-                // Trigger background pre-fetching for the next upcoming players
                 processPrefetchQueue();
 
                 const displayBid = roomData.currentBid > 0 ? roomData.currentBid : currentPlayer.basePrice;
