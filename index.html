@@ -566,14 +566,14 @@
             </div>
         </header>
 
-        <main class="flex-1 flex flex-col lg:flex-row w-full overflow-hidden relative">
-            <aside class="w-full lg:w-[350px] shrink-0 bg-zinc-950/80 border-r border-zinc-800/80 flex flex-col h-[40vh] lg:h-full">
-                <div class="p-4 border-b border-zinc-800/80 bg-zinc-900/30">
+        <main class="flex-1 flex flex-col lg:flex-row w-full overflow-y-auto overflow-x-hidden lg:overflow-hidden relative touch-scroll hide-scrollbar pb-safe">
+            <aside class="w-full lg:w-[350px] shrink-0 bg-zinc-950/80 border-b lg:border-b-0 lg:border-r border-zinc-800/80 flex flex-col lg:h-full">
+                <div class="p-4 border-b border-zinc-800/80 bg-zinc-900/30 shrink-0">
                     <h2 class="font-display font-bold text-white flex items-center gap-2 tracking-wide uppercase text-sm">
                         <span class="w-1.5 h-5 rounded-full bg-cric-green shrink-0"></span> Points Table
                     </h2>
                 </div>
-                <div class="flex-1 overflow-y-auto hide-scrollbar p-2">
+                <div class="lg:flex-1 lg:overflow-y-auto hide-scrollbar touch-scroll p-2">
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="text-[9px] sm:text-[10px] text-zinc-500 uppercase tracking-widest border-b border-zinc-800/50">
@@ -590,8 +590,8 @@
                 </div>
             </aside>
 
-            <section class="flex-1 bg-zinc-950 flex flex-col h-[60vh] lg:h-full border-t lg:border-t-0 lg:border-r border-zinc-800/80">
-                <div class="p-4 border-b border-zinc-800/80 bg-zinc-900/30 flex justify-between items-center z-10">
+            <section class="w-full lg:flex-1 shrink-0 bg-zinc-950 flex flex-col border-b lg:border-b-0 lg:border-r border-zinc-800/80 lg:h-full">
+                <div class="p-4 border-b border-zinc-800/80 bg-zinc-900/30 flex justify-between items-center z-10 shrink-0">
                     <h2 class="font-display font-bold text-white flex items-center gap-2 tracking-wide uppercase text-sm">
                         <span class="w-1.5 h-5 rounded-full bg-red-500 shrink-0"></span> Match Center
                     </h2>
@@ -601,7 +601,7 @@
                     </div>
                 </div>
                 
-                <div class="flex-1 overflow-y-auto hide-scrollbar p-4 relative">
+                <div class="lg:flex-1 lg:overflow-y-auto hide-scrollbar touch-scroll p-4 relative min-h-[350px]">
                     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-cric-accent/5 rounded-full blur-[80px] pointer-events-none"></div>
                     <div id="current-match-display" class="w-full max-w-2xl mx-auto mb-8 empty:hidden"></div>
                     <h3 class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3 pl-1">Recent Results</h3>
@@ -609,13 +609,13 @@
                 </div>
             </section>
 
-            <aside class="w-full lg:w-[320px] shrink-0 bg-zinc-950/80 flex flex-col h-[40vh] lg:h-full border-t lg:border-t-0 border-zinc-800/80">
-                <div class="p-4 border-b border-zinc-800/80 bg-zinc-900/30">
+            <aside class="w-full lg:w-[320px] shrink-0 bg-zinc-950/80 flex flex-col border-zinc-800/80 lg:h-full">
+                <div class="p-4 border-b border-zinc-800/80 bg-zinc-900/30 shrink-0">
                     <h2 class="font-display font-bold text-white flex items-center gap-2 tracking-wide uppercase text-sm">
                         <span class="w-1.5 h-5 rounded-full bg-cric-gold shrink-0"></span> Leaderboards
                     </h2>
                 </div>
-                <div class="flex-1 overflow-y-auto hide-scrollbar p-4 space-y-6">
+                <div class="lg:flex-1 lg:overflow-y-auto hide-scrollbar touch-scroll p-4 space-y-6 pb-12">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
                             <div class="w-6 h-6 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-500/30">
@@ -658,18 +658,18 @@
                 <p class="text-zinc-400 text-sm mt-2">Replace your injured or underperforming players with unsold players.</p>
             </div>
             
-            <div class="flex-1 overflow-y-auto hide-scrollbar flex flex-col lg:flex-row gap-6 min-h-[300px]">
-                <div class="flex-1 flex flex-col">
-                    <h3 class="text-xs font-bold text-red-400 uppercase tracking-widest mb-3">Release a Player</h3>
-                    <div id="transfer-my-players" class="space-y-2 flex-1 overflow-y-auto border border-zinc-800 rounded-xl p-2 bg-zinc-950/50"></div>
+            <div class="flex-1 overflow-y-auto hide-scrollbar touch-scroll flex flex-col lg:flex-row gap-6 min-h-[300px]">
+                <div class="w-full lg:flex-1 flex flex-col">
+                    <h3 class="text-xs font-bold text-red-400 uppercase tracking-widest mb-3 shrink-0">Release a Player</h3>
+                    <div id="transfer-my-players" class="space-y-2 w-full lg:flex-1 lg:overflow-y-auto hide-scrollbar touch-scroll border border-zinc-800 rounded-xl p-2 bg-zinc-950/50"></div>
                 </div>
-                <div class="flex flex-col items-center justify-center shrink-0">
+                <div class="flex flex-col items-center justify-center shrink-0 py-2 lg:py-0">
                     <svg class="w-8 h-8 text-zinc-600 hidden lg:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
                     <svg class="w-8 h-8 text-zinc-600 block lg:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path></svg>
                 </div>
-                <div class="flex-1 flex flex-col">
-                    <h3 class="text-xs font-bold text-cric-green uppercase tracking-widest mb-3">Sign Unsold Player</h3>
-                    <div id="transfer-unsold-players" class="space-y-2 flex-1 overflow-y-auto border border-zinc-800 rounded-xl p-2 bg-zinc-950/50"></div>
+                <div class="w-full lg:flex-1 flex flex-col">
+                    <h3 class="text-xs font-bold text-cric-green uppercase tracking-widest mb-3 shrink-0">Sign Unsold Player</h3>
+                    <div id="transfer-unsold-players" class="space-y-2 w-full lg:flex-1 lg:overflow-y-auto hide-scrollbar touch-scroll border border-zinc-800 rounded-xl p-2 bg-zinc-950/50"></div>
                 </div>
             </div>
 
@@ -1064,6 +1064,30 @@
                     } catch (e) { console.error(e); showToast("Failed to transfer host."); }
                 }
             }
+        };
+
+        window.openKickModal = (userId, name) => {
+            showToast(`Kick ${name}?`, `<button onclick="kickPlayer('${userId}')" class="mt-2 w-full bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-xs font-black uppercase tracking-widest shadow-md transition-colors">Confirm Kick</button>`);
+        };
+
+        window.kickPlayer = async (userId) => {
+            document.getElementById('toast').classList.remove('show');
+            try {
+                await updateDoc(doc(getUsersRef(), userId), { kicked: true, isOnline: false });
+                showToast("Player kicked successfully.");
+            } catch(e) { console.error(e); showToast("Failed to kick player."); }
+        };
+
+        window.openBanModal = (userId, name) => {
+            showToast(`Permanently Ban ${name}?`, `<button onclick="banPlayer('${userId}')" class="mt-2 w-full bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg text-xs font-black uppercase tracking-widest shadow-md transition-colors">Confirm Ban</button>`);
+        };
+
+        window.banPlayer = async (userId) => {
+            document.getElementById('toast').classList.remove('show');
+            try {
+                await updateDoc(doc(getUsersRef(), userId), { banned: true, isOnline: false });
+                showToast("Player banned successfully.");
+            } catch(e) { console.error(e); showToast("Failed to ban player."); }
         };
 
         const BUDGET_DEFAULT = 120.0;
