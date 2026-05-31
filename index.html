@@ -2131,7 +2131,8 @@ Return a JSON object exactly matching the schema.
                 currentMatchIndex: 0,
                 standings: standings,
                 playerStats: stats,
-                injuries: []
+                injuries: [],
+                transferReady: []
             };
 
             try { await updateDoc(doc(getRoomsRef(), currentRoomId), { status: 'season', season: initialSeason }); } 
@@ -2164,7 +2165,8 @@ Return a JSON object exactly matching the schema.
 
             if (sd.phase === 'league' && mIdx === Math.floor(sd.matches.filter(m=>m.type==='league').length / 2)) {
                 sd.phase = 'transfer';
-                await updateDoc(doc(getRoomsRef(), currentRoomId), { 'season.phase': 'transfer' });
+                sd.transferReady = [];
+                await updateDoc(doc(getRoomsRef(), currentRoomId), { season: sd });
                 return;
             }
 
@@ -2172,8 +2174,19 @@ Return a JSON object exactly matching the schema.
             const t1 = usersData.find(u => u.userId === match.t1);
             const t2 = usersData.find(u => u.userId === match.t2);
 
-            const t1Players = playersData.filter(p => p.ownerId === match.t1 && (!sd.playerStats[p.playerId] || sd.playerStats[p.playerId].injuredFor <= 0));
-            const t2Players = playersData.filter(p => p.ownerId === match.t2 && (!sd.playerStats[p.playerId] || sd.playerStats[p.playerId].injuredFor <= 0));
+            const getBest11 = (teamId) => {
+                let available = playersData.filter(p => p.ownerId === teamId && (!sd.playerStats[p.playerId] || sd.playerStats[p.playerId].injuredFor <= 0));
+                // Sort by AI Rating descending to field the strongest possible 11
+                available.sort((a, b) => {
+                    const rA = parseFloat((playerStatsCache[a.name] || getFallbackAnalytics(a)).aiRating) || 5.0;
+                    const rB = parseFloat((playerStatsCache[b.name] || getFallbackAnalytics(b)).aiRating) || 5.0;
+                    return rB - rA;
+                });
+                return available.slice(0, 11);
+            };
+
+            const t1Players = getBest11(match.t1);
+            const t2Players = getBest11(match.t2);
 
             Object.values(sd.playerStats).forEach(ps => { if(ps.injuredFor > 0) ps.injuredFor--; });
 
@@ -2312,7 +2325,9 @@ Return a JSON object exactly matching the schema.
             if (isHost && seasonData.phase !== 'finished') {
                 hostControls.classList.remove('hidden'); hostControls.classList.add('flex');
                 if (seasonData.phase === 'transfer') {
-                    hostControls.innerHTML = `<button onclick="resumeSeason()" class="bg-cric-green hover:bg-emerald-400 text-zinc-950 px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-[0_0_10px_rgba(16,185,129,0.5)]">Resume Season</button>`;
+                    const totalTeams = Object.keys(seasonData.standings).length;
+                    const readyCount = (seasonData.transferReady || []).length;
+                    hostControls.innerHTML = `<span class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mr-2 flex items-center">${readyCount}/${totalTeams} READY</span><button onclick="resumeSeason()" class="bg-cric-green hover:bg-emerald-400 text-zinc-950 px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-[0_0_10px_rgba(16,185,129,0.5)] animate-pulse">Resume Season</button>`;
                 } else {
                     hostControls.innerHTML = `<button id="btn-sim-next" class="bg-white text-zinc-950 hover:bg-zinc-200 px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-md">Simulate Match</button>
                                               <button id="btn-sim-all" class="bg-zinc-800 text-white hover:bg-zinc-700 px-4 py-1.5 rounded-lg text-xs font-bold transition-all border border-zinc-700">Simulate 5</button>`;
@@ -2412,13 +2427,28 @@ Return a JSON object exactly matching the schema.
 
             const currentMatch = seasonData.matches[seasonData.currentMatchIndex];
             if (seasonData.phase === 'transfer') {
+                const totalTeams = Object.keys(seasonData.standings).length;
+                const readyCount = (seasonData.transferReady || []).length;
+                const isReady = (seasonData.transferReady || []).includes(myUserDocId);
+                
+                let actionsHtml = '';
+                if (isReady) {
+                    actionsHtml = `<p class="text-emerald-400 font-bold text-sm bg-emerald-500/10 border border-emerald-500/20 py-2 rounded-xl mt-4">Transfers Completed! Waiting for others...</p>`;
+                } else {
+                    actionsHtml = `
+                        <div class="flex flex-col sm:flex-row gap-3 justify-center mt-4">
+                            <button onclick="openTransferWindow()" class="bg-blue-500 hover:bg-blue-400 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(59,130,246,0.5)] active:scale-95">Open Transfer Desk</button>
+                            <button onclick="markTransferReady()" class="bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700 px-6 py-3 rounded-xl font-bold transition-all active:scale-95">Done with Transfers</button>
+                        </div>
+                    `;
+                }
+
                 currentMatchDiv.innerHTML = `
-                    <div class="bg-blue-900/20 border border-blue-500/40 rounded-2xl p-6 text-center shadow-[0_0_30px_rgba(59,130,246,0.15)]">
-                        <span class="text-4xl mb-2 block animate-float">🔄</span>
-                        <h3 class="text-xl font-display font-black text-blue-400 uppercase tracking-widest mb-1">Transfer Window Open</h3>
-                        <p class="text-zinc-400 text-sm mb-5">Trade underperforming or injured players.</p>
-                        <button onclick="openTransferWindow()" class="bg-blue-500 hover:bg-blue-400 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(59,130,246,0.5)] animate-pulse active:scale-95">Open Transfer Desk</button>
-                        ${isHost ? '<p class="text-xs text-zinc-500 mt-4 italic">As host, click Resume Season above when everyone is done.</p>' : '<p class="text-xs text-zinc-500 mt-4 italic">Waiting for host to resume season...</p>'}
+                    <div class="bg-blue-900/20 border border-blue-500/40 rounded-2xl p-6 text-center shadow-[0_0_30px_rgba(59,130,246,0.15)] animate-pulse-fast">
+                        <span class="text-4xl mb-2 block">🔄</span><h3 class="text-xl font-display font-black text-blue-400 uppercase tracking-widest mb-1">Transfer Window Open</h3>
+                        <p class="text-zinc-400 text-sm mb-2">Teams are trading players. (${readyCount}/${totalTeams} Ready)</p>
+                        ${actionsHtml}
+                        ${isHost ? '<p class="text-[10px] text-zinc-500 mt-4 uppercase tracking-widest font-bold">Host: Click Resume Season when ready.</p>' : ''}
                     </div>`;
             } else if (currentMatch && seasonData.phase !== 'finished') {
                 const t1Name = usersData.find(u=>u.userId===currentMatch.t1)?.username;
@@ -2469,6 +2499,19 @@ Return a JSON object exactly matching the schema.
             const modal = document.getElementById('transfer-modal');
             modal.classList.remove('hidden');
             setTimeout(() => modal.classList.remove('opacity-0'), 10);
+        };
+
+        window.markTransferReady = async () => {
+            if (!currentUser || !roomData || !seasonData) return;
+            try {
+                let newSd = JSON.parse(JSON.stringify(seasonData));
+                if (!newSd.transferReady) newSd.transferReady = [];
+                if (!newSd.transferReady.includes(myUserDocId)) {
+                    newSd.transferReady.push(myUserDocId);
+                    await updateDoc(doc(getRoomsRef(), currentRoomId), { season: newSd });
+                    showToast("Locked in. Waiting for others!");
+                }
+            } catch(e) { console.error(e); showToast("Failed to lock transfers."); }
         };
 
         window.resumeSeason = async () => {
