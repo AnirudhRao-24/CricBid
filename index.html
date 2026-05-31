@@ -767,7 +767,7 @@
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-            apiKey: "AIzaSyCAd5OJKmVW2aSWgDogBg3lSpj1uzPxGrk",
+            apiKey: "dummy-key-fallback",
             authDomain: "cricbid.firebaseapp.com",
             projectId: "cricbid",
             storageBucket: "cricbid.firebasestorage.app",
@@ -1386,6 +1386,16 @@ Return a JSON object exactly matching the schema.
 
         document.getElementById('guest-name-input')?.addEventListener('keypress', (e) => {
             if(e.key === 'Enter') document.getElementById('btn-confirm-guest').click();
+        });
+
+        document.getElementById('btn-google-login')?.addEventListener('click', async () => {
+            try {
+                const provider = new GoogleAuthProvider();
+                await signInWithPopup(auth, provider);
+            } catch(e) {
+                console.error("Google login error:", e);
+                showToast("Google Login cancelled or failed.");
+            }
         });
 
         document.getElementById('username-input')?.addEventListener('input', (e) => {
