@@ -743,6 +743,26 @@
         let playerStatsCache = {};
         let activeFetches = {};
 
+        function getGuestName() {
+            try { return localStorage.getItem('cricbid_guest_name') || "Guest"; } catch(e) { return "Guest"; }
+        }
+
+        function setGuestName(name) {
+            try { localStorage.setItem('cricbid_guest_name', name); } catch(e) {}
+        }
+
+        function clearGuestName() {
+            try { localStorage.removeItem('cricbid_guest_name'); } catch(e) {}
+        }
+
+        function getSessionId() {
+            try {
+                let id = sessionStorage.getItem('cricbid_session');
+                if (!id) { id = Math.random().toString(36).substring(2, 9); sessionStorage.setItem('cricbid_session', id); }
+                return id;
+            } catch(e) { return Math.random().toString(36).substring(2, 9); }
+        }
+
         const screens = { lobby: document.getElementById('lobby-screen'), auction: document.getElementById('auction-screen'), season: document.getElementById('season-screen') };
         const inputs = { roomCode: document.getElementById('room-code-input') };
         const buttons = { create: document.getElementById('btn-create-room'), join: document.getElementById('btn-join-room'), leave: document.getElementById('btn-leave') };
@@ -804,7 +824,7 @@
                 document.getElementById('auth-lobby-menu').classList.remove('hidden');
                 document.getElementById('auth-lobby-menu').classList.add('flex');
 
-                let displayName = user.displayName || localStorage.getItem('cricbid_guest_name') || "Guest User";
+                let displayName = user.displayName || getGuestName();
                 let photoUrl = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=10b981&color=fff`;
 
                 document.getElementById('user-display-name').innerText = displayName;
@@ -864,7 +884,7 @@
         document.getElementById('btn-confirm-guest')?.addEventListener('click', async () => {
             const name = document.getElementById('guest-name-input').value.trim();
             if (!name) return showToast("Enter an alias!");
-            localStorage.setItem('cricbid_guest_name', name);
+            setGuestName(name);
             try {
                 await signInAnonymously(auth);
             } catch(e) { console.error(e); showToast("Guest login failed."); }
@@ -889,7 +909,7 @@
                 }
                 stopAllListeners();
                 await signOut(auth);
-                localStorage.removeItem('cricbid_guest_name');
+                clearGuestName();
                 showToast("Signed out successfully.");
             } catch(e) { console.error("Sign out error", e); }
         });
@@ -934,7 +954,7 @@
 
         window.invitePlayer = async (targetUid) => {
             if (!currentRoomId) return showToast("You must Host or Join a room first to send invites!");
-            const myName = currentUser.displayName || localStorage.getItem('cricbid_guest_name') || "A player";
+            const myName = currentUser.displayName || getGuestName();
             try {
                 const invRef = doc(getInvitesRef());
                 await setDoc(invRef, {
@@ -1092,7 +1112,7 @@
         };
 
         async function createRoom(roomId, format) {
-            const username = currentUser.displayName || localStorage.getItem('cricbid_guest_name') || "Guest";
+            const username = currentUser.displayName || getGuestName();
             try {
                 buttons.create.disabled = true; buttons.create.innerText = "Hosting...";
                 await setDoc(doc(getRoomsRef(), roomId), {
@@ -1100,8 +1120,7 @@
                     currentAuctionIndex: 0, timerEndTime: 0, currentBid: 0, currentBidder: null, createdAt: serverTimestamp()
                 });
 
-                let localSessionId = sessionStorage.getItem('cricbid_session');
-                if (!localSessionId) { localSessionId = Math.random().toString(36).substring(2, 9); sessionStorage.setItem('cricbid_session', localSessionId); }
+                let localSessionId = getSessionId();
                 myUserDocId = currentUser.uid + "_" + localSessionId + "_" + roomId; 
                 
                 await setDoc(doc(getUsersRef(), myUserDocId), {
@@ -1119,11 +1138,16 @@
                 });
                 await batch.commit();
                 enterRoom(roomId);
-            } catch(e) { console.error(e); showToast("Error creating room."); buttons.create.disabled = false; buttons.create.innerText = "Host New Auction"; }
+            } catch(e) { 
+                console.error("Create Room Error:", e); 
+                showToast("Error: " + (e.message || "Failed to create room")); 
+                buttons.create.disabled = false; 
+                buttons.create.innerText = "Host New Auction"; 
+            }
         }
 
         async function joinRoom(roomId) {
-            const username = currentUser.displayName || localStorage.getItem('cricbid_guest_name') || "Guest";
+            const username = currentUser.displayName || getGuestName();
             try {
                 buttons.join.disabled = true;
                 const roomsSnap = await getDocs(getRoomsRef());
@@ -1143,8 +1167,7 @@
                 });
                 if (isBanned) { showToast("You are permanently banned."); buttons.join.disabled = false; return; }
 
-                let localSessionId = sessionStorage.getItem('cricbid_session');
-                if (!localSessionId) { localSessionId = Math.random().toString(36).substring(2, 9); sessionStorage.setItem('cricbid_session', localSessionId); }
+                let localSessionId = getSessionId();
                 myUserDocId = currentUser.uid + "_" + localSessionId + "_" + roomId;
                 
                 const userRef = doc(getUsersRef(), myUserDocId);
@@ -1159,7 +1182,11 @@
                     });
                 }
                 enterRoom(roomId);
-            } catch(e) { console.error(e); showToast("Error joining room."); buttons.join.disabled = false; }
+            } catch(e) { 
+                console.error("Join Room Error:", e); 
+                showToast("Error: " + (e.message || "Failed to join room")); 
+                buttons.join.disabled = false; 
+            }
         }
 
         function enterRoom(roomId) {
