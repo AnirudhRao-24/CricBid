@@ -642,6 +642,11 @@
                             <p class="text-xs text-zinc-500 italic">No injuries reported yet.</p>
                         </div>
                     </div>
+
+                    <div id="my-squad-stats-wrapper" class="hidden pb-4">
+                        <h3 class="text-[10px] font-bold text-cric-green uppercase tracking-widest mb-3 border-t border-zinc-800/50 pt-4">My Squad Stats</h3>
+                        <div id="my-squad-stats-list" class="space-y-2"></div>
+                    </div>
                 </div>
             </aside>
         </main>
@@ -2199,7 +2204,7 @@ Return a JSON object exactly matching the schema.
             const nrrDiff = margin * 0.01;
             sd.standings[winner].nrr += nrrDiff; sd.standings[loser].nrr -= nrrDiff;
 
-            distributeMatchStats(t1Players, t2Players, sd.playerStats);
+            distributeMatchStats(t1Players, t2Players, sd.playerStats, roomData.format);
 
             const checkInjury = (teamPlayers) => {
                 if(Math.random() < 0.03 && teamPlayers.length > 0) {
@@ -2217,10 +2222,23 @@ Return a JSON object exactly matching the schema.
             catch(e) { console.error("Sim error", e); }
         }
 
-        function distributeMatchStats(t1, t2, statsObj) {
+        function distributeMatchStats(t1, t2, statsObj, format) {
             const distribute = (players, oppPlayers) => {
-                let totalRuns = Math.floor(Math.random() * 80) + 140;
-                let runCandidates = players.filter(p => p.role.includes('Batsman') || p.role.includes('All-Rounder'));
+                let totalRuns = 140, maxRunsAdd = 80;
+                let totalWkts = 4, maxWktsAdd = 7;
+
+                if (format === 'ODI') {
+                    totalRuns = 220; maxRunsAdd = 130;
+                    totalWkts = 6; maxWktsAdd = 4;
+                } else if (format === 'TEST') {
+                    totalRuns = 400; maxRunsAdd = 250;
+                    totalWkts = 12; maxWktsAdd = 8;
+                }
+
+                totalRuns += Math.floor(Math.random() * maxRunsAdd);
+                totalWkts += Math.floor(Math.random() * maxWktsAdd);
+
+                let runCandidates = players.filter(p => p.role.includes('Batsman') || p.role.includes('All-Rounder') || p.role.includes('Wicketkeeper'));
                 if(runCandidates.length === 0) runCandidates = players;
                 
                 for(let r=0; r<totalRuns; r+=Math.floor(Math.random()*20)+5) {
@@ -2230,7 +2248,6 @@ Return a JSON object exactly matching the schema.
                     }
                 }
 
-                let totalWkts = Math.floor(Math.random() * 7) + 4;
                 let bowlCandidates = oppPlayers.filter(p => p.role.includes('Pacer') || p.role.includes('Spinner') || p.role.includes('All-Rounder'));
                 if(bowlCandidates.length === 0) bowlCandidates = oppPlayers;
 
@@ -2295,7 +2312,7 @@ Return a JSON object exactly matching the schema.
             if (isHost && seasonData.phase !== 'finished') {
                 hostControls.classList.remove('hidden'); hostControls.classList.add('flex');
                 if (seasonData.phase === 'transfer') {
-                    hostControls.innerHTML = `<button onclick="openTransferWindow()" class="bg-blue-500 hover:bg-blue-400 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-[0_0_10px_rgba(59,130,246,0.5)] animate-pulse">Open Transfer Window</button>`;
+                    hostControls.innerHTML = `<button onclick="resumeSeason()" class="bg-cric-green hover:bg-emerald-400 text-zinc-950 px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-[0_0_10px_rgba(16,185,129,0.5)]">Resume Season</button>`;
                 } else {
                     hostControls.innerHTML = `<button id="btn-sim-next" class="bg-white text-zinc-950 hover:bg-zinc-200 px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-md">Simulate Match</button>
                                               <button id="btn-sim-all" class="bg-zinc-800 text-white hover:bg-zinc-700 px-4 py-1.5 rounded-lg text-xs font-bold transition-all border border-zinc-700">Simulate 5</button>`;
@@ -2358,6 +2375,37 @@ Return a JSON object exactly matching the schema.
                 seasonData.injuries.forEach(inj => { injList.innerHTML += `<div class="bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] p-2 rounded-md font-medium">⚠️ ${inj}</div>`; });
             } else { injList.innerHTML = `<p class="text-xs text-zinc-500 italic">No injuries reported yet.</p>`; }
 
+            const mySquadWrapper = document.getElementById('my-squad-stats-wrapper');
+            const mySquadList = document.getElementById('my-squad-stats-list');
+            if (mySquadWrapper && mySquadList) {
+                if (seasonData.phase === 'transfer' || seasonData.phase === 'finished') {
+                    mySquadWrapper.classList.remove('hidden');
+                    mySquadList.innerHTML = '';
+                    
+                    const myPlayers = playersData.filter(p => p.ownerId === myUserDocId);
+                    const myStats = myPlayers.map(p => seasonData.playerStats[p.playerId]).filter(Boolean);
+                    
+                    myStats.sort((a,b) => (b.runs + b.wickets*20) - (a.runs + a.wickets*20));
+
+                    myStats.forEach(stat => {
+                        mySquadList.innerHTML += `
+                            <div class="flex justify-between items-center bg-zinc-900/50 border border-zinc-800 p-2 rounded-lg">
+                                <div class="truncate pr-2">
+                                    <p class="text-xs font-bold text-white truncate">${stat.name}</p>
+                                    <p class="text-[9px] text-zinc-500 uppercase">${stat.role}</p>
+                                </div>
+                                <div class="flex gap-1.5 shrink-0 text-[10px] font-bold text-zinc-300">
+                                    <span class="bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">${stat.runs} R</span>
+                                    <span class="bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">${stat.wickets} W</span>
+                                </div>
+                            </div>`;
+                    });
+                    if(myStats.length === 0) mySquadList.innerHTML = '<p class="text-xs text-zinc-500 italic">No players in your squad.</p>';
+                } else {
+                    mySquadWrapper.classList.add('hidden');
+                }
+            }
+
             const currentMatchDiv = document.getElementById('current-match-display');
             const resultsList = document.getElementById('season-results-list');
             resultsList.innerHTML = '';
@@ -2365,9 +2413,12 @@ Return a JSON object exactly matching the schema.
             const currentMatch = seasonData.matches[seasonData.currentMatchIndex];
             if (seasonData.phase === 'transfer') {
                 currentMatchDiv.innerHTML = `
-                    <div class="bg-blue-900/20 border border-blue-500/40 rounded-2xl p-6 text-center shadow-[0_0_30px_rgba(59,130,246,0.15)] animate-pulse-fast">
-                        <span class="text-4xl mb-2 block">🔄</span><h3 class="text-xl font-display font-black text-blue-400 uppercase tracking-widest mb-1">Transfer Window Open</h3>
-                        <p class="text-zinc-400 text-sm">Teams are trading players. Awaiting Host to proceed.</p>
+                    <div class="bg-blue-900/20 border border-blue-500/40 rounded-2xl p-6 text-center shadow-[0_0_30px_rgba(59,130,246,0.15)]">
+                        <span class="text-4xl mb-2 block animate-float">🔄</span>
+                        <h3 class="text-xl font-display font-black text-blue-400 uppercase tracking-widest mb-1">Transfer Window Open</h3>
+                        <p class="text-zinc-400 text-sm mb-5">Trade underperforming or injured players.</p>
+                        <button onclick="openTransferWindow()" class="bg-blue-500 hover:bg-blue-400 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(59,130,246,0.5)] animate-pulse active:scale-95">Open Transfer Desk</button>
+                        ${isHost ? '<p class="text-xs text-zinc-500 mt-4 italic">As host, click Resume Season above when everyone is done.</p>' : '<p class="text-xs text-zinc-500 mt-4 italic">Waiting for host to resume season...</p>'}
                     </div>`;
             } else if (currentMatch && seasonData.phase !== 'finished') {
                 const t1Name = usersData.find(u=>u.userId===currentMatch.t1)?.username;
@@ -2420,6 +2471,15 @@ Return a JSON object exactly matching the schema.
             setTimeout(() => modal.classList.remove('opacity-0'), 10);
         };
 
+        window.resumeSeason = async () => {
+            if (!currentUser || !roomData) return;
+            try {
+                let newSd = JSON.parse(JSON.stringify(seasonData));
+                newSd.phase = 'league';
+                await updateDoc(doc(getRoomsRef(), currentRoomId), { season: newSd });
+            } catch(e) { console.error(e); showToast("Failed to resume season."); }
+        };
+
         function renderTransferLists() {
             const myPlayersList = document.getElementById('transfer-my-players');
             const unsoldList = document.getElementById('transfer-unsold-players');
@@ -2467,7 +2527,6 @@ Return a JSON object exactly matching the schema.
                 let newSd = JSON.parse(JSON.stringify(seasonData));
                 newSd.playerStats[signP.playerId] = { runs: 0, wickets: 0, injuredFor: 0, name: signP.name, owner: myUserDocId, role: signP.role, set: signP.set };
                 newSd.injuries.unshift(`${me.username} signed ${signP.name} replacing ${releaseP.name}.`);
-                if(me.role === 'admin') newSd.phase = 'league';
                 
                 batch.update(doc(getRoomsRef(), currentRoomId), { season: newSd });
                 await batch.commit();
