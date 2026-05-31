@@ -768,12 +768,12 @@
         
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
             apiKey: "AIzaSyCAd5OJKmVW2aSWgDogBg3lSpj1uzPxGrk",
-              authDomain: "cricbid-839eb.firebaseapp.com",
-              projectId: "cricbid-839eb",
-              storageBucket: "cricbid-839eb.firebasestorage.app",
-              messagingSenderId: "521652177425",
-              appId: "1:521652177425:web:c33adfb7ea97360d6affb0",
-              measurementId: "G-7WHCC3VSTW"
+  authDomain: "cricbid-839eb.firebaseapp.com",
+  projectId: "cricbid-839eb",
+  storageBucket: "cricbid-839eb.firebasestorage.app",
+  messagingSenderId: "521652177425",
+  appId: "1:521652177425:web:c33adfb7ea97360d6affb0",
+  measurementId: "G-7WHCC3VSTW"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -1297,17 +1297,14 @@ Return a JSON object exactly matching the schema.
                     try {
                         await signInWithCustomToken(auth, __initial_auth_token);
                     } catch (customErr) {
-                        console.warn("Custom token mismatch. Falling back to Anonymous Auth.");
-                    }
-                } else {
-                    const savedName = localStorage.getItem('cricbid_guest_name');
-                    if(savedName) {
-                        await signInAnonymously(auth);
+                        console.warn("Custom token mismatch. Waiting for manual login.");
                     }
                 }
+                // Do not auto-login here. 
+                // Firebase will automatically trigger onAuthStateChanged if an existing session (Google or Guest) is found!
             } catch (e) {
                 console.error("Auth error:", e);
-                showToast("Connection failed. Check if Anonymous Auth is enabled in Firebase.");
+                showToast("Connection setup failed.");
             }
         }
         
@@ -1348,6 +1345,16 @@ Return a JSON object exactly matching the schema.
                 });
                 
                 listenToGlobalEvents(user.uid);
+            } else {
+                // User is not logged in. Ensure login options are shown.
+                document.getElementById('login-section').classList.remove('hidden');
+                document.getElementById('lobby-controls').classList.add('hidden');
+                
+                const guestSection = document.getElementById('guest-name-section');
+                if (guestSection) {
+                    guestSection.classList.add('hidden');
+                    guestSection.classList.remove('flex');
+                }
             }
         });
 
@@ -1395,7 +1402,11 @@ Return a JSON object exactly matching the schema.
                 await signInWithPopup(auth, provider);
             } catch(e) {
                 console.error("Google login error:", e);
-                showToast("Google Login cancelled or failed.");
+                if (e.code === 'auth/unauthorized-domain') {
+                    showToast(`Security Error: Please add "${window.location.hostname}" to Firebase Authorized Domains.`);
+                } else {
+                    showToast("Google Login cancelled or failed.");
+                }
             }
         });
 
