@@ -794,6 +794,7 @@
 
         let playerStatsCache = {};
         let activeFetches = {};
+        let inviteCooldowns = {};
 
         function getGuestName() {
             try { return localStorage.getItem('cricbid_guest_name') || "Guest"; } catch(e) { return "Guest"; }
@@ -972,11 +973,18 @@
             const container = document.getElementById('global-players-list');
             if (!container) return;
             container.innerHTML = '';
-            if (globalPlayers.length === 0) {
-                container.innerHTML = '<p class="text-xs text-zinc-600 italic px-1">No other players online right now.</p>';
+            
+            const availablePlayers = globalPlayers.filter(p => !usersData.some(u => u.authId === p.uid && !u.kicked && !u.banned));
+            
+            if (availablePlayers.length === 0) {
+                container.innerHTML = '<p class="text-xs text-zinc-600 italic px-1">No other players available to invite right now.</p>';
                 return;
             }
-            globalPlayers.forEach(p => {
+            availablePlayers.forEach(p => {
+                const isOnCooldown = inviteCooldowns[p.uid] && (Date.now() - inviteCooldowns[p.uid] < 5000);
+                const btnText = isOnCooldown ? 'Invited' : 'Invite';
+                const btnClass = isOnCooldown ? 'bg-zinc-700 text-zinc-400 cursor-not-allowed border-zinc-600' : 'bg-cric-accent/20 text-blue-400 hover:bg-cric-accent/40 border-blue-500/30 active:scale-95';
+
                 const div = document.createElement('div');
                 div.className = "flex justify-between items-center bg-zinc-900 border border-zinc-800 p-2.5 rounded-xl";
                 div.innerHTML = `
@@ -985,16 +993,34 @@
                         <img src="${p.photo}" class="w-6 h-6 rounded-full border border-zinc-700">
                         <span class="text-xs font-bold text-zinc-300">${p.name}</span>
                     </div>
-                    <button onclick="invitePlayer('${p.uid}')" class="text-[9px] bg-cric-accent/20 text-blue-400 hover:bg-cric-accent/40 border border-blue-500/30 px-3 py-1.5 rounded-lg transition-colors font-bold uppercase tracking-widest active:scale-95">Invite</button>
+                    <button onclick="invitePlayer('${p.uid}', this)" class="text-[9px] px-3 py-1.5 rounded-lg transition-colors font-bold uppercase tracking-widest border ${btnClass}" ${isOnCooldown ? 'disabled' : ''}>${btnText}</button>
                 `;
                 container.appendChild(div);
             });
         }
 
-        window.invitePlayer = async (targetUid) => {
+        window.invitePlayer = async (targetUid, btnElement) => {
             if (!currentRoomId) return showToast("You must Host or Join a room first to send invites!");
+            
+            if (inviteCooldowns[targetUid] && (Date.now() - inviteCooldowns[targetUid] < 5000)) return;
+            
             const myName = currentUser.displayName || getGuestName();
             try {
+                inviteCooldowns[targetUid] = Date.now();
+                
+                if (btnElement) {
+                    btnElement.disabled = true;
+                    btnElement.innerText = 'Invited';
+                    btnElement.className = 'text-[9px] px-3 py-1.5 rounded-lg transition-colors font-bold uppercase tracking-widest border bg-zinc-700 text-zinc-400 cursor-not-allowed border-zinc-600';
+                    setTimeout(() => {
+                        if (document.body.contains(btnElement)) {
+                            btnElement.disabled = false;
+                            btnElement.innerText = 'Invite';
+                            btnElement.className = 'text-[9px] px-3 py-1.5 rounded-lg transition-colors font-bold uppercase tracking-widest border bg-cric-accent/20 text-blue-400 hover:bg-cric-accent/40 border-blue-500/30 active:scale-95';
+                        }
+                    }, 5000);
+                }
+
                 const invRef = doc(getInvitesRef());
                 await setDoc(invRef, {
                     id: invRef.id,
