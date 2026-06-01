@@ -1708,11 +1708,26 @@ Return JSON exactly matching this schema:
 { name: "Gerhard Erasmus", role: "All-Rounder", country: "NAM", base: 1.5, set: "All-Rounder" },
 { name: "Dipendra Singh Airee", role: "All-Rounder", country: "NEP", base: 1.5, set: "All-Rounder" },
 { name: "Bas de Leede", role: "All-Rounder", country: "NED", base: 1.5, set: "All-Rounder" }
+
+
+
+
+
+
+
+ // MARQUEE (26)
+
+
+
+
+
+
+
+
+
             ],
             "ODI": [
-                // MARQUEE (26)
-
-{ name: "Virat Kohli", role: "Batsman", country: "IND", base: 2.0, set: "Marquee" },
+                { name: "Virat Kohli", role: "Batsman", country: "IND", base: 2.0, set: "Marquee" },
 { name: "Rohit Sharma", role: "Batsman", country: "IND", base: 2.0, set: "Marquee" },
 { name: "Shubman Gill", role: "Batsman", country: "IND", base: 2.0, set: "Marquee" },
 { name: "Travis Head", role: "Batsman", country: "AUS", base: 2.0, set: "Marquee" },
@@ -3050,6 +3065,12 @@ Return a JSON object exactly matching the schema.
                     }
                 }
 
+                // Fallback: If sets don't match strictly, pick ANY upcoming player
+                if (!nextPlayer) {
+                    const anyUpcoming = playersData.filter(p => p.status === 'upcoming');
+                    if (anyUpcoming.length > 0) nextPlayer = anyUpcoming[0];
+                }
+
                 if(nextPlayer) {
                     await updateDoc(doc(getRoomsRef(), currentRoomId), { currentAuctionIndex: nextPlayer.order, status: 'active', currentBid: 0, currentBidder: null, timerEndTime: Date.now() + (TIMER_SECONDS * 1000) });
                     await updateDoc(doc(getPlayersRef(), nextPlayer.playerId), { status: 'auctioning' });
@@ -3066,6 +3087,12 @@ Return a JSON object exactly matching the schema.
                             firstPlayer = availableInSet[Math.floor(Math.random() * availableInSet.length)];
                             break;
                         }
+                    }
+                    
+                    // Fallback: If sets don't match strictly, pick ANY upcoming player
+                    if (!firstPlayer) {
+                        const anyUpcoming = playersData.filter(p => p.status === 'upcoming');
+                        if (anyUpcoming.length > 0) firstPlayer = anyUpcoming[0];
                     }
                 }
                 if (firstPlayer) {
