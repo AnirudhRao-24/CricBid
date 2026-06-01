@@ -333,7 +333,9 @@
                             <select id="format-input" class="w-full bg-zinc-950/50 border border-zinc-800 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3.5 sm:py-4 text-white focus:outline-none focus:border-cric-green focus:bg-zinc-900/80 transition-all text-sm sm:text-base shadow-inner appearance-none cursor-pointer font-bold">
                                 <option value="T20">T20 Format</option>
                                 <option value="ODI">ODI Format</option>
-                                <option value="TEST">Test/Legends Format</option>
+                                <option value="TEST">Test Format</option>
+                                <option value="TEST_LEGENDS">Test (Legends/Greats)</option>
+                                <option value="ODI_LEGENDS">ODI (Legends/Greats)</option>
                             </select>
                             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-zinc-400">
                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -456,7 +458,7 @@
                             <div id="stats-overlay" class="absolute inset-0 bg-zinc-950/95 backdrop-blur-2xl z-[25] hidden flex-col p-5 sm:p-8 animate-fade-in border border-zinc-700/50 rounded-[1.5rem] sm:rounded-[2rem]">
                                 <div class="flex justify-between items-center mb-4 sm:mb-6 border-b border-zinc-800/80 pb-3 shrink-0">
                                     <h3 class="text-white font-display font-bold text-base sm:text-xl flex items-center gap-2">
-                                        <svg class="w-4 h-4 sm:w-5 sm:h-5 text-cric-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                                        <svg class="w-4 h-4 sm:w-5 sm:h-5 text-cric-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012-2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                                         AI Analytics & Stats
                                     </h3>
                                     <button onclick="document.getElementById('stats-overlay').classList.add('hidden'); document.getElementById('stats-overlay').classList.remove('flex');" class="text-zinc-400 hover:text-white bg-zinc-900 hover:bg-zinc-800 p-1.5 sm:p-2 rounded-lg transition-colors active:scale-95">
@@ -684,7 +686,7 @@
                 <button onclick="openAIPreview()" class="bg-purple-600 hover:bg-purple-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-colors border border-purple-400 flex items-center gap-1 shadow-[0_0_10px_rgba(147,51,234,0.4)]">
                     🤖 AI Preview
                 </button>
-                <button onclick="document.getElementById('season-screen').classList.add('hidden'); document.getElementById('season-screen').classList.remove('flex'); document.getElementById('auction-screen').classList.remove('hidden'); document.getElementById('auction-screen').classList.add('flex');" class="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-bold px-3 py-1.5 rounded-lg text-xs transition-colors border border-zinc-700">Back to Squads</button>
+                <button onclick="document.getElementById('season-screen').classList.add('hidden'); document.getElementById('season-screen').classList.remove('flex'); document.getElementById('auction-screen').classList.remove('hidden'); document.getElementById('auction-screen').classList.add('flex'); showFloatingButtons();" class="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-bold px-3 py-1.5 rounded-lg text-xs transition-colors border border-zinc-700">Back to Squads</button>
             </div>
         </header>
 
@@ -792,7 +794,7 @@
                 </div>
                 <div class="flex flex-col items-center justify-center shrink-0 py-2 lg:py-0">
                     <svg class="w-8 h-8 text-zinc-600 hidden lg:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
-                    <svg class="w-8 h-8 text-zinc-600 block lg:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path></svg>
+                    <svg class="w-8 h-8 text-zinc-600 block lg:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4-4l-4-4"></path></svg>
                 </div>
                 <div class="w-full lg:flex-1 flex flex-col">
                     <h3 class="text-xs font-bold text-cric-green uppercase tracking-widest mb-3 shrink-0">Sign Unsold Player</h3>
@@ -878,20 +880,26 @@
         window.hideFloatingButtons = () => {
             ['btn-desktop-chat', 'btn-ai-coach', 'reaction-buttons'].forEach(id => {
                 const el = document.getElementById(id);
-                if (el) el.style.display = 'none';
+                if (el) {
+                    el.classList.add('hidden');
+                    el.classList.remove('flex');
+                }
             });
         };
 
         window.showFloatingButtons = () => {
-            ['btn-desktop-chat', 'btn-ai-coach'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.style.display = '';
-            });
+            const chatBtn = document.getElementById('btn-desktop-chat');
+            if (chatBtn) chatBtn.classList.remove('hidden');
+            
+            const aiBtn = document.getElementById('btn-ai-coach');
+            if (aiBtn) aiBtn.classList.remove('hidden');
+
             if (currentRoomId && roomData && roomData.status !== 'season') {
                 const reactBtns = document.getElementById('reaction-buttons');
                 const auctionScreen = document.getElementById('auction-screen');
-                if (reactBtns && !auctionScreen.classList.contains('hidden')) {
-                    reactBtns.style.display = '';
+                if (reactBtns && auctionScreen && !auctionScreen.classList.contains('hidden')) {
+                    reactBtns.classList.remove('hidden');
+                    reactBtns.classList.add('flex');
                 }
             }
         };
@@ -2174,29 +2182,39 @@ Return JSON exactly matching this schema:
 
 { name: "Dhananjaya de Silva", role: "All-Rounder", country: "SL", base: 1.0, set: "All-Rounders" },
 { name: "Chamika Karunaratne", role: "All-Rounder", country: "SL", base: 0.5, set: "All-Rounders" }
+            ],
+            "TEST_LEGENDS": [
+                { name: "Sachin Tendulkar", role: "Batsman", country: "IND", base: 2.0, set: "Marquee" },
+                { name: "Shane Warne", role: "Spinner", country: "AUS", base: 2.0, set: "Spinners" },
+                { name: "Muttiah Muralitharan", role: "Spinner", country: "SL", base: 2.0, set: "Spinners" }
+            ],
+            "ODI_LEGENDS": [
+                { name: "Viv Richards", role: "Batsman", country: "WI", base: 2.0, set: "Marquee" },
+                { name: "Wasim Akram", role: "Pacer", country: "PAK", base: 2.0, set: "Pacers" },
+                { name: "Ricky Ponting", role: "Batsman", country: "AUS", base: 2.0, set: "Marquee" }
             ]
         };
 
-        buttons.create.addEventListener('click', async () => {
+        buttons.create?.addEventListener('click', async () => {
             const format = document.getElementById('format-input').value;
             if(!currentUser) return showToast("Authenticating... wait a moment.");
             await createRoom(generateRoomCode(), format);
         });
 
-        buttons.join.addEventListener('click', async () => {
+        buttons.join?.addEventListener('click', async () => {
             const code = inputs.roomCode.value.trim().toUpperCase();
             if(!code) return showToast("Enter a room code!");
             if(!currentUser) return showToast("Authenticating... wait a moment.");
             await joinRoom(code);
         });
 
-        buttons.leave.addEventListener('click', () => {
+        buttons.leave?.addEventListener('click', () => {
             hideFloatingButtons();
             modalElements.modal.classList.remove('hidden');
             setTimeout(() => { modalElements.modal.classList.remove('opacity-0'); modalElements.content.classList.remove('scale-95'); modalElements.content.classList.add('scale-100'); }, 10);
         });
         
-        modalElements.cancel.addEventListener('click', () => {
+        modalElements.cancel?.addEventListener('click', () => {
             modalElements.modal.classList.add('opacity-0');
             modalElements.content.classList.remove('scale-100'); modalElements.content.classList.add('scale-95');
             setTimeout(() => { 
@@ -2205,7 +2223,7 @@ Return JSON exactly matching this schema:
             }, 300);
         });
         
-        modalElements.confirm.addEventListener('click', async () => {
+        modalElements.confirm?.addEventListener('click', async () => {
             if (myUserDocId && auth.currentUser) {
                 try {
                     await transferHostRole();
@@ -2293,7 +2311,6 @@ Return JSON exactly matching this schema:
                     currentAuctionIndex: 0, timerEndTime: 0, currentBid: 0, currentBidder: null, createdAt: serverTimestamp()
                 });
 
-                // Fixed: Unique ID binds to user to prevent duplicate ghost players
                 myUserDocId = currentUser.uid + "_" + roomId; 
                 
                 await setDoc(doc(getUsersRef(), myUserDocId), {
@@ -2359,7 +2376,6 @@ Return JSON exactly matching this schema:
                     return;
                 }
 
-                // Fixed: Unique ID binds to user to prevent duplicate ghost players
                 myUserDocId = currentUser.uid + "_" + roomId;
                 
                 const userRef = doc(getUsersRef(), myUserDocId);
@@ -2393,6 +2409,9 @@ Return JSON exactly matching this schema:
             screens.auction.classList.add('flex');
             ui.roomCode.innerText = roomId;
             
+            document.getElementById('reaction-buttons')?.classList.remove('hidden');
+            document.getElementById('reaction-buttons')?.classList.add('flex');
+
             showFloatingButtons();
 
             setupListeners(); initVoiceChat(); startHeartbeat();
@@ -2585,7 +2604,7 @@ Return JSON exactly matching this schema:
             if (activeFetches[player.name]) return activeFetches[player.name];
 
             const fetchPromise = (async () => {
-                const formatStr = roomData && roomData.format === 'TEST' ? 'Test' : (roomData && roomData.format === 'ODI' ? 'ODI' : 'T20I');
+                const formatStr = roomData && roomData.format.startsWith('TEST') ? 'Test' : (roomData && roomData.format.startsWith('ODI') ? 'ODI' : 'T20I');
                 const prompt = `Act as an expert Cricket Analyst. Retrieve the real-world international career stats strictly for the ${formatStr} format only (DO NOT include domestic, franchise, or other formats) and recent ${formatStr} form for the cricketer "${player.name}". 
 Role: ${player.role}. Base Price: ${player.basePrice || player.base} Cr.
 Return a JSON object exactly matching the schema. 
@@ -2967,14 +2986,14 @@ Return a JSON object exactly matching the schema.
                         if (teamsNeedingPlayers.length > 0 && unsoldPlayersLeft.length > 0 && !draftModalDismissed) {
                             openDraftModal(teamsNeedingPlayers);
                         } else {
-                            document.getElementById('draft-modal').classList.add('hidden');
+                            document.getElementById('draft-modal')?.classList.add('hidden');
                             if (!document.getElementById('btn-host-start-season')) {
                                 const btn = document.createElement('button');
                                 btn.id = 'btn-host-start-season';
                                 btn.className = "bg-cric-accent hover:bg-blue-500 text-white font-bold px-2.5 sm:px-5 py-2 sm:py-3 rounded-lg sm:rounded-xl shadow-[0_0_20px_rgba(59,130,246,0.4)] flex-1 min-w-[100%] sm:min-w-[150px] transition-colors active:scale-95 text-[10px] sm:text-sm uppercase tracking-wider mt-2";
                                 btn.innerText = "Simulate Season 🏆";
                                 btn.onclick = initializeSeason;
-                                ui.hostControls.appendChild(btn);
+                                ui.hostControls?.appendChild(btn);
                             }
                         }
                     }
@@ -3113,7 +3132,7 @@ Return a JSON object exactly matching the schema.
 
             try {
                 await updateDoc(doc(getRoomsRef(), currentRoomId), { currentBid: newBid, currentBidder: myUserDocId, timerEndTime: newEndTime });
-                document.getElementById('bidding-controls').classList.add('opacity-50', 'pointer-events-none');
+                document.getElementById('bidding-controls')?.classList.add('opacity-50', 'pointer-events-none');
             } catch(e) { console.error("Bid err", e); }
         };
 
@@ -3230,8 +3249,10 @@ Return a JSON object exactly matching the schema.
             stopTimer();
             timerInterval = setInterval(() => {
                 const now = Date.now(); const diff = Math.max(0, endTime - now); const seconds = Math.ceil(diff / 1000);
-                ui.timer.innerText = seconds.toString().padStart(2, '0');
-                if(seconds <= 5) { ui.timer.classList.add('text-red-500'); ui.timer.classList.remove('text-white'); } else { ui.timer.classList.remove('text-red-500'); ui.timer.classList.add('text-white'); }
+                if (ui.timer) {
+                    ui.timer.innerText = seconds.toString().padStart(2, '0');
+                    if(seconds <= 5) { ui.timer.classList.add('text-red-500'); ui.timer.classList.remove('text-white'); } else { ui.timer.classList.remove('text-red-500'); ui.timer.classList.add('text-white'); }
+                }
                 if(diff <= 0) { stopTimer(); handleTimerEnd(); }
             }, 100);
         }
@@ -3400,10 +3421,10 @@ Return a JSON object exactly matching the schema.
                 let totalRuns = 140, maxRunsAdd = 80;
                 let totalWkts = 4, maxWktsAdd = 7;
 
-                if (format === 'ODI') {
+                if (format && format.startsWith('ODI')) {
                     totalRuns = 220; maxRunsAdd = 130;
                     totalWkts = 6; maxWktsAdd = 4;
-                } else if (format === 'TEST') {
+                } else if (format && format.startsWith('TEST')) {
                     totalRuns = 400; maxRunsAdd = 250;
                     totalWkts = 12; maxWktsAdd = 8;
                 }
@@ -3465,7 +3486,7 @@ Return a JSON object exactly matching the schema.
                 const q2 = pMatches.find(m => m.type === 'Qualifier 2');
                 const final = pMatches.find(m => m.type === 'Final');
 
-                if (q1.isPlayed && elim.isPlayed && !q2) {
+                if (q1 && q1.isPlayed && elim && elim.isPlayed && !q2) {
                     const q1Loser = q1.winner === q1.t1 ? q1.t2 : q1.t1;
                     sd.matches.push({ id: sd.matches.length, t1: q1Loser, t2: elim.winner, type: 'Qualifier 2', winner: null, isPlayed: false, summary: '' });
                 } else if (q2 && q2.isPlayed && !final) {
@@ -3483,77 +3504,88 @@ Return a JSON object exactly matching the schema.
             const isHost = usersData.find(u => u.userId === myUserDocId)?.role === 'admin';
             const hostControls = document.getElementById('season-host-controls');
             if (isHost && seasonData.phase !== 'finished') {
-                hostControls.classList.remove('hidden'); hostControls.classList.add('flex');
-                if (seasonData.phase === 'transfer') {
-                    const totalTeams = Object.keys(seasonData.standings).length;
-                    const readyCount = (seasonData.transferReady || []).length;
-                    hostControls.innerHTML = `<span class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mr-2 flex items-center">${readyCount}/${totalTeams} READY</span><button id="btn-resume-season" onclick="resumeSeason()" class="bg-cric-green hover:bg-emerald-400 text-zinc-950 px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-[0_0_10px_rgba(16,185,129,0.5)] animate-pulse">Resume Season</button>`;
-                } else {
-                    hostControls.innerHTML = `<button id="btn-sim-next" class="bg-white text-zinc-950 hover:bg-zinc-200 px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-md">Simulate Match</button>
-                                              <button id="btn-sim-all" class="bg-zinc-800 text-white hover:bg-zinc-700 px-4 py-1.5 rounded-lg text-xs font-bold transition-all border border-zinc-700">Simulate 5</button>`;
-                    document.getElementById('btn-sim-next').addEventListener('click', simulateNextMatch);
-                    document.getElementById('btn-sim-all').addEventListener('click', async () => { for(let i=0;i<5;i++) await simulateNextMatch(); });
+                if (hostControls) {
+                    hostControls.classList.remove('hidden'); hostControls.classList.add('flex');
+                    if (seasonData.phase === 'transfer') {
+                        const totalTeams = Object.keys(seasonData.standings).length;
+                        const readyCount = (seasonData.transferReady || []).length;
+                        hostControls.innerHTML = `<span class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mr-2 flex items-center">${readyCount}/${totalTeams} READY</span><button id="btn-resume-season" onclick="resumeSeason()" class="bg-cric-green hover:bg-emerald-400 text-zinc-950 px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-[0_0_10px_rgba(16,185,129,0.5)] animate-pulse">Resume Season</button>`;
+                    } else {
+                        hostControls.innerHTML = `<button id="btn-sim-next" class="bg-white text-zinc-950 hover:bg-zinc-200 px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-md">Simulate Match</button>
+                                                  <button id="btn-sim-all" class="bg-zinc-800 text-white hover:bg-zinc-700 px-4 py-1.5 rounded-lg text-xs font-bold transition-all border border-zinc-700">Simulate 5</button>`;
+                        document.getElementById('btn-sim-next')?.addEventListener('click', simulateNextMatch);
+                        document.getElementById('btn-sim-all')?.addEventListener('click', async () => { for(let i=0;i<5;i++) await simulateNextMatch(); });
+                    }
                 }
-            } else { hostControls.classList.add('hidden'); hostControls.classList.remove('flex'); }
+            } else { if (hostControls) { hostControls.classList.add('hidden'); hostControls.classList.remove('flex'); } }
 
-            document.getElementById('ui-season-phase').innerText = seasonData.phase.toUpperCase();
+            const phaseEl = document.getElementById('ui-season-phase');
+            if(phaseEl) phaseEl.innerText = seasonData.phase.toUpperCase();
 
             const ptBody = document.getElementById('season-points-table');
-            ptBody.innerHTML = '';
-            const sortedTeams = Object.entries(seasonData.standings).sort((a,b) => b[1].pts - a[1].pts || b[1].nrr - a[1].nrr);
-            
-            sortedTeams.forEach(([id, t], idx) => {
-                const isMe = id === myUserDocId;
-                const teamRating = getTeamRating(id);
-                const row = document.createElement('tr');
-                row.className = `border-b border-zinc-800/30 hover:bg-zinc-800/30 transition-colors ${isMe ? 'bg-cric-green/10 border-l-2 border-l-cric-green' : ''} ${idx < 4 ? 'bg-blue-500/5' : ''}`;
-                row.innerHTML = `
-                    <td class="py-2.5 pl-2 font-bold text-white flex items-center gap-1.5">
-                        <span class="text-[9px] text-zinc-500 w-3">${idx+1}</span> 
-                        <span class="truncate max-w-[100px] sm:max-w-[150px]">${t.name}</span>
-                        <span class="text-[8px] text-purple-400 bg-purple-900/40 px-1 rounded border border-purple-500/30 ml-0.5 whitespace-nowrap">⭐ ${teamRating}</span>
-                        ${idx < 4 ? '<span class="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_5px_rgba(59,130,246,0.8)]" title="Playoff Spot"></span>' : ''}
-                    </td>
-                    <td class="py-2.5 text-center text-zinc-400 font-medium">${t.p}</td>
-                    <td class="py-2.5 text-center text-emerald-400 font-bold">${t.w}</td>
-                    <td class="py-2.5 text-center text-red-400 font-bold">${t.l}</td>
-                    <td class="py-2.5 text-center text-white font-black">${t.pts}</td>
-                    <td class="py-2.5 text-right pr-2 text-zinc-400 font-display">${t.nrr > 0 ? '+'+t.nrr.toFixed(2) : t.nrr.toFixed(2)}</td>
-                `;
-                ptBody.appendChild(row);
-            });
+            if (ptBody) {
+                ptBody.innerHTML = '';
+                const sortedTeams = Object.entries(seasonData.standings).sort((a,b) => b[1].pts - a[1].pts || b[1].nrr - a[1].nrr);
+                
+                sortedTeams.forEach(([id, t], idx) => {
+                    const isMe = id === myUserDocId;
+                    const teamRating = getTeamRating(id);
+                    const row = document.createElement('tr');
+                    row.className = `border-b border-zinc-800/30 hover:bg-zinc-800/30 transition-colors ${isMe ? 'bg-cric-green/10 border-l-2 border-l-cric-green' : ''} ${idx < 4 ? 'bg-blue-500/5' : ''}`;
+                    row.innerHTML = `
+                        <td class="py-2.5 pl-2 font-bold text-white flex items-center gap-1.5">
+                            <span class="text-[9px] text-zinc-500 w-3">${idx+1}</span> 
+                            <span class="truncate max-w-[100px] sm:max-w-[150px]">${t.name}</span>
+                            <span class="text-[8px] text-purple-400 bg-purple-900/40 px-1 rounded border border-purple-500/30 ml-0.5 whitespace-nowrap">⭐ ${teamRating}</span>
+                            ${idx < 4 ? '<span class="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_5px_rgba(59,130,246,0.8)]" title="Playoff Spot"></span>' : ''}
+                        </td>
+                        <td class="py-2.5 text-center text-zinc-400 font-medium">${t.p}</td>
+                        <td class="py-2.5 text-center text-emerald-400 font-bold">${t.w}</td>
+                        <td class="py-2.5 text-center text-red-400 font-bold">${t.l}</td>
+                        <td class="py-2.5 text-center text-white font-black">${t.pts}</td>
+                        <td class="py-2.5 text-right pr-2 text-zinc-400 font-display">${t.nrr > 0 ? '+'+t.nrr.toFixed(2) : t.nrr.toFixed(2)}</td>
+                    `;
+                    ptBody.appendChild(row);
+                });
+            }
 
             const pStatsArr = Object.values(seasonData.playerStats);
             const orangeList = document.getElementById('orange-cap-list');
-            let orangeHtml = '';
-            pStatsArr.sort((a,b) => b.runs - a.runs).slice(0,5).forEach((p, idx) => {
-                orangeHtml += `
-                    <div class="flex justify-between items-center bg-zinc-900/50 border border-zinc-800 p-2 rounded-lg ${idx===0 ? 'border-orange-500/50 shadow-[0_0_10px_rgba(249,115,22,0.1)]' : ''}">
-                        <div class="flex items-center gap-2 overflow-hidden"><span class="text-xs font-black ${idx===0 ? 'text-orange-500' : 'text-zinc-600'}">#${idx+1}</span>
-                            <div class="truncate"><p class="text-sm font-bold text-zinc-200 truncate">${p.name}</p><p class="text-[9px] text-zinc-500 uppercase tracking-widest truncate">${usersData.find(u=>u.userId===p.owner)?.username}</p></div>
-                        </div><span class="font-display font-black text-white ml-2 bg-zinc-950 px-2 py-0.5 rounded border border-zinc-800">${p.runs}</span>
-                    </div>`;
-            });
-            orangeList.innerHTML = orangeHtml;
+            if (orangeList) {
+                let orangeHtml = '';
+                pStatsArr.sort((a,b) => b.runs - a.runs).slice(0,5).forEach((p, idx) => {
+                    orangeHtml += `
+                        <div class="flex justify-between items-center bg-zinc-900/50 border border-zinc-800 p-2 rounded-lg ${idx===0 ? 'border-orange-500/50 shadow-[0_0_10px_rgba(249,115,22,0.1)]' : ''}">
+                            <div class="flex items-center gap-2 overflow-hidden"><span class="text-xs font-black ${idx===0 ? 'text-orange-500' : 'text-zinc-600'}">#${idx+1}</span>
+                                <div class="truncate"><p class="text-sm font-bold text-zinc-200 truncate">${p.name}</p><p class="text-[9px] text-zinc-500 uppercase tracking-widest truncate">${usersData.find(u=>u.userId===p.owner)?.username}</p></div>
+                            </div><span class="font-display font-black text-white ml-2 bg-zinc-950 px-2 py-0.5 rounded border border-zinc-800">${p.runs}</span>
+                        </div>`;
+                });
+                orangeList.innerHTML = orangeHtml;
+            }
 
             const purpleList = document.getElementById('purple-cap-list');
-            let purpleHtml = '';
-            pStatsArr.sort((a,b) => b.wickets - a.wickets).slice(0,5).forEach((p, idx) => {
-                purpleHtml += `
-                    <div class="flex justify-between items-center bg-zinc-900/50 border border-zinc-800 p-2 rounded-lg ${idx===0 ? 'border-purple-500/50 shadow-[0_0_10px_rgba(168,85,247,0.1)]' : ''}">
-                        <div class="flex items-center gap-2 overflow-hidden"><span class="text-xs font-black ${idx===0 ? 'text-purple-500' : 'text-zinc-600'}">#${idx+1}</span>
-                            <div class="truncate"><p class="text-sm font-bold text-zinc-200 truncate">${p.name}</p><p class="text-[9px] text-zinc-500 uppercase tracking-widest truncate">${usersData.find(u=>u.userId===p.owner)?.username}</p></div>
-                        </div><span class="font-display font-black text-white ml-2 bg-zinc-950 px-2 py-0.5 rounded border border-zinc-800">${p.wickets}</span>
-                    </div>`;
-            });
-            purpleList.innerHTML = purpleHtml;
+            if (purpleList) {
+                let purpleHtml = '';
+                pStatsArr.sort((a,b) => b.wickets - a.wickets).slice(0,5).forEach((p, idx) => {
+                    purpleHtml += `
+                        <div class="flex justify-between items-center bg-zinc-900/50 border border-zinc-800 p-2 rounded-lg ${idx===0 ? 'border-purple-500/50 shadow-[0_0_10px_rgba(168,85,247,0.1)]' : ''}">
+                            <div class="flex items-center gap-2 overflow-hidden"><span class="text-xs font-black ${idx===0 ? 'text-purple-500' : 'text-zinc-600'}">#${idx+1}</span>
+                                <div class="truncate"><p class="text-sm font-bold text-zinc-200 truncate">${p.name}</p><p class="text-[9px] text-zinc-500 uppercase tracking-widest truncate">${usersData.find(u=>u.userId===p.owner)?.username}</p></div>
+                            </div><span class="font-display font-black text-white ml-2 bg-zinc-950 px-2 py-0.5 rounded border border-zinc-800">${p.wickets}</span>
+                        </div>`;
+                });
+                purpleList.innerHTML = purpleHtml;
+            }
 
             const injList = document.getElementById('injury-list');
-            let injHtml = '';
-            if (seasonData.injuries && seasonData.injuries.length > 0) {
-                seasonData.injuries.forEach(inj => { injHtml += `<div class="bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] p-2 rounded-md font-medium">⚠️ ${inj}</div>`; });
-            } else { injHtml = `<p class="text-xs text-zinc-500 italic">No injuries reported yet.</p>`; }
-            injList.innerHTML = injHtml;
+            if (injList) {
+                let injHtml = '';
+                if (seasonData.injuries && seasonData.injuries.length > 0) {
+                    seasonData.injuries.forEach(inj => { injHtml += `<div class="bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] p-2 rounded-md font-medium">⚠️ ${inj}</div>`; });
+                } else { injHtml = `<p class="text-xs text-zinc-500 italic">No injuries reported yet.</p>`; }
+                injList.innerHTML = injHtml;
+            }
 
             const mySquadWrapper = document.getElementById('my-squad-stats-wrapper');
             const mySquadList = document.getElementById('my-squad-stats-list');
@@ -3592,121 +3624,132 @@ Return a JSON object exactly matching the schema.
             let resultsHtml = '';
 
             const currentMatch = seasonData.matches[seasonData.currentMatchIndex];
-            if (seasonData.phase === 'transfer') {
-                const endTime = seasonData.transferEndTime || (Date.now() + 120000);
-                
-                if (!transferTimerInterval) {
-                    transferTimerInterval = setInterval(() => {
-                        const now = Date.now();
-                        const diff = Math.max(0, endTime - now);
-                        const secs = Math.ceil(diff / 1000);
-                        const mins = Math.floor(secs / 60);
-                        const remSecs = secs % 60;
-                        const timeStr = `${mins}:${remSecs.toString().padStart(2, '0')}`;
-                        
-                        const timerEl = document.getElementById('transfer-countdown-clock');
-                        if (timerEl) timerEl.innerText = timeStr;
-                        
-                        if (diff <= 0) {
-                            clearInterval(transferTimerInterval);
-                            transferTimerInterval = null;
-                            if (isHost && document.getElementById('btn-resume-season')) {
-                                document.getElementById('btn-resume-season').click();
-                            }
-                        }
-                    }, 1000);
-                }
-
-                const totalTeams = Object.keys(seasonData.standings).length;
-                const readyCount = (seasonData.transferReady || []).length;
-                const isReady = (seasonData.transferReady || []).includes(myUserDocId);
-                
-                let actionsHtml = '';
-                if (isReady) {
-                    actionsHtml = `<p class="text-emerald-400 font-bold text-sm bg-emerald-500/10 border border-emerald-500/20 py-2 rounded-xl mt-4">Transfers Completed! Waiting for others...</p>`;
-                } else {
-                    actionsHtml = `
-                        <div class="flex flex-col sm:flex-row gap-3 justify-center w-full mt-4">
-                            <button onclick="openTransferWindow()" class="bg-blue-500 hover:bg-blue-400 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(59,130,246,0.5)] active:scale-95">Open Transfer Desk</button>
-                            <button onclick="markTransferReady()" class="bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700 px-6 py-3 rounded-xl font-bold transition-all active:scale-95">Done with Transfers</button>
-                        </div>
-                    `;
-                }
-
-                currentMatchDiv.innerHTML = `
-                    <div class="bg-blue-900/20 border border-blue-500/40 rounded-2xl p-6 text-center shadow-[0_0_30px_rgba(59,130,246,0.15)] animate-pulse-fast flex flex-col items-center">
-                        <span class="text-4xl mb-2 block">🔄</span><h3 class="text-xl font-display font-black text-blue-400 uppercase tracking-widest mb-1">Transfer Window Open</h3>
-                        <p class="text-zinc-400 text-sm mb-4">Teams are trading players. (${readyCount}/${totalTeams} Ready)</p>
-                        <div class="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 mb-2">
-                            <p class="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-1">Time Remaining</p>
-                            <p id="transfer-countdown-clock" class="text-2xl font-display font-black text-red-500">--:--</p>
-                        </div>
-                        ${actionsHtml}
-                        ${isHost ? '<p class="text-[10px] text-zinc-500 mt-4 uppercase tracking-widest font-bold">Host: Auto-resumes when timer ends.</p>' : ''}
-                    </div>`;
-            } else {
-                if (transferTimerInterval) { clearInterval(transferTimerInterval); transferTimerInterval = null; }
-                if (currentMatch && seasonData.phase !== 'finished') {
-                    const t1Name = usersData.find(u=>u.userId===currentMatch.t1)?.username;
-                    const t2Name = usersData.find(u=>u.userId===currentMatch.t2)?.username;
-                    const matchType = currentMatch.type === 'league' ? `Match ${seasonData.currentMatchIndex + 1}` : currentMatch.type;
+            
+            if (currentMatchDiv) {
+                if (seasonData.phase === 'transfer') {
+                    const endTime = seasonData.transferEndTime || (Date.now() + 120000);
                     
-                    currentMatchDiv.innerHTML = `
-                        <div class="bg-gradient-to-b from-zinc-900 to-zinc-950 border border-zinc-700/50 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
-                            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent opacity-50"></div>
-                            <p class="text-center text-[10px] font-bold text-red-500 uppercase tracking-widest mb-4">UP NEXT • ${matchType}</p>
-                            <div class="flex justify-between items-center gap-4">
-                                <div class="flex-1 text-center"><div class="w-12 h-12 sm:w-16 sm:h-16 mx-auto bg-zinc-800 rounded-full flex items-center justify-center font-display font-bold text-xl sm:text-2xl text-zinc-300 border border-zinc-700 shadow-inner mb-2">${t1Name.charAt(0)}</div><p class="font-bold text-white text-sm sm:text-base truncate">${t1Name}</p></div>
-                                <div class="shrink-0 text-center"><span class="text-xs sm:text-sm font-black italic text-zinc-600 px-3 py-1 bg-zinc-950 rounded-full border border-zinc-800">VS</span></div>
-                                <div class="flex-1 text-center"><div class="w-12 h-12 sm:w-16 sm:h-16 mx-auto bg-zinc-800 rounded-full flex items-center justify-center font-display font-bold text-xl sm:text-2xl text-zinc-300 border border-zinc-700 shadow-inner mb-2">${t2Name.charAt(0)}</div><p class="font-bold text-white text-sm sm:text-base truncate">${t2Name}</p></div>
+                    if (!transferTimerInterval) {
+                        transferTimerInterval = setInterval(() => {
+                            const now = Date.now();
+                            const diff = Math.max(0, endTime - now);
+                            const secs = Math.ceil(diff / 1000);
+                            const mins = Math.floor(secs / 60);
+                            const remSecs = secs % 60;
+                            const timeStr = `${mins}:${remSecs.toString().padStart(2, '0')}`;
+                            
+                            const timerEl = document.getElementById('transfer-countdown-clock');
+                            if (timerEl) timerEl.innerText = timeStr;
+                            
+                            if (diff <= 0) {
+                                clearInterval(transferTimerInterval);
+                                transferTimerInterval = null;
+                                if (isHost && document.getElementById('btn-resume-season')) {
+                                    document.getElementById('btn-resume-season').click();
+                                }
+                            }
+                        }, 1000);
+                    }
+
+                    const totalTeams = Object.keys(seasonData.standings).length;
+                    const readyCount = (seasonData.transferReady || []).length;
+                    const isReady = (seasonData.transferReady || []).includes(myUserDocId);
+                    
+                    let actionsHtml = '';
+                    if (isReady) {
+                        actionsHtml = `<p class="text-emerald-400 font-bold text-sm bg-emerald-500/10 border border-emerald-500/20 py-2 rounded-xl mt-4">Transfers Completed! Waiting for others...</p>`;
+                    } else {
+                        actionsHtml = `
+                            <div class="flex flex-col sm:flex-row gap-3 justify-center w-full mt-4">
+                                <button onclick="openTransferWindow()" class="bg-blue-500 hover:bg-blue-400 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(59,130,246,0.5)] active:scale-95">Open Transfer Desk</button>
+                                <button onclick="markTransferReady()" class="bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700 px-6 py-3 rounded-xl font-bold transition-all active:scale-95">Done with Transfers</button>
                             </div>
-                        </div>`;
-                } else if (seasonData.phase === 'finished') {
-                    const finalMatch = seasonData.matches.find(m => m.type === 'Final');
-                    const winnerName = usersData.find(u=>u.userId===finalMatch.winner)?.username;
+                        `;
+                    }
+
                     currentMatchDiv.innerHTML = `
-                        <div class="bg-gradient-to-b from-emerald-900/30 to-zinc-950 border border-emerald-500/40 rounded-2xl p-6 text-center shadow-[0_0_40px_rgba(16,185,129,0.2)]">
-                            <span class="text-5xl mb-3 block animate-float">🏆</span><h3 class="text-2xl font-display font-black text-white mb-1">Season Champions</h3><p class="text-xl font-bold text-emerald-400">${winnerName}</p>
+                        <div class="bg-blue-900/20 border border-blue-500/40 rounded-2xl p-6 text-center shadow-[0_0_30px_rgba(59,130,246,0.15)] animate-pulse-fast flex flex-col items-center">
+                            <span class="text-4xl mb-2 block">🔄</span><h3 class="text-xl font-display font-black text-blue-400 uppercase tracking-widest mb-1">Transfer Window Open</h3>
+                            <p class="text-zinc-400 text-sm mb-4">Teams are trading players. (${readyCount}/${totalTeams} Ready)</p>
+                            <div class="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 mb-2">
+                                <p class="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-1">Time Remaining</p>
+                                <p id="transfer-countdown-clock" class="text-2xl font-display font-black text-red-500">--:--</p>
+                            </div>
+                            ${actionsHtml}
+                            ${isHost ? '<p class="text-[10px] text-zinc-500 mt-4 uppercase tracking-widest font-bold">Host: Auto-resumes when timer ends.</p>' : ''}
                         </div>`;
+                } else {
+                    if (transferTimerInterval) { clearInterval(transferTimerInterval); transferTimerInterval = null; }
+                    if (currentMatch && seasonData.phase !== 'finished') {
+                        const t1Name = usersData.find(u=>u.userId===currentMatch.t1)?.username;
+                        const t2Name = usersData.find(u=>u.userId===currentMatch.t2)?.username;
+                        const matchType = currentMatch.type === 'league' ? `Match ${seasonData.currentMatchIndex + 1}` : currentMatch.type;
+                        
+                        currentMatchDiv.innerHTML = `
+                            <div class="bg-gradient-to-b from-zinc-900 to-zinc-950 border border-zinc-700/50 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
+                                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent opacity-50"></div>
+                                <p class="text-center text-[10px] font-bold text-red-500 uppercase tracking-widest mb-4">UP NEXT • ${matchType}</p>
+                                <div class="flex justify-between items-center gap-4">
+                                    <div class="flex-1 text-center"><div class="w-12 h-12 sm:w-16 sm:h-16 mx-auto bg-zinc-800 rounded-full flex items-center justify-center font-display font-bold text-xl sm:text-2xl text-zinc-300 border border-zinc-700 shadow-inner mb-2">${t1Name?.charAt(0) || '?'}</div><p class="font-bold text-white text-sm sm:text-base truncate">${t1Name || '?'}</p></div>
+                                    <div class="shrink-0 text-center"><span class="text-xs sm:text-sm font-black italic text-zinc-600 px-3 py-1 bg-zinc-950 rounded-full border border-zinc-800">VS</span></div>
+                                    <div class="flex-1 text-center"><div class="w-12 h-12 sm:w-16 sm:h-16 mx-auto bg-zinc-800 rounded-full flex items-center justify-center font-display font-bold text-xl sm:text-2xl text-zinc-300 border border-zinc-700 shadow-inner mb-2">${t2Name?.charAt(0) || '?'}</div><p class="font-bold text-white text-sm sm:text-base truncate">${t2Name || '?'}</p></div>
+                                </div>
+                            </div>`;
+                    } else if (seasonData.phase === 'finished') {
+                        const finalMatch = seasonData.matches.find(m => m.type === 'Final');
+                        const winnerName = usersData.find(u=>u.userId===finalMatch?.winner)?.username;
+                        currentMatchDiv.innerHTML = `
+                            <div class="bg-gradient-to-b from-emerald-900/30 to-zinc-950 border border-emerald-500/40 rounded-2xl p-6 text-center shadow-[0_0_40px_rgba(16,185,129,0.2)]">
+                                <span class="text-5xl mb-3 block animate-float">🏆</span><h3 class="text-2xl font-display font-black text-white mb-1">Season Champions</h3><p class="text-xl font-bold text-emerald-400">${winnerName || 'Unknown'}</p>
+                            </div>`;
+                    }
                 }
             }
 
-            const playedMatches = seasonData.matches.filter(m => m.isPlayed).reverse();
-            playedMatches.forEach(m => {
-                const t1 = usersData.find(u=>u.userId===m.t1); const t2 = usersData.find(u=>u.userId===m.t2);
-                if(!t1 || !t2) return;
-                const isT1Winner = m.winner === m.t1;
-                
-                resultsHtml += `
-                    <div class="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm">
-                        <div class="flex items-center justify-center sm:justify-start gap-3 flex-1">
-                            <span class="${isT1Winner ? 'text-white font-bold' : 'text-zinc-500'} text-right flex-1 truncate">${t1.username}</span>
-                            <span class="text-[10px] font-black text-zinc-700 bg-zinc-950 px-1.5 py-0.5 rounded border border-zinc-800">VS</span>
-                            <span class="${!isT1Winner ? 'text-white font-bold' : 'text-zinc-500'} text-left flex-1 truncate">${t2.username}</span>
-                        </div>
-                        <div class="text-[10px] sm:text-xs text-cric-green font-bold bg-cric-green/10 border border-cric-green/20 px-2.5 py-1 rounded-md text-center shrink-0">${m.summary}</div>
-                    </div>`;
-            });
-            resultsList.innerHTML = resultsHtml;
+            if (resultsList) {
+                const playedMatches = seasonData.matches.filter(m => m.isPlayed).reverse();
+                playedMatches.forEach(m => {
+                    const t1 = usersData.find(u=>u.userId===m.t1); const t2 = usersData.find(u=>u.userId===m.t2);
+                    if(!t1 || !t2) return;
+                    const isT1Winner = m.winner === m.t1;
+                    
+                    resultsHtml += `
+                        <div class="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm">
+                            <div class="flex items-center justify-center sm:justify-start gap-3 flex-1">
+                                <span class="${isT1Winner ? 'text-white font-bold' : 'text-zinc-500'} text-right flex-1 truncate">${t1.username}</span>
+                                <span class="text-[10px] font-black text-zinc-700 bg-zinc-950 px-1.5 py-0.5 rounded border border-zinc-800">VS</span>
+                                <span class="${!isT1Winner ? 'text-white font-bold' : 'text-zinc-500'} text-left flex-1 truncate">${t2.username}</span>
+                            </div>
+                            <div class="text-[10px] sm:text-xs text-cric-green font-bold bg-cric-green/10 border border-cric-green/20 px-2.5 py-1 rounded-md text-center shrink-0">${m.summary}</div>
+                        </div>`;
+                });
+                resultsList.innerHTML = resultsHtml;
+            }
         }
 
         window.openTransferWindow = () => {
             hideFloatingButtons();
             selectedTransferRelease = null; selectedTransferSign = null;
-            document.getElementById('btn-confirm-transfer').disabled = true;
+            const confirmBtn = document.getElementById('btn-confirm-transfer');
+            if(confirmBtn) confirmBtn.disabled = true;
+            
             renderTransferLists();
             const modal = document.getElementById('transfer-modal');
-            modal.classList.remove('hidden');
-            setTimeout(() => modal.classList.remove('opacity-0'), 10);
+            if(modal) {
+                modal.classList.remove('hidden');
+                setTimeout(() => modal.classList.remove('opacity-0'), 10);
+            }
         };
 
         window.closeTransferWindow = () => {
             const modal = document.getElementById('transfer-modal');
-            modal.classList.add('opacity-0');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                showFloatingButtons();
-            }, 300);
+            if(modal) {
+                modal.classList.add('opacity-0');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    showFloatingButtons();
+                }, 300);
+            }
         };
 
         window.markTransferReady = async () => {
@@ -3734,6 +3777,8 @@ Return a JSON object exactly matching the schema.
         function renderTransferLists() {
             const myPlayersList = document.getElementById('transfer-my-players');
             const unsoldList = document.getElementById('transfer-unsold-players');
+            if(!myPlayersList || !unsoldList) return;
+            
             myPlayersList.innerHTML = ''; unsoldList.innerHTML = '';
 
             const myPlayers = playersData.filter(p => p.ownerId === myUserDocId);
@@ -3760,11 +3805,15 @@ Return a JSON object exactly matching the schema.
             if(unsoldPlayers.length === 0) unsoldList.innerHTML = '<p class="text-xs text-zinc-500 italic p-2">No unsold players available.</p>';
         }
 
-        function checkTransferValid() { document.getElementById('btn-confirm-transfer').disabled = !(selectedTransferRelease && selectedTransferSign); }
+        function checkTransferValid() { 
+            const btn = document.getElementById('btn-confirm-transfer');
+            if(btn) btn.disabled = !(selectedTransferRelease && selectedTransferSign); 
+        }
 
-        document.getElementById('btn-confirm-transfer').addEventListener('click', async () => {
+        document.getElementById('btn-confirm-transfer')?.addEventListener('click', async () => {
             if (!selectedTransferRelease || !selectedTransferSign) return;
-            const releaseP = playersData.find(p => p.playerId === selectedTransferRelease); const signP = playersData.find(p => p.playerId === selectedTransferSign);
+            const releaseP = playersData.find(p => p.playerId === selectedTransferRelease); 
+            const signP = playersData.find(p => p.playerId === selectedTransferSign);
             const me = usersData.find(u => u.userId === myUserDocId);
             const budgetDiff = (releaseP.basePrice || releaseP.base) - (signP.basePrice || signP.base);
             if (me.budget + budgetDiff < 0) return showToast("Insufficient budget for this swap.");
@@ -3964,7 +4013,7 @@ Return a JSON object exactly matching the schema.
                     } catch (audioErr) {
                         console.warn("Audio also failed.", audioErr);
                         showToast("Mic access denied. Please check browser permissions.");
-                        return; 
+                        return;
                     }
                 }
                 
