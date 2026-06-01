@@ -654,7 +654,7 @@
         </button>
         
         <!-- Fixed AI Coach Button -->
-        <button onclick="openAICoach()" class="fixed bottom-4 left-4 sm:bottom-8 sm:left-8 w-14 h-14 sm:w-16 sm:h-16 bg-purple-600 hover:bg-purple-500 text-white rounded-full sm:rounded-[1.5rem] shadow-[0_10px_20px_rgba(147,51,234,0.3)] flex items-center justify-center z-[105] transition-all hover:scale-105 active:scale-95 shrink-0 border border-purple-400" title="AI Coach">
+        <button id="btn-ai-coach" onclick="openAICoach()" class="fixed bottom-4 left-4 sm:bottom-8 sm:left-8 w-14 h-14 sm:w-16 sm:h-16 bg-purple-600 hover:bg-purple-500 text-white rounded-full sm:rounded-[1.5rem] shadow-[0_10px_20px_rgba(147,51,234,0.3)] flex items-center justify-center z-[105] transition-all hover:scale-105 active:scale-95 shrink-0 border border-purple-400" title="AI Coach">
             <span class="text-2xl sm:text-3xl">🤖</span>
         </button>
 
@@ -801,7 +801,7 @@
             </div>
 
             <div class="mt-6 pt-4 border-t border-zinc-800 flex justify-end gap-3 shrink-0">
-                <button onclick="document.getElementById('transfer-modal').classList.add('hidden')" class="px-5 py-2.5 rounded-xl text-white font-bold bg-zinc-800 hover:bg-zinc-700 transition-colors">Skip</button>
+                <button onclick="closeTransferWindow()" class="px-5 py-2.5 rounded-xl text-white font-bold bg-zinc-800 hover:bg-zinc-700 transition-colors">Skip</button>
                 <button id="btn-confirm-transfer" class="px-5 py-2.5 rounded-xl text-zinc-950 font-bold bg-cric-green hover:bg-emerald-400 transition-colors shadow-lg disabled:opacity-50">Confirm Trade</button>
             </div>
         </div>
@@ -874,8 +874,31 @@
         let activeFetches = {};
         let inviteCooldowns = {};
 
+        // === UI Helpers to hide/show overlapping floating buttons for iOS ===
+        window.hideFloatingButtons = () => {
+            ['btn-desktop-chat', 'btn-ai-coach', 'reaction-buttons'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = 'none';
+            });
+        };
+
+        window.showFloatingButtons = () => {
+            ['btn-desktop-chat', 'btn-ai-coach'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = '';
+            });
+            if (currentRoomId && roomData && roomData.status !== 'season') {
+                const reactBtns = document.getElementById('reaction-buttons');
+                const auctionScreen = document.getElementById('auction-screen');
+                if (reactBtns && !auctionScreen.classList.contains('hidden')) {
+                    reactBtns.style.display = '';
+                }
+            }
+        };
+
         // AI Feature Logic
         window.openAICoach = async () => {
+            hideFloatingButtons();
             const modal = document.getElementById('ai-coach-modal');
             const loading = document.getElementById('ai-coach-loading');
             const content = document.getElementById('ai-coach-content');
@@ -1003,10 +1026,15 @@ Return JSON exactly matching this schema:
             const modal = document.getElementById('ai-coach-modal');
             modal.classList.add('opacity-0');
             modal.querySelector('.glass-panel').classList.add('scale-95');
-            setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 300);
+            setTimeout(() => { 
+                modal.classList.add('hidden'); 
+                modal.classList.remove('flex'); 
+                showFloatingButtons();
+            }, 300);
         };
 
         window.openAIPreview = async () => {
+            hideFloatingButtons();
             const modal = document.getElementById('ai-preview-modal');
             const loading = document.getElementById('ai-preview-loading');
             const content = document.getElementById('ai-preview-content');
@@ -1158,7 +1186,11 @@ Return JSON exactly matching this schema:
             const modal = document.getElementById('ai-preview-modal');
             modal.classList.add('opacity-0');
             modal.querySelector('.glass-panel').classList.add('scale-95');
-            setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 300);
+            setTimeout(() => { 
+                modal.classList.add('hidden'); 
+                modal.classList.remove('flex'); 
+                showFloatingButtons();
+            }, 300);
         };
 
         function getGuestName() {
@@ -1430,6 +1462,7 @@ Return JSON exactly matching this schema:
         };
 
         window.openInviteModal = () => {
+            hideFloatingButtons();
             const modal = document.getElementById('invite-modal');
             const codeInput = document.getElementById('invite-code-display');
             if (codeInput) codeInput.value = currentRoomId;
@@ -1444,7 +1477,10 @@ Return JSON exactly matching this schema:
             const modal = document.getElementById('invite-modal');
             modal.classList.add('opacity-0');
             modal.querySelector('.glass-panel').classList.add('scale-95');
-            setTimeout(() => modal.classList.add('hidden'), 300);
+            setTimeout(() => { 
+                modal.classList.add('hidden');
+                showFloatingButtons();
+            }, 300);
         };
 
         window.copyRoomCode = () => {
@@ -1468,11 +1504,7 @@ Return JSON exactly matching this schema:
         // Mock dataset added to ensure the auction works out of the box when testing in preview
         const AUCTION_DATABASES = {
             "T20": [
-                // =====================
-// MARQUEE
-// =====================
-
-{ name: "Jasprit Bumrah", role: "Bowler", country: "IND", base: 2.0, set: "Marquee" },
+                { name: "Jasprit Bumrah", role: "Bowler", country: "IND", base: 2.0, set: "Marquee" },
 { name: "Virat Kohli", role: "Batsman", country: "IND", base: 2.0, set: "Marquee" },
 { name: "Suryakumar Yadav", role: "Batsman", country: "IND", base: 2.0, set: "Marquee" },
 { name: "Hardik Pandya", role: "All-Rounder", country: "IND", base: 2.0, set: "Marquee" },
@@ -1725,9 +1757,7 @@ Return JSON exactly matching this schema:
 { name: "Bas de Leede", role: "All-Rounder", country: "NED", base: 1.5, set: "All-Rounders" }
             ],
             "ODI": [
-                 // MARQUEE (26)
-
-{ name: "Virat Kohli", role: "Batsman", country: "IND", base: 2.0, set: "Marquee" },
+                { name: "Virat Kohli", role: "Batsman", country: "IND", base: 2.0, set: "Marquee" },
 { name: "Rohit Sharma", role: "Batsman", country: "IND", base: 2.0, set: "Marquee" },
 { name: "Shubman Gill", role: "Batsman", country: "IND", base: 2.0, set: "Marquee" },
 { name: "Travis Head", role: "Batsman", country: "AUS", base: 2.0, set: "Marquee" },
@@ -2143,7 +2173,7 @@ Return JSON exactly matching this schema:
 { name: "Bas de Leede", role: "All-Rounder", country: "NED", base: 1.0, set: "All-Rounders" },
 
 { name: "Dhananjaya de Silva", role: "All-Rounder", country: "SL", base: 1.0, set: "All-Rounders" },
-{ name: "Chamika Karunaratne", role: "All-Rounder", country: "SL", base: 0.5, set: "All-Rounders" },
+{ name: "Chamika Karunaratne", role: "All-Rounder", country: "SL", base: 0.5, set: "All-Rounders" }
             ]
         };
 
@@ -2161,6 +2191,7 @@ Return JSON exactly matching this schema:
         });
 
         buttons.leave.addEventListener('click', () => {
+            hideFloatingButtons();
             modalElements.modal.classList.remove('hidden');
             setTimeout(() => { modalElements.modal.classList.remove('opacity-0'); modalElements.content.classList.remove('scale-95'); modalElements.content.classList.add('scale-100'); }, 10);
         });
@@ -2168,7 +2199,10 @@ Return JSON exactly matching this schema:
         modalElements.cancel.addEventListener('click', () => {
             modalElements.modal.classList.add('opacity-0');
             modalElements.content.classList.remove('scale-100'); modalElements.content.classList.add('scale-95');
-            setTimeout(() => { modalElements.modal.classList.add('hidden'); }, 300);
+            setTimeout(() => { 
+                modalElements.modal.classList.add('hidden'); 
+                showFloatingButtons();
+            }, 300);
         });
         
         modalElements.confirm.addEventListener('click', async () => {
@@ -2359,7 +2393,7 @@ Return JSON exactly matching this schema:
             screens.auction.classList.add('flex');
             ui.roomCode.innerText = roomId;
             
-            document.getElementById('reaction-buttons').classList.remove('hidden');
+            showFloatingButtons();
 
             setupListeners(); initVoiceChat(); startHeartbeat();
         }
@@ -2881,14 +2915,14 @@ Return a JSON object exactly matching the schema.
                 screens.auction.classList.add('hidden'); screens.auction.classList.remove('flex');
                 screens.season.classList.remove('hidden'); screens.season.classList.add('flex');
                 seasonData = roomData.season || null;
-                document.getElementById('reaction-buttons').classList.add('hidden');
+                hideFloatingButtons();
                 updateSeasonUI();
                 return; 
             } else {
                 screens.season.classList.add('hidden'); screens.season.classList.remove('flex');
                 if (currentRoomId && screens.lobby.classList.contains('hidden')) {
                     screens.auction.classList.remove('hidden'); screens.auction.classList.add('flex');
-                    document.getElementById('reaction-buttons').classList.remove('hidden');
+                    showFloatingButtons();
                 }
             }
 
@@ -3657,12 +3691,22 @@ Return a JSON object exactly matching the schema.
         }
 
         window.openTransferWindow = () => {
+            hideFloatingButtons();
             selectedTransferRelease = null; selectedTransferSign = null;
             document.getElementById('btn-confirm-transfer').disabled = true;
             renderTransferLists();
             const modal = document.getElementById('transfer-modal');
             modal.classList.remove('hidden');
             setTimeout(() => modal.classList.remove('opacity-0'), 10);
+        };
+
+        window.closeTransferWindow = () => {
+            const modal = document.getElementById('transfer-modal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                showFloatingButtons();
+            }, 300);
         };
 
         window.markTransferReady = async () => {
@@ -3739,6 +3783,7 @@ Return a JSON object exactly matching the schema.
                 await batch.commit();
 
                 document.getElementById('transfer-modal').classList.add('hidden');
+                showFloatingButtons();
                 showToast("Transfer Successful!");
             } catch(e) { console.error("Transfer Error", e); showToast("Failed to process transfer."); }
         });
@@ -3870,12 +3915,16 @@ Return a JSON object exactly matching the schema.
         window.toggleDesktopChat = () => {
             const panel = document.getElementById('chat-panel');
             if(panel.classList.contains('hidden')) {
+                hideFloatingButtons();
                 panel.classList.remove('hidden'); panel.classList.add('flex');
                 const badge = document.getElementById('chat-badge');
                 if(badge) { badge.classList.add('hidden'); badge.classList.remove('flex'); }
                 lastViewedMessageCount = chatMessages.length;
                 setTimeout(scrollToBottomChat, 100);
-            } else { panel.classList.add('hidden'); panel.classList.remove('flex'); }
+            } else { 
+                panel.classList.add('hidden'); panel.classList.remove('flex'); 
+                showFloatingButtons();
+            }
         };
 
         window.sendChatMessage = async () => {
