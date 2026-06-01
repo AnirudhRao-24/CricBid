@@ -812,7 +812,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
-        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, onSnapshot, writeBatch, serverTimestamp, deleteDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, onSnapshot, writeBatch, serverTimestamp, deleteDoc, runTransaction } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         
@@ -835,7 +835,7 @@
         const getRoomsRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'rooms');
         const getUsersRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'users');
         const getPlayersRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'players');
-        const getChatRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'messages');
+        const getChatRef = (roomId) => collection(db, 'artifacts', appId, 'public', 'data', 'messages_' + roomId);
         const getPresenceRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'presence');
         const getInvitesRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'invites');
 
@@ -875,6 +875,9 @@
         let playerStatsCache = {};
         let activeFetches = {};
         let inviteCooldowns = {};
+
+        let serverTimeOffset = 0;
+        const getServerTime = () => Date.now() + serverTimeOffset;
 
         // === UI Helpers to hide/show overlapping floating buttons for iOS ===
         window.hideFloatingButtons = () => {
@@ -2239,7 +2242,7 @@ Return JSON exactly matching this schema:
         window.addEventListener('online', () => { if (myUserDocId && auth.currentUser) updateDoc(doc(getUsersRef(), myUserDocId), { isOnline: true, lastActive: Date.now() }).catch(() => {}); });
 
         async function transferHostRole() {
-            if (!usersData || !myUserDocId) return;
+            if (!usersData || !myUserDocId || !currentRoomId) return;
             const me = usersData.find(u => u.userId === myUserDocId);
             if (me && me.role === 'admin') {
                 const others = usersData.filter(u => u.userId !== myUserDocId && u._computedOnline);
@@ -2250,28 +2253,44 @@ Return JSON exactly matching this schema:
                     });
                     const nextHost = others[0];
                     try {
-                        const batch = writeBatch(db);
-                        batch.update(doc(getUsersRef(), myUserDocId), { role: 'player' }); 
-                        batch.update(doc(getUsersRef(), nextHost.userId), { role: 'admin' });
-                        batch.update(doc(getRoomsRef(), currentRoomId), { hostId: nextHost.authId });
-                        await batch.commit();
-                    } catch (e) { console.error(e); }
+                        await runTransaction(db, async (transaction) => {
+                            const roomRef = doc(getRoomsRef(), currentRoomId);
+                            const roomDoc = await transaction.get(roomRef);
+                            // Only safely transfer if I am still the host according to DB
+                            if (!roomDoc.exists() || roomDoc.data().hostId !== currentUser.uid) return;
+
+                            const myUserRef = doc(getUsersRef(), myUserDocId);
+                            const nextHostRef = doc(getUsersRef(), nextHost.userId);
+
+                            transaction.update(myUserRef, { role: 'player' });
+                            transaction.update(nextHostRef, { role: 'admin' });
+                            transaction.update(roomRef, { hostId: nextHost.authId });
+                        });
+                    } catch (e) { console.error("Atomic transfer failed:", e); }
                 }
             }
         }
         
         window.transferHostTo = async (targetUserId) => {
-            if (!myUserDocId || !usersData || !auth.currentUser) return;
+            if (!myUserDocId || !usersData || !auth.currentUser || !currentRoomId) return;
             const me = usersData.find(u => u.userId === myUserDocId);
             if (me && me.role === 'admin') {
                 const targetUser = usersData.find(u => u.userId === targetUserId);
                 if (targetUser) {
                     try {
-                        const batch = writeBatch(db);
-                        batch.update(doc(getUsersRef(), myUserDocId), { role: 'player' });
-                        batch.update(doc(getUsersRef(), targetUser.userId), { role: 'admin' });
-                        batch.update(doc(getRoomsRef(), currentRoomId), { hostId: targetUser.authId });
-                        await batch.commit();
+                        await runTransaction(db, async (transaction) => {
+                            const roomRef = doc(getRoomsRef(), currentRoomId);
+                            const roomDoc = await transaction.get(roomRef);
+                            // Only safely transfer if I am still the host according to DB
+                            if (!roomDoc.exists() || roomDoc.data().hostId !== currentUser.uid) return Promise.reject("Not current host");
+
+                            const myUserRef = doc(getUsersRef(), myUserDocId);
+                            const nextHostRef = doc(getUsersRef(), targetUser.userId);
+
+                            transaction.update(myUserRef, { role: 'player' });
+                            transaction.update(nextHostRef, { role: 'admin' });
+                            transaction.update(roomRef, { hostId: targetUser.authId });
+                        });
                         showToast(`Transferred host to ${targetUser.username}`);
                     } catch (e) { console.error(e); showToast("Failed to transfer host."); }
                 }
@@ -2316,7 +2335,7 @@ Return JSON exactly matching this schema:
                 await setDoc(doc(getUsersRef(), myUserDocId), {
                     userId: myUserDocId, authId: currentUser.uid, roomId: roomId, username: username,
                     budget: BUDGET_DEFAULT, role: 'admin', joinedAt: Date.now(), isOnline: true,
-                    kicked: false, banned: false, peerId: null, lastActive: Date.now()
+                    kicked: false, banned: false, peerId: null, lastActive: Date.now(), serverTime: serverTimestamp()
                 });
 
                 const batch = writeBatch(db);
@@ -2381,12 +2400,12 @@ Return JSON exactly matching this schema:
                 const userRef = doc(getUsersRef(), myUserDocId);
                 const userSnap = await getDoc(userRef);
                 if (userSnap.exists()) {
-                    await updateDoc(userRef, { username: username, isOnline: true, kicked: false, lastActive: Date.now() });
+                    await updateDoc(userRef, { username: username, isOnline: true, kicked: false, lastActive: Date.now(), serverTime: serverTimestamp() });
                 } else {
                     await setDoc(userRef, {
                         userId: myUserDocId, authId: currentUser.uid, roomId: roomId, username: username,
                         budget: BUDGET_DEFAULT, role: 'player', joinedAt: Date.now(), isOnline: true,
-                        kicked: false, banned: false, peerId: null, lastActive: Date.now()
+                        kicked: false, banned: false, peerId: null, lastActive: Date.now(), serverTime: serverTimestamp()
                     });
                 }
                 enterRoom(roomId);
@@ -2419,7 +2438,7 @@ Return JSON exactly matching this schema:
 
         function startHeartbeat() {
             if (heartbeatInterval) clearInterval(heartbeatInterval);
-            heartbeatInterval = setInterval(() => { if (myUserDocId && auth.currentUser) { updateDoc(doc(getUsersRef(), myUserDocId), { lastActive: Date.now() }).catch(()=>{}); } }, 15000); 
+            heartbeatInterval = setInterval(() => { if (myUserDocId && auth.currentUser) { updateDoc(doc(getUsersRef(), myUserDocId), { lastActive: Date.now(), serverTime: serverTimestamp() }).catch(()=>{}); } }, 15000); 
         }
 
         function setupListeners() {
@@ -2439,6 +2458,10 @@ Return JSON exactly matching this schema:
                         const isHeartbeatAlive = data.lastActive ? (now - data.lastActive < 75000) : true;
                         data._computedOnline = data.isOnline !== false && isHeartbeatAlive;
                         tempUsers.push(data);
+                        
+                        if (data.userId === myUserDocId && data.serverTime && !docSnap.metadata.hasPendingWrites) {
+                            serverTimeOffset = data.serverTime.toMillis() - Date.now();
+                        }
                     }
                 });
                 usersData = tempUsers;
@@ -2451,13 +2474,23 @@ Return JSON exactly matching this schema:
                 if (onlineUsers.length > 0) {
                     const hasAdmin = onlineUsers.some(u => u.role === 'admin');
                     if (!hasAdmin && !failoverTimer) {
-                        failoverTimer = setTimeout(() => {
+                        failoverTimer = setTimeout(async () => {
                             const currentOnline = usersData.filter(u => u._computedOnline);
                             if (!currentOnline.some(u => u.role === 'admin') && currentOnline.length > 0) {
                                 const sortedUsers = [...currentOnline].sort((a, b) => (a.joinedAt || 0) - (b.joinedAt || 0));
                                 if (sortedUsers[0].userId === myUserDocId) {
-                                    updateDoc(doc(getUsersRef(), myUserDocId), { role: 'admin' }).catch(console.error);
-                                    updateDoc(doc(getRoomsRef(), currentRoomId), { hostId: currentUser.uid }).catch(console.error);
+                                    try {
+                                        // Using runTransaction for safe, atomic client-side failover fallback
+                                        await runTransaction(db, async (transaction) => {
+                                            const roomRef = doc(getRoomsRef(), currentRoomId);
+                                            const roomDoc = await transaction.get(roomRef);
+                                            if (!roomDoc.exists()) return;
+                                            
+                                            const myUserRef = doc(getUsersRef(), myUserDocId);
+                                            transaction.update(myUserRef, { role: 'admin' });
+                                            transaction.update(roomRef, { hostId: currentUser.uid });
+                                        });
+                                    } catch(e) { console.error("Failover atomic transaction failed", e); }
                                 }
                             }
                             failoverTimer = null;
@@ -2489,7 +2522,7 @@ Return JSON exactly matching this schema:
                 if (roomData && roomData.status === 'finished') updateRoomUI();
             }, (error) => { console.error("Players sync error", error) });
 
-            unsubscribeChat = onSnapshot(getChatRef(), (snapshot) => {
+            unsubscribeChat = onSnapshot(getChatRef(currentRoomId), (snapshot) => {
                 const msgs = [];
                 snapshot.docChanges().forEach(change => {
                     const data = change.doc.data();
@@ -2508,14 +2541,14 @@ Return JSON exactly matching this schema:
                         if(data.receiverId === 'all' || data.senderId === myUserDocId || data.receiverId === myUserDocId) { msgs.push(data); }
                     }
                 });
-                chatMessages = msgs.sort((a,b) => a.timestamp - b.timestamp);
+                chatMessages = msgs.sort((a,b) => a.timestamp - b.timestamp).slice(-50);
                 updateChatUI();
             }, (error) => { console.error("Chat sync error", error) });
         }
 
         window.sendReaction = (emoji) => {
             if (!currentRoomId || !myUserDocId || !auth.currentUser) return;
-            const msgRef = doc(getChatRef());
+            const msgRef = doc(getChatRef(currentRoomId));
             setDoc(msgRef, {
                 id: msgRef.id, roomId: currentRoomId, senderId: myUserDocId, 
                 type: 'reaction', emoji: emoji, timestamp: Date.now()
@@ -3127,7 +3160,7 @@ Return a JSON object exactly matching the schema.
             let newBid = roomData.currentBid === 0 ? (currentPlayer.basePrice || currentPlayer.base || 0) : parseFloat((roomData.currentBid + amount).toFixed(2));
             if(newBid > me.budget) return showToast("Insufficient Budget!");
 
-            const now = Date.now(); let newEndTime = roomData.timerEndTime;
+            const now = getServerTime(); let newEndTime = roomData.timerEndTime;
             if((newEndTime - now) < 5000) newEndTime = now + 10000;
 
             try {
@@ -3158,7 +3191,7 @@ Return a JSON object exactly matching the schema.
                 }
 
                 if(nextPlayer) {
-                    await updateDoc(doc(getRoomsRef(), currentRoomId), { currentAuctionIndex: nextPlayer.order, status: 'active', currentBid: 0, currentBidder: null, timerEndTime: Date.now() + (TIMER_SECONDS * 1000) });
+                    await updateDoc(doc(getRoomsRef(), currentRoomId), { currentAuctionIndex: nextPlayer.order, status: 'active', currentBid: 0, currentBidder: null, timerEndTime: getServerTime() + (TIMER_SECONDS * 1000) });
                     await updateDoc(doc(getPlayersRef(), nextPlayer.playerId), { status: 'auctioning' });
                 } else {
                     await updateDoc(doc(getRoomsRef(), currentRoomId), { status: 'finished' });
@@ -3182,11 +3215,11 @@ Return a JSON object exactly matching the schema.
                     }
                 }
                 if (firstPlayer) {
-                    await updateDoc(doc(getRoomsRef(), currentRoomId), { currentAuctionIndex: firstPlayer.order, status: 'active', currentBid: 0, currentBidder: null, timerEndTime: Date.now() + (TIMER_SECONDS * 1000) });
+                    await updateDoc(doc(getRoomsRef(), currentRoomId), { currentAuctionIndex: firstPlayer.order, status: 'active', currentBid: 0, currentBidder: null, timerEndTime: getServerTime() + (TIMER_SECONDS * 1000) });
                     await updateDoc(doc(getPlayersRef(), firstPlayer.playerId), { status: 'auctioning' });
                 }
             } else if (roomData.status === 'paused') {
-                await updateDoc(doc(getRoomsRef(), currentRoomId), { status: 'active', timerEndTime: Date.now() + (TIMER_SECONDS * 1000) });
+                await updateDoc(doc(getRoomsRef(), currentRoomId), { status: 'active', timerEndTime: getServerTime() + (TIMER_SECONDS * 1000) });
             }
         });
 
@@ -3248,7 +3281,7 @@ Return a JSON object exactly matching the schema.
         function startTimer(endTime) {
             stopTimer();
             timerInterval = setInterval(() => {
-                const now = Date.now(); const diff = Math.max(0, endTime - now); const seconds = Math.ceil(diff / 1000);
+                const now = getServerTime(); const diff = Math.max(0, endTime - now); const seconds = Math.ceil(diff / 1000);
                 if (ui.timer) {
                     ui.timer.innerText = seconds.toString().padStart(2, '0');
                     if(seconds <= 5) { ui.timer.classList.add('text-red-500'); ui.timer.classList.remove('text-white'); } else { ui.timer.classList.remove('text-red-500'); ui.timer.classList.add('text-white'); }
@@ -3985,7 +4018,7 @@ Return a JSON object exactly matching the schema.
             
             try {
                 input.value = ''; 
-                const msgRef = doc(getChatRef());
+                const msgRef = doc(getChatRef(currentRoomId));
                 await setDoc(msgRef, { id: msgRef.id, roomId: currentRoomId, senderId: myUserDocId, senderName: me.username, receiverId: receiverId, receiverName: receiverName, text: text, timestamp: Date.now() });
                 document.getElementById('emoji-picker')?.classList.add('hidden');
             } catch(e) { console.error("Chat send error:", e); showToast("Failed to send message"); }
@@ -4030,7 +4063,22 @@ Return a JSON object exactly matching the schema.
                                 { urls: 'stun:stun.l.google.com:19302' },
                                 { urls: 'stun:stun1.l.google.com:19302' },
                                 { urls: 'stun:stun2.l.google.com:19302' },
-                                { urls: 'stun:stun3.l.google.com:19302' }
+                                { urls: 'stun:stun3.l.google.com:19302' },
+                                { 
+                                    urls: 'turn:openrelay.metered.ca:80',
+                                    username: 'openrelayproject',
+                                    credential: 'openrelayproject'
+                                },
+                                { 
+                                    urls: 'turn:openrelay.metered.ca:443',
+                                    username: 'openrelayproject',
+                                    credential: 'openrelayproject'
+                                },
+                                { 
+                                    urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+                                    username: 'openrelayproject',
+                                    credential: 'openrelayproject'
+                                }
                             ]
                         }
                     });
@@ -4101,7 +4149,6 @@ Return a JSON object exactly matching the schema.
                 emojiPicker.addEventListener('click', (e) => { e.stopPropagation(); });
             }
         }, 1000);
-
     </script>
 </body>
 </html>
