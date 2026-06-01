@@ -1640,6 +1640,7 @@ Return JSON exactly matching this schema:
                 { name: "Keshav Maharaj", role: "Spinner", country: "SA", base: 1.0, set: "Spinners" },
                 { name: "Tabraiz Shamsi", role: "Spinner", country: "SA", base: 0.75, set: "Spinners" },
                 { name: "Wanindu Hasaranga", role: "Spinner", country: "SL", base: 1.5, set: "Spinners" }
+
             ],
             "TEST": [
                 { name: "Sachin Tendulkar", role: "Batsman", country: "IND", base: 2.0, set: "Marquee" },
@@ -2345,16 +2346,24 @@ Return a JSON object exactly matching the schema.
             const gallery = document.getElementById('video-gallery');
             if (!gallery) return;
 
-            Array.from(gallery.children).forEach(child => { if (!child.querySelector('#local-video')) child.remove(); });
+            const currentIds = new Set();
 
             usersData.forEach(u => {
                 if (u.userId !== myUserDocId && u._computedOnline) {
-                    const wrapper = document.createElement('div');
-                    wrapper.className = "relative group flex flex-col items-center animate-fade-in shrink-0 snap-start";
+                    currentIds.add(u.userId);
                     
                     const stream = u.peerId ? activeStreams.get(u.peerId) : null;
+                    let wrapper = document.getElementById(`peer-container-${u.userId}`);
 
-                    if (stream) {
+                    if (!wrapper) {
+                        wrapper = document.createElement('div');
+                        wrapper.id = `peer-container-${u.userId}`;
+                        wrapper.className = "relative group flex flex-col items-center animate-fade-in shrink-0 snap-start";
+                        gallery.appendChild(wrapper);
+                    }
+
+                    if (stream && !wrapper.querySelector('video')) {
+                        wrapper.innerHTML = '';
                         const videoWrap = document.createElement('div');
                         videoWrap.className = "p-0.5 rounded-[0.875rem] sm:rounded-[1.25rem] bg-gradient-to-b from-cric-green to-transparent";
                         const video = document.createElement('video');
@@ -2363,17 +2372,33 @@ Return a JSON object exactly matching the schema.
                         video.setAttribute('autoplay', '');
                         video.className = "w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-[0.75rem] sm:rounded-[1rem] object-cover bg-zinc-800 block";
                         videoWrap.appendChild(video); wrapper.appendChild(videoWrap);
-                    } else {
+                        
+                        const nameTag = document.createElement('span');
+                        nameTag.className = "absolute -bottom-2 bg-zinc-900 border border-zinc-700 text-white text-[7px] sm:text-[9px] font-bold px-1.5 sm:px-2 py-0.5 rounded-md whitespace-nowrap z-10 shadow-sm uppercase tracking-wider";
+                        nameTag.innerText = u.username;
+                        wrapper.appendChild(nameTag);
+                    } else if (!stream && !wrapper.querySelector('.avatar-box')) {
+                        wrapper.innerHTML = '';
                         const avatar = document.createElement('div');
-                        avatar.className = "w-11 h-11 sm:w-[60px] sm:h-[60px] md:w-[68px] md:h-[68px] rounded-[0.875rem] sm:rounded-[1.25rem] border border-zinc-700 bg-zinc-800 flex items-center justify-center text-lg sm:text-xl md:text-2xl font-bold shadow-md text-zinc-300 font-display uppercase";
+                        avatar.className = "avatar-box w-11 h-11 sm:w-[60px] sm:h-[60px] md:w-[68px] md:h-[68px] rounded-[0.875rem] sm:rounded-[1.25rem] border border-zinc-700 bg-zinc-800 flex items-center justify-center text-lg sm:text-xl md:text-2xl font-bold shadow-md text-zinc-300 font-display uppercase";
                         avatar.innerText = u.username.charAt(0); wrapper.appendChild(avatar);
+                        
+                        const nameTag = document.createElement('span');
+                        nameTag.className = "absolute -bottom-2 bg-zinc-900 border border-zinc-700 text-white text-[7px] sm:text-[9px] font-bold px-1.5 sm:px-2 py-0.5 rounded-md whitespace-nowrap z-10 shadow-sm uppercase tracking-wider";
+                        nameTag.innerText = u.username;
+                        wrapper.appendChild(nameTag);
+                    } else {
+                        // Update name tag in place without destroying video element
+                        const nameTag = wrapper.querySelector('span');
+                        if (nameTag && nameTag.innerText !== u.username) nameTag.innerText = u.username;
                     }
-                    
-                    const nameTag = document.createElement('span');
-                    nameTag.className = "absolute -bottom-2 bg-zinc-900 border border-zinc-700 text-white text-[7px] sm:text-[9px] font-bold px-1.5 sm:px-2 py-0.5 rounded-md whitespace-nowrap z-10 shadow-sm uppercase tracking-wider";
-                    nameTag.innerText = u.username;
+                }
+            });
 
-                    wrapper.appendChild(nameTag); gallery.appendChild(wrapper);
+            Array.from(gallery.children).forEach(child => {
+                if (!child.querySelector('#local-video') && child.id && child.id.startsWith('peer-container-')) {
+                    const uid = child.id.replace('peer-container-', '');
+                    if (!currentIds.has(uid)) child.remove();
                 }
             });
         }
@@ -3515,13 +3540,20 @@ Return a JSON object exactly matching the schema.
                     return;
                 }
                 try { 
-                    localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: { facingMode: "user" } }); 
+                    localStream = await navigator.mediaDevices.getUserMedia({ 
+                        audio: { echoCancellation: true, noiseSuppression: true }, 
+                        video: { facingMode: { ideal: "user" } } 
+                    }); 
                 } catch (camErr) { 
                     console.warn("Camera failed, trying audio only.", camErr); 
                     try {
-                        localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false }); 
+                        localStream = await navigator.mediaDevices.getUserMedia({ 
+                            audio: { echoCancellation: true, noiseSuppression: true }, 
+                            video: false 
+                        }); 
                     } catch (audioErr) {
                         console.warn("Audio also failed.", audioErr);
+                        showToast("Mic access denied. Please check browser permissions.");
                         return; 
                     }
                 }
