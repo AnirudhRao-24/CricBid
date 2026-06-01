@@ -74,8 +74,8 @@
         
         .glass-panel {
             background: rgba(24, 24, 27, 0.7);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.05);
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
         }
@@ -854,6 +854,7 @@
         let playerToKick = null;
         let playerToBan = null;
         let heartbeatInterval = null;
+        let transferTimerInterval = null;
 
         let seasonData = null;
         let selectedTransferRelease = null;
@@ -1304,6 +1305,7 @@ Return JSON exactly matching this schema:
             if (unsubscribePlayers) { unsubscribePlayers(); unsubscribePlayers = null; }
             if (unsubscribeChat) { unsubscribeChat(); unsubscribeChat = null; }
             if (heartbeatInterval) { clearInterval(heartbeatInterval); heartbeatInterval = null; }
+            if (transferTimerInterval) { clearInterval(transferTimerInterval); transferTimerInterval = null; }
         }
 
         document.getElementById('btn-logout')?.addEventListener('click', async () => {
@@ -1551,7 +1553,6 @@ Return JSON exactly matching this schema:
                 { name: "Maheesh Theekshana", role: "Spinner", country: "SL", base: 1.0, set: "Spinners" },
                 { name: "Mujeeb Ur Rahman", role: "Spinner", country: "AFG", base: 0.75, set: "Spinners" },
                 { name: "Akeal Hosein", role: "Spinner", country: "WI", base: 0.75, set: "Spinners" }
-
             ],
             "ODI": [
                 { name: "Virat Kohli", role: "Batsman", country: "IND", base: 2.0, set: "Marquee" },
@@ -2150,7 +2151,7 @@ Return JSON exactly matching this schema:
             else if(player.set === "Batsmen" || player.set === "Pacers") baseMatches = 50;
             
             const matches = baseMatches + (h % 40);
-            const base = player.basePrice;
+            const base = player.basePrice || player.base || 0;
 
             let calculatedRating = 6.0;
             if(base >= 2.0) calculatedRating = 8.5;
@@ -2202,7 +2203,7 @@ Return JSON exactly matching this schema:
             const fetchPromise = (async () => {
                 const formatStr = roomData && roomData.format === 'TEST' ? 'Test' : (roomData && roomData.format === 'ODI' ? 'ODI' : 'T20I');
                 const prompt = `Act as an expert Cricket Analyst. Retrieve the real-world international career stats strictly for the ${formatStr} format only (DO NOT include domestic, franchise, or other formats) and recent ${formatStr} form for the cricketer "${player.name}". 
-Role: ${player.role}. Base Price: ${player.basePrice} Cr.
+Role: ${player.role}. Base Price: ${player.basePrice || player.base} Cr.
 Return a JSON object exactly matching the schema. 
 - matches: Total ${formatStr} matches played.
 - stat1Label: 'Runs' if batsman/all-rounder, 'Wickets' if bowler.
@@ -2317,7 +2318,7 @@ Return a JSON object exactly matching the schema.
             });
             document.getElementById('ui-stat-form').innerHTML = formHtml;
 
-            const currentBidVal = roomData.currentBid > 0 ? roomData.currentBid : currentPlayer.basePrice;
+            const currentBidVal = roomData.currentBid > 0 ? roomData.currentBid : (currentPlayer.basePrice || currentPlayer.base || 0);
             const barCurrent = document.getElementById('ui-stat-bar-current');
             const barPredicted = document.getElementById('ui-stat-bar-predicted');
             const verdict = document.getElementById('ui-stat-verdict');
@@ -2358,6 +2359,8 @@ Return a JSON object exactly matching the schema.
                         videoWrap.className = "p-0.5 rounded-[0.875rem] sm:rounded-[1.25rem] bg-gradient-to-b from-cric-green to-transparent";
                         const video = document.createElement('video');
                         video.srcObject = stream; video.autoplay = true; video.playsInline = true;
+                        video.setAttribute('playsinline', '');
+                        video.setAttribute('autoplay', '');
                         video.className = "w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-[0.75rem] sm:rounded-[1rem] object-cover bg-zinc-800 block";
                         videoWrap.appendChild(video); wrapper.appendChild(videoWrap);
                     } else {
@@ -2445,30 +2448,30 @@ Return a JSON object exactly matching the schema.
         }
 
         function updatePlayersUI() {
-            ui.upcomingList.innerHTML = '';
+            let upcomingHtml = '';
             const upcoming = playersData.filter(p => p.status === 'upcoming');
             const sold = playersData.filter(p => p.status === 'sold');
             const unsold = playersData.filter(p => p.status === 'unsold');
             
-            ui.upcomingList.innerHTML += `<div class="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1 sm:mt-2 mb-2 sm:mb-3 px-1">Upcoming (${upcoming.length})</div>`;
+            upcomingHtml += `<div class="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1 sm:mt-2 mb-2 sm:mb-3 px-1">Upcoming (${upcoming.length})</div>`;
             upcoming.slice(0, 4).forEach(p => {
-                ui.upcomingList.innerHTML += `
+                upcomingHtml += `
                     <div class="p-2.5 sm:p-3.5 border border-zinc-800/80 bg-zinc-900/50 rounded-lg sm:rounded-xl flex justify-between items-center hover:bg-zinc-900 transition-colors">
                         <div>
                             <p class="text-xs sm:text-sm font-bold text-zinc-200 tracking-wide">${p.name}</p>
                             <p class="text-[8px] sm:text-[9px] text-zinc-500 uppercase tracking-widest font-bold mt-0.5">${p.set} • ${p.role}</p>
                         </div>
-                        <span class="text-[10px] sm:text-xs font-display text-zinc-400 font-bold bg-zinc-950 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-md sm:rounded-lg border border-zinc-800 shadow-inner">₹${p.base}</span>
+                        <span class="text-[10px] sm:text-xs font-display text-zinc-400 font-bold bg-zinc-950 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-md sm:rounded-lg border border-zinc-800 shadow-inner">₹${p.basePrice || p.base}</span>
                     </div>
                 `;
             });
 
             if (sold.length > 0) {
-                ui.upcomingList.innerHTML += `<div class="text-[9px] sm:text-[10px] text-cric-green font-bold uppercase tracking-widest mt-4 sm:mt-6 mb-2 sm:mb-3 px-1 border-t border-zinc-800/50 pt-3 sm:pt-5">Recently Sold (${sold.length})</div>`;
+                upcomingHtml += `<div class="text-[9px] sm:text-[10px] text-cric-green font-bold uppercase tracking-widest mt-4 sm:mt-6 mb-2 sm:mb-3 px-1 border-t border-zinc-800/50 pt-3 sm:pt-5">Recently Sold (${sold.length})</div>`;
                 [...sold].reverse().slice(0, 3).forEach(p => {
                     const owner = usersData.find(u => u.userId === p.ownerId);
                     const ownerName = owner ? owner.username : 'Unknown';
-                    ui.upcomingList.innerHTML += `
+                    upcomingHtml += `
                         <div class="p-2.5 sm:p-3.5 border border-cric-green/20 bg-cric-green/5 rounded-lg sm:rounded-xl flex flex-col shadow-sm">
                             <div class="flex justify-between items-center mb-1.5 sm:mb-2">
                                 <p class="text-xs sm:text-sm font-bold text-white tracking-wide">${p.name}</p>
@@ -2481,9 +2484,9 @@ Return a JSON object exactly matching the schema.
             }
 
             if (unsold.length > 0) {
-                ui.upcomingList.innerHTML += `<div class="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-4 sm:mt-6 mb-2 sm:mb-3 px-1 border-t border-zinc-800/50 pt-3 sm:pt-5">Unsold (${unsold.length})</div>`;
+                upcomingHtml += `<div class="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-4 sm:mt-6 mb-2 sm:mb-3 px-1 border-t border-zinc-800/50 pt-3 sm:pt-5">Unsold (${unsold.length})</div>`;
                 [...unsold].reverse().slice(0, 2).forEach(p => {
-                    ui.upcomingList.innerHTML += `
+                    upcomingHtml += `
                         <div class="p-2.5 sm:p-3.5 border border-zinc-800/50 bg-zinc-900/30 rounded-lg sm:rounded-xl flex justify-between items-center opacity-50">
                             <p class="text-xs sm:text-sm font-bold text-zinc-500 line-through tracking-wide">${p.name}</p>
                             <span class="text-[8px] sm:text-[9px] text-zinc-600 font-black uppercase tracking-widest">Unsold</span>
@@ -2491,6 +2494,8 @@ Return a JSON object exactly matching the schema.
                     `;
                 });
             }
+            
+            ui.upcomingList.innerHTML = upcomingHtml;
         }
 
         function updateRoomUI() {
@@ -2572,7 +2577,7 @@ Return a JSON object exactly matching the schema.
                 if(ui.playerName) ui.playerName.innerText = currentPlayer.name;
                 if(ui.playerRole) ui.playerRole.innerText = currentPlayer.role;
                 if(ui.playerCountry) ui.playerCountry.innerHTML = `<svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path></svg> ${currentPlayer.country}`;
-                if(ui.playerBase) ui.playerBase.innerText = `₹ ${formatMoney(currentPlayer.basePrice)} Cr`;
+                if(ui.playerBase) ui.playerBase.innerText = `₹ ${formatMoney(currentPlayer.basePrice || currentPlayer.base)} Cr`;
 
                 if (currentPlayer.set) {
                     if(ui.playerSet) {
@@ -2601,7 +2606,7 @@ Return a JSON object exactly matching the schema.
 
                 processPrefetchQueue();
 
-                const displayBid = roomData.currentBid > 0 ? roomData.currentBid : currentPlayer.basePrice;
+                const displayBid = roomData.currentBid > 0 ? roomData.currentBid : (currentPlayer.basePrice || currentPlayer.base || 0);
                 if(ui.currentBid) ui.currentBid.innerHTML = `₹ ${formatMoney(displayBid)} <span class="text-xl sm:text-2xl lg:text-3xl text-zinc-500 font-bold tracking-normal">Cr</span>`;
 
                 if(roomData.currentBidder) {
@@ -2692,7 +2697,7 @@ Return a JSON object exactly matching the schema.
             const myPlayersCount = playersData.filter(p => p.ownerId === myUserDocId).length;
             if(myPlayersCount >= 18) return showToast("Roster full! Maximum 18 players allowed.");
 
-            let newBid = roomData.currentBid === 0 ? currentPlayer.basePrice : parseFloat((roomData.currentBid + amount).toFixed(2));
+            let newBid = roomData.currentBid === 0 ? (currentPlayer.basePrice || currentPlayer.base || 0) : parseFloat((roomData.currentBid + amount).toFixed(2));
             if(newBid > me.budget) return showToast("Insufficient Budget!");
 
             const now = Date.now(); let newEndTime = roomData.timerEndTime;
@@ -2900,6 +2905,7 @@ Return a JSON object exactly matching the schema.
             if (sd.phase === 'league' && mIdx === Math.floor(sd.matches.filter(m=>m.type==='league').length / 2)) {
                 sd.phase = 'transfer';
                 sd.transferReady = [];
+                sd.transferEndTime = Date.now() + (120 * 1000); // 2 minutes
                 await updateDoc(doc(getRoomsRef(), currentRoomId), { season: sd });
                 return;
             }
@@ -3061,7 +3067,7 @@ Return a JSON object exactly matching the schema.
                 if (seasonData.phase === 'transfer') {
                     const totalTeams = Object.keys(seasonData.standings).length;
                     const readyCount = (seasonData.transferReady || []).length;
-                    hostControls.innerHTML = `<span class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mr-2 flex items-center">${readyCount}/${totalTeams} READY</span><button onclick="resumeSeason()" class="bg-cric-green hover:bg-emerald-400 text-zinc-950 px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-[0_0_10px_rgba(16,185,129,0.5)] animate-pulse">Resume Season</button>`;
+                    hostControls.innerHTML = `<span class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mr-2 flex items-center">${readyCount}/${totalTeams} READY</span><button id="btn-resume-season" onclick="resumeSeason()" class="bg-cric-green hover:bg-emerald-400 text-zinc-950 px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-[0_0_10px_rgba(16,185,129,0.5)] animate-pulse">Resume Season</button>`;
                 } else {
                     hostControls.innerHTML = `<button id="btn-sim-next" class="bg-white text-zinc-950 hover:bg-zinc-200 px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-md">Simulate Match</button>
                                               <button id="btn-sim-all" class="bg-zinc-800 text-white hover:bg-zinc-700 px-4 py-1.5 rounded-lg text-xs font-bold transition-all border border-zinc-700">Simulate 5</button>`;
@@ -3099,39 +3105,42 @@ Return a JSON object exactly matching the schema.
 
             const pStatsArr = Object.values(seasonData.playerStats);
             const orangeList = document.getElementById('orange-cap-list');
-            orangeList.innerHTML = '';
+            let orangeHtml = '';
             pStatsArr.sort((a,b) => b.runs - a.runs).slice(0,5).forEach((p, idx) => {
-                orangeList.innerHTML += `
+                orangeHtml += `
                     <div class="flex justify-between items-center bg-zinc-900/50 border border-zinc-800 p-2 rounded-lg ${idx===0 ? 'border-orange-500/50 shadow-[0_0_10px_rgba(249,115,22,0.1)]' : ''}">
                         <div class="flex items-center gap-2 overflow-hidden"><span class="text-xs font-black ${idx===0 ? 'text-orange-500' : 'text-zinc-600'}">#${idx+1}</span>
                             <div class="truncate"><p class="text-sm font-bold text-zinc-200 truncate">${p.name}</p><p class="text-[9px] text-zinc-500 uppercase tracking-widest truncate">${usersData.find(u=>u.userId===p.owner)?.username}</p></div>
                         </div><span class="font-display font-black text-white ml-2 bg-zinc-950 px-2 py-0.5 rounded border border-zinc-800">${p.runs}</span>
                     </div>`;
             });
+            orangeList.innerHTML = orangeHtml;
 
             const purpleList = document.getElementById('purple-cap-list');
-            purpleList.innerHTML = '';
+            let purpleHtml = '';
             pStatsArr.sort((a,b) => b.wickets - a.wickets).slice(0,5).forEach((p, idx) => {
-                purpleList.innerHTML += `
+                purpleHtml += `
                     <div class="flex justify-between items-center bg-zinc-900/50 border border-zinc-800 p-2 rounded-lg ${idx===0 ? 'border-purple-500/50 shadow-[0_0_10px_rgba(168,85,247,0.1)]' : ''}">
                         <div class="flex items-center gap-2 overflow-hidden"><span class="text-xs font-black ${idx===0 ? 'text-purple-500' : 'text-zinc-600'}">#${idx+1}</span>
                             <div class="truncate"><p class="text-sm font-bold text-zinc-200 truncate">${p.name}</p><p class="text-[9px] text-zinc-500 uppercase tracking-widest truncate">${usersData.find(u=>u.userId===p.owner)?.username}</p></div>
                         </div><span class="font-display font-black text-white ml-2 bg-zinc-950 px-2 py-0.5 rounded border border-zinc-800">${p.wickets}</span>
                     </div>`;
             });
+            purpleList.innerHTML = purpleHtml;
 
             const injList = document.getElementById('injury-list');
-            injList.innerHTML = '';
+            let injHtml = '';
             if (seasonData.injuries && seasonData.injuries.length > 0) {
-                seasonData.injuries.forEach(inj => { injList.innerHTML += `<div class="bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] p-2 rounded-md font-medium">⚠️ ${inj}</div>`; });
-            } else { injList.innerHTML = `<p class="text-xs text-zinc-500 italic">No injuries reported yet.</p>`; }
+                seasonData.injuries.forEach(inj => { injHtml += `<div class="bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] p-2 rounded-md font-medium">⚠️ ${inj}</div>`; });
+            } else { injHtml = `<p class="text-xs text-zinc-500 italic">No injuries reported yet.</p>`; }
+            injList.innerHTML = injHtml;
 
             const mySquadWrapper = document.getElementById('my-squad-stats-wrapper');
             const mySquadList = document.getElementById('my-squad-stats-list');
             if (mySquadWrapper && mySquadList) {
                 if (seasonData.phase === 'transfer' || seasonData.phase === 'finished') {
                     mySquadWrapper.classList.remove('hidden');
-                    mySquadList.innerHTML = '';
+                    let mySquadHtml = '';
                     
                     const myPlayers = playersData.filter(p => p.ownerId === myUserDocId);
                     const myStats = myPlayers.map(p => seasonData.playerStats[p.playerId]).filter(Boolean);
@@ -3139,7 +3148,7 @@ Return a JSON object exactly matching the schema.
                     myStats.sort((a,b) => (b.runs + b.wickets*20) - (a.runs + a.wickets*20));
 
                     myStats.forEach(stat => {
-                        mySquadList.innerHTML += `
+                        mySquadHtml += `
                             <div class="flex justify-between items-center bg-zinc-900/50 border border-zinc-800 p-2 rounded-lg">
                                 <div class="truncate pr-2">
                                     <p class="text-xs font-bold text-white truncate">${stat.name}</p>
@@ -3151,7 +3160,8 @@ Return a JSON object exactly matching the schema.
                                 </div>
                             </div>`;
                     });
-                    if(myStats.length === 0) mySquadList.innerHTML = '<p class="text-xs text-zinc-500 italic p-2">No players in your squad.</p>';
+                    if(myStats.length === 0) mySquadHtml = '<p class="text-xs text-zinc-500 italic p-2">No players in your squad.</p>';
+                    mySquadList.innerHTML = mySquadHtml;
                 } else {
                     mySquadWrapper.classList.add('hidden');
                 }
@@ -3159,10 +3169,34 @@ Return a JSON object exactly matching the schema.
 
             const currentMatchDiv = document.getElementById('current-match-display');
             const resultsList = document.getElementById('season-results-list');
-            resultsList.innerHTML = '';
+            let resultsHtml = '';
 
             const currentMatch = seasonData.matches[seasonData.currentMatchIndex];
             if (seasonData.phase === 'transfer') {
+                const endTime = seasonData.transferEndTime || (Date.now() + 120000);
+                
+                if (!transferTimerInterval) {
+                    transferTimerInterval = setInterval(() => {
+                        const now = Date.now();
+                        const diff = Math.max(0, endTime - now);
+                        const secs = Math.ceil(diff / 1000);
+                        const mins = Math.floor(secs / 60);
+                        const remSecs = secs % 60;
+                        const timeStr = `${mins}:${remSecs.toString().padStart(2, '0')}`;
+                        
+                        const timerEl = document.getElementById('transfer-countdown-clock');
+                        if (timerEl) timerEl.innerText = timeStr;
+                        
+                        if (diff <= 0) {
+                            clearInterval(transferTimerInterval);
+                            transferTimerInterval = null;
+                            if (isHost && document.getElementById('btn-resume-season')) {
+                                document.getElementById('btn-resume-season').click();
+                            }
+                        }
+                    }, 1000);
+                }
+
                 const totalTeams = Object.keys(seasonData.standings).length;
                 const readyCount = (seasonData.transferReady || []).length;
                 const isReady = (seasonData.transferReady || []).includes(myUserDocId);
@@ -3172,7 +3206,7 @@ Return a JSON object exactly matching the schema.
                     actionsHtml = `<p class="text-emerald-400 font-bold text-sm bg-emerald-500/10 border border-emerald-500/20 py-2 rounded-xl mt-4">Transfers Completed! Waiting for others...</p>`;
                 } else {
                     actionsHtml = `
-                        <div class="flex flex-col sm:flex-row gap-3 justify-center mt-4">
+                        <div class="flex flex-col sm:flex-row gap-3 justify-center w-full mt-4">
                             <button onclick="openTransferWindow()" class="bg-blue-500 hover:bg-blue-400 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(59,130,246,0.5)] active:scale-95">Open Transfer Desk</button>
                             <button onclick="markTransferReady()" class="bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700 px-6 py-3 rounded-xl font-bold transition-all active:scale-95">Done with Transfers</button>
                         </div>
@@ -3180,34 +3214,41 @@ Return a JSON object exactly matching the schema.
                 }
 
                 currentMatchDiv.innerHTML = `
-                    <div class="bg-blue-900/20 border border-blue-500/40 rounded-2xl p-6 text-center shadow-[0_0_30px_rgba(59,130,246,0.15)] animate-pulse-fast">
+                    <div class="bg-blue-900/20 border border-blue-500/40 rounded-2xl p-6 text-center shadow-[0_0_30px_rgba(59,130,246,0.15)] animate-pulse-fast flex flex-col items-center">
                         <span class="text-4xl mb-2 block">🔄</span><h3 class="text-xl font-display font-black text-blue-400 uppercase tracking-widest mb-1">Transfer Window Open</h3>
-                        <p class="text-zinc-400 text-sm mb-2">Teams are trading players. (${readyCount}/${totalTeams} Ready)</p>
-                        ${actionsHtml}
-                        ${isHost ? '<p class="text-[10px] text-zinc-500 mt-4 uppercase tracking-widest font-bold">Host: Click Resume Season when ready.</p>' : ''}
-                    </div>`;
-            } else if (currentMatch && seasonData.phase !== 'finished') {
-                const t1Name = usersData.find(u=>u.userId===currentMatch.t1)?.username;
-                const t2Name = usersData.find(u=>u.userId===currentMatch.t2)?.username;
-                const matchType = currentMatch.type === 'league' ? `Match ${seasonData.currentMatchIndex + 1}` : currentMatch.type;
-                
-                currentMatchDiv.innerHTML = `
-                    <div class="bg-gradient-to-b from-zinc-900 to-zinc-950 border border-zinc-700/50 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
-                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent opacity-50"></div>
-                        <p class="text-center text-[10px] font-bold text-red-500 uppercase tracking-widest mb-4">UP NEXT • ${matchType}</p>
-                        <div class="flex justify-between items-center gap-4">
-                            <div class="flex-1 text-center"><div class="w-12 h-12 sm:w-16 sm:h-16 mx-auto bg-zinc-800 rounded-full flex items-center justify-center font-display font-bold text-xl sm:text-2xl text-zinc-300 border border-zinc-700 shadow-inner mb-2">${t1Name.charAt(0)}</div><p class="font-bold text-white text-sm sm:text-base truncate">${t1Name}</p></div>
-                            <div class="shrink-0 text-center"><span class="text-xs sm:text-sm font-black italic text-zinc-600 px-3 py-1 bg-zinc-950 rounded-full border border-zinc-800">VS</span></div>
-                            <div class="flex-1 text-center"><div class="w-12 h-12 sm:w-16 sm:h-16 mx-auto bg-zinc-800 rounded-full flex items-center justify-center font-display font-bold text-xl sm:text-2xl text-zinc-300 border border-zinc-700 shadow-inner mb-2">${t2Name.charAt(0)}</div><p class="font-bold text-white text-sm sm:text-base truncate">${t2Name}</p></div>
+                        <p class="text-zinc-400 text-sm mb-4">Teams are trading players. (${readyCount}/${totalTeams} Ready)</p>
+                        <div class="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 mb-2">
+                            <p class="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-1">Time Remaining</p>
+                            <p id="transfer-countdown-clock" class="text-2xl font-display font-black text-red-500">--:--</p>
                         </div>
+                        ${actionsHtml}
+                        ${isHost ? '<p class="text-[10px] text-zinc-500 mt-4 uppercase tracking-widest font-bold">Host: Auto-resumes when timer ends.</p>' : ''}
                     </div>`;
-            } else if (seasonData.phase === 'finished') {
-                const finalMatch = seasonData.matches.find(m => m.type === 'Final');
-                const winnerName = usersData.find(u=>u.userId===finalMatch.winner)?.username;
-                currentMatchDiv.innerHTML = `
-                    <div class="bg-gradient-to-b from-emerald-900/30 to-zinc-950 border border-emerald-500/40 rounded-2xl p-6 text-center shadow-[0_0_40px_rgba(16,185,129,0.2)]">
-                        <span class="text-5xl mb-3 block animate-float">🏆</span><h3 class="text-2xl font-display font-black text-white mb-1">Season Champions</h3><p class="text-xl font-bold text-emerald-400">${winnerName}</p>
-                    </div>`;
+            } else {
+                if (transferTimerInterval) { clearInterval(transferTimerInterval); transferTimerInterval = null; }
+                if (currentMatch && seasonData.phase !== 'finished') {
+                    const t1Name = usersData.find(u=>u.userId===currentMatch.t1)?.username;
+                    const t2Name = usersData.find(u=>u.userId===currentMatch.t2)?.username;
+                    const matchType = currentMatch.type === 'league' ? `Match ${seasonData.currentMatchIndex + 1}` : currentMatch.type;
+                    
+                    currentMatchDiv.innerHTML = `
+                        <div class="bg-gradient-to-b from-zinc-900 to-zinc-950 border border-zinc-700/50 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
+                            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent opacity-50"></div>
+                            <p class="text-center text-[10px] font-bold text-red-500 uppercase tracking-widest mb-4">UP NEXT • ${matchType}</p>
+                            <div class="flex justify-between items-center gap-4">
+                                <div class="flex-1 text-center"><div class="w-12 h-12 sm:w-16 sm:h-16 mx-auto bg-zinc-800 rounded-full flex items-center justify-center font-display font-bold text-xl sm:text-2xl text-zinc-300 border border-zinc-700 shadow-inner mb-2">${t1Name.charAt(0)}</div><p class="font-bold text-white text-sm sm:text-base truncate">${t1Name}</p></div>
+                                <div class="shrink-0 text-center"><span class="text-xs sm:text-sm font-black italic text-zinc-600 px-3 py-1 bg-zinc-950 rounded-full border border-zinc-800">VS</span></div>
+                                <div class="flex-1 text-center"><div class="w-12 h-12 sm:w-16 sm:h-16 mx-auto bg-zinc-800 rounded-full flex items-center justify-center font-display font-bold text-xl sm:text-2xl text-zinc-300 border border-zinc-700 shadow-inner mb-2">${t2Name.charAt(0)}</div><p class="font-bold text-white text-sm sm:text-base truncate">${t2Name}</p></div>
+                            </div>
+                        </div>`;
+                } else if (seasonData.phase === 'finished') {
+                    const finalMatch = seasonData.matches.find(m => m.type === 'Final');
+                    const winnerName = usersData.find(u=>u.userId===finalMatch.winner)?.username;
+                    currentMatchDiv.innerHTML = `
+                        <div class="bg-gradient-to-b from-emerald-900/30 to-zinc-950 border border-emerald-500/40 rounded-2xl p-6 text-center shadow-[0_0_40px_rgba(16,185,129,0.2)]">
+                            <span class="text-5xl mb-3 block animate-float">🏆</span><h3 class="text-2xl font-display font-black text-white mb-1">Season Champions</h3><p class="text-xl font-bold text-emerald-400">${winnerName}</p>
+                        </div>`;
+                }
             }
 
             const playedMatches = seasonData.matches.filter(m => m.isPlayed).reverse();
@@ -3216,7 +3257,7 @@ Return a JSON object exactly matching the schema.
                 if(!t1 || !t2) return;
                 const isT1Winner = m.winner === m.t1;
                 
-                resultsList.innerHTML += `
+                resultsHtml += `
                     <div class="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm">
                         <div class="flex items-center justify-center sm:justify-start gap-3 flex-1">
                             <span class="${isT1Winner ? 'text-white font-bold' : 'text-zinc-500'} text-right flex-1 truncate">${t1.username}</span>
@@ -3226,6 +3267,7 @@ Return a JSON object exactly matching the schema.
                         <div class="text-[10px] sm:text-xs text-cric-green font-bold bg-cric-green/10 border border-cric-green/20 px-2.5 py-1 rounded-md text-center shrink-0">${m.summary}</div>
                     </div>`;
             });
+            resultsList.innerHTML = resultsHtml;
         }
 
         window.openTransferWindow = () => {
@@ -3281,7 +3323,7 @@ Return a JSON object exactly matching the schema.
             unsoldPlayers.forEach(p => {
                 const div = document.createElement('div');
                 div.className = `p-2.5 rounded-lg border cursor-pointer transition-all flex justify-between items-center ${selectedTransferSign === p.playerId ? 'border-cric-green bg-cric-green/20' : 'border-zinc-800 bg-zinc-900 hover:border-zinc-600'}`;
-                div.innerHTML = `<div><p class="text-sm font-bold text-white">${p.name}</p><p class="text-[9px] text-zinc-500 uppercase">${p.role}</p></div><span class="font-display font-black text-xs text-zinc-400">₹${p.base}</span>`;
+                div.innerHTML = `<div><p class="text-sm font-bold text-white">${p.name}</p><p class="text-[9px] text-zinc-500 uppercase">${p.role}</p></div><span class="font-display font-black text-xs text-zinc-400">₹${p.basePrice || p.base}</span>`;
                 div.onclick = () => { selectedTransferSign = p.playerId; renderTransferLists(); checkTransferValid(); };
                 unsoldList.appendChild(div);
             });
@@ -3294,13 +3336,13 @@ Return a JSON object exactly matching the schema.
             if (!selectedTransferRelease || !selectedTransferSign) return;
             const releaseP = playersData.find(p => p.playerId === selectedTransferRelease); const signP = playersData.find(p => p.playerId === selectedTransferSign);
             const me = usersData.find(u => u.userId === myUserDocId);
-            const budgetDiff = releaseP.basePrice - signP.basePrice;
+            const budgetDiff = (releaseP.basePrice || releaseP.base) - (signP.basePrice || signP.base);
             if (me.budget + budgetDiff < 0) return showToast("Insufficient budget for this swap.");
 
             try {
                 const batch = writeBatch(db);
                 batch.update(doc(getPlayersRef(), releaseP.playerId), { status: 'unsold', ownerId: null, soldPrice: null });
-                batch.update(doc(getPlayersRef(), signP.playerId), { status: 'sold', ownerId: myUserDocId, soldPrice: signP.basePrice });
+                batch.update(doc(getPlayersRef(), signP.playerId), { status: 'sold', ownerId: myUserDocId, soldPrice: (signP.basePrice || signP.base) });
                 batch.update(doc(getUsersRef(), myUserDocId), { budget: me.budget + budgetDiff });
                 
                 let newSd = JSON.parse(JSON.stringify(seasonData));
@@ -3412,14 +3454,11 @@ Return a JSON object exactly matching the schema.
                 } else { lastViewedMessageCount = chatMessages.length; }
             }
             
-            container.innerHTML = '';
+            let chatHtml = '';
             chatMessages.forEach(msg => {
                 const isMe = msg.senderId === myUserDocId;
                 const isWhisper = msg.receiverId !== 'all';
                 const isWhisperToMe = isWhisper && msg.receiverId === myUserDocId;
-                
-                const div = document.createElement('div');
-                div.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} w-full mb-3 sm:mb-4`;
                 
                 let labelText = isMe ? 'You' : msg.senderName;
                 if (isWhisper) { labelText = isWhisperToMe ? `Whisper from ${msg.senderName}` : `Whisper to ${msg.receiverName}`; }
@@ -3434,9 +3473,9 @@ Return a JSON object exactly matching the schema.
                         : 'bg-purple-950/80 text-purple-100 rounded-xl sm:rounded-[1.25rem] rounded-tl-sm border border-purple-500/30';
                 }
                 
-                div.innerHTML = `<span class="text-[8px] sm:text-[9px] font-bold uppercase tracking-widest ${isWhisper ? 'text-purple-400' : 'text-zinc-500'} mb-1 sm:mb-1.5 mx-1">${labelText}</span><div class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-md inline-block max-w-[85%] break-words leading-relaxed ${bubbleClasses}">${msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>`;
-                container.appendChild(div);
+                chatHtml += `<div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} w-full mb-3 sm:mb-4"><span class="text-[8px] sm:text-[9px] font-bold uppercase tracking-widest ${isWhisper ? 'text-purple-400' : 'text-zinc-500'} mb-1 sm:mb-1.5 mx-1">${labelText}</span><div class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-md inline-block max-w-[85%] break-words leading-relaxed ${bubbleClasses}">${msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div></div>`;
             });
+            container.innerHTML = chatHtml;
             scrollToBottomChat();
         }
 
@@ -3494,7 +3533,16 @@ Return a JSON object exactly matching the schema.
                 }
 
                 try {
-                    peer = new Peer();
+                    peer = new Peer({
+                        config: {
+                            iceServers: [
+                                { urls: 'stun:stun.l.google.com:19302' },
+                                { urls: 'stun:stun1.l.google.com:19302' },
+                                { urls: 'stun:stun2.l.google.com:19302' },
+                                { urls: 'stun:stun3.l.google.com:19302' }
+                            ]
+                        }
+                    });
                     peer.on('open', (id) => { myPeerId = id; if (myUserDocId) { updateDoc(doc(getUsersRef(), myUserDocId), { peerId: myPeerId }).catch(console.error); } });
                     peer.on('call', (call) => { call.answer(localStream); handleCallStream(call); });
                     peer.on('error', (err) => { if (err.type === 'network' || String(err).includes('SecurityError') || String(err).includes('WebSocket')) { console.warn("PeerJS security error (HTTPS needed)."); } else if (err.type !== 'peer-unavailable') { console.warn("PeerJS:", err); } });
