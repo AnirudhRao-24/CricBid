@@ -1,0 +1,57 @@
+﻿        body { background-color: #09090b; color: #fafafa; }
+        
+        .glass-panel {
+            background: rgba(24, 24, 27, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .premium-card-bg {
+            background: linear-gradient(135deg, rgba(39,39,42,1) 0%, rgba(24,24,27,1) 100%);
+            position: relative;
+        }
+        .premium-card-bg::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at top right, rgba(16,185,129,0.1), transparent 50%);
+            pointer-events: none;
+        }
+
+        .glowing-bid {
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.6);
+            border-color: #10b981 !important;
+            transform: scale(1.02);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .pt-safe { padding-top: max(1rem, env(safe-area-inset-top)); }
+        .pb-safe { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+        .mb-safe { margin-bottom: env(safe-area-inset-bottom); }
+        
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #52525b; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .touch-scroll { -webkit-overflow-scrolling: touch; }
+        
+        .toast {
+            position: fixed; top: max(1.5rem, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%) translateY(-120px);
+            opacity: 0; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 9999;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        
+        input, select, textarea { font-size: 16px !important; }
+        
+        .mesh-bg {
+            background-color: #09090b;
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, hsla(225,39%,30%,0.2) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(160,84%,39%,0.15) 0, transparent 50%);
+        }
+

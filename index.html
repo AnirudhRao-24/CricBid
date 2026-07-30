@@ -1,0 +1,706 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CricBid - Premium Live Auction</title>
+    
+    <meta name="theme-color" content="#09090b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CricBid">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    
+    <script src="tailwind-config.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="relative w-full h-[100dvh] flex flex-col font-sans antialiased bg-cric-dark overflow-hidden selection:bg-cric-green selection:text-white">
+
+    <div id="toast" class="toast bg-zinc-900/95 backdrop-blur-md border border-zinc-800 text-zinc-100 px-5 py-4 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] font-medium flex items-center gap-3 min-w-[300px] max-w-[90vw] ring-1 ring-white/5">
+        <div class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        </div>
+        <span id="toast-msg" class="flex-1 text-sm leading-relaxed font-semibold flex flex-col">Notification message</span>
+    </div>
+
+    <!-- Modals -->
+    <div id="exit-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden flex-col items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="glass-panel bg-zinc-900 p-8 rounded-3xl max-w-sm w-full text-center shadow-2xl transform scale-95 transition-transform duration-300" id="exit-modal-content">
+            <div class="w-16 h-16 sm:w-20 sm:h-20 bg-red-500/10 rounded-3xl mx-auto mb-6 flex items-center justify-center text-red-500 shadow-inner">
+                <svg class="w-8 h-8 sm:w-10 sm:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+            </div>
+            <h2 class="text-xl sm:text-2xl font-display font-bold text-white mb-2">Leave Auction?</h2>
+            <p class="text-zinc-400 mb-8 text-xs sm:text-sm">You can rejoin later using the room code. Your team will be preserved.</p>
+            <div class="flex gap-3">
+                <button id="btn-cancel-exit" class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold py-3 sm:py-3.5 rounded-xl transition-colors">Cancel</button>
+                <button id="btn-confirm-exit" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-3 sm:py-3.5 rounded-xl transition-all shadow-[0_0_15px_rgba(239,68,68,0.4)]">Disconnect</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invite Modal -->
+    <div id="invite-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden flex-col items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="glass-panel bg-zinc-900 border border-zinc-700 p-6 sm:p-8 rounded-[2rem] max-w-sm w-full shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col max-h-[80vh]">
+            <div class="flex justify-between items-center mb-4 shrink-0">
+                <h2 class="text-xl sm:text-2xl font-display font-bold text-white">Invite Players</h2>
+                <button onclick="closeInviteModal()" class="text-zinc-400 hover:text-white p-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div id="global-players-list" class="flex-1 overflow-y-auto space-y-2 hide-scrollbar">
+                <p class="text-xs text-zinc-600 italic px-1">Finding players...</p>
+            </div>
+            <div class="mt-4 pt-4 border-t border-zinc-800 shrink-0">
+                <p class="text-[10px] text-zinc-500 uppercase tracking-widest mb-2 font-bold">Or share room code</p>
+                <div class="flex gap-2">
+                    <input type="text" id="invite-code-display" readonly class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-white text-center font-display tracking-widest font-bold text-sm">
+                    <button onclick="copyRoomCode()" class="bg-zinc-800 hover:bg-zinc-700 text-white px-4 rounded-xl font-bold transition-colors">Copy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Post-Auction Draft Modal -->
+    <div id="draft-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[120] hidden flex-col items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="glass-panel bg-zinc-900 border border-zinc-700 p-6 sm:p-8 rounded-[2rem] max-w-2xl w-full shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]">
+            <div class="text-center mb-6 shrink-0">
+                <h2 class="text-2xl sm:text-3xl font-display font-black text-white">Post-Auction Allocation</h2>
+                <p class="text-zinc-400 text-sm mt-2">Some franchises have less than 13 players. Assign unsold players to complete their squads.</p>
+            </div>
+            
+            <div class="flex flex-col gap-4 flex-1 min-h-[300px] overflow-hidden">
+                <div>
+                    <label class="block text-[10px] font-bold text-zinc-400 mb-2 uppercase tracking-wider">Select Franchise</label>
+                    <select id="draft-team-select" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-cric-green">
+                    </select>
+                </div>
+                <div class="flex-1 flex flex-col overflow-hidden">
+                    <label class="block text-[10px] font-bold text-zinc-400 mb-2 uppercase tracking-wider">Select Unsold Player (Base Price)</label>
+                    <div id="draft-unsold-players" class="flex-1 overflow-y-auto hide-scrollbar touch-scroll border border-zinc-800 rounded-xl p-2 bg-zinc-950/50 space-y-2"></div>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-zinc-800 flex justify-end gap-3 shrink-0">
+                <button id="btn-close-draft" class="px-5 py-2.5 rounded-xl text-zinc-400 font-bold bg-zinc-800 hover:bg-zinc-700 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Close Window</button>
+                <button id="btn-assign-draft" class="px-5 py-2.5 rounded-xl text-zinc-950 font-bold bg-cric-green hover:bg-emerald-400 transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">Assign Player</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Coach Modal (Auction Phase) -->
+    <div id="ai-coach-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[120] hidden flex-col items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="glass-panel bg-zinc-900 border border-purple-500/30 p-6 sm:p-8 rounded-[2rem] max-w-2xl w-full shadow-[0_0_50px_rgba(147,51,234,0.15)] transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center mb-6 shrink-0">
+                <h2 class="text-2xl sm:text-3xl font-display font-black text-white flex items-center gap-3">
+                    <span class="text-3xl sm:text-4xl">🤖</span> AI Strategist
+                </h2>
+                <button onclick="closeAICoach()" class="text-zinc-400 hover:text-white p-2 bg-zinc-800 rounded-xl">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <div id="ai-coach-loading" class="flex-1 flex flex-col items-center justify-center py-12">
+                <div class="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                <p class="text-purple-400 font-bold tracking-widest uppercase text-sm animate-pulse">Analyzing Squad & Pool...</p>
+            </div>
+
+            <div id="ai-coach-content" class="flex-1 overflow-y-auto hide-scrollbar hidden flex-col gap-6">
+                <div>
+                    <h3 class="text-xs font-bold text-purple-400 uppercase tracking-widest mb-2 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-purple-500"></span> Team Balance Analysis</h3>
+                    <div class="bg-purple-900/20 border border-purple-500/20 rounded-xl p-4 text-sm text-purple-100 leading-relaxed" id="ai-coach-analysis">
+                        <!-- AI Analysis Injected Here -->
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Recommended Targets</h3>
+                    <div id="ai-coach-targets" class="space-y-3">
+                        <!-- AI Targets Injected Here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Tournament Preview Modal (Season Phase) -->
+    <div id="ai-preview-modal" class="fixed inset-0 bg-black/95 backdrop-blur-xl z-[120] hidden flex-col items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="glass-panel bg-zinc-900 border border-cric-gold/30 p-6 sm:p-8 rounded-[2rem] max-w-3xl w-full shadow-[0_0_60px_rgba(251?91,36,0.15)] transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center mb-6 shrink-0 border-b border-zinc-800 pb-4">
+                <h2 class="text-2xl sm:text-3xl font-display font-black text-white flex items-center gap-3">
+                    <span class="text-3xl sm:text-4xl">🏆</span> Tournament Preview
+                </h2>
+                <button onclick="closeAIPreview()" class="text-zinc-400 hover:text-white p-2 bg-zinc-800 rounded-xl">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <div id="ai-preview-loading" class="flex-1 flex flex-col items-center justify-center py-16">
+                <span class="text-6xl mb-4 animate-float">🤖</span>
+                <p class="text-cric-gold font-bold tracking-widest uppercase text-sm animate-pulse">Evaluating All Franchises...</p>
+            </div>
+
+            <div id="ai-preview-content" class="flex-1 overflow-y-auto hide-scrollbar hidden flex-col gap-6">
+                <div class="bg-gradient-to-br from-zinc-800 to-zinc-900 border border-cric-gold/40 rounded-2xl p-6 text-center relative overflow-hidden">
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-cric-gold/20 rounded-full blur-[40px]"></div>
+                    <p class="text-[10px] font-bold text-cric-gold uppercase tracking-widest mb-1">Predicted Champion</p>
+                    <h3 id="ai-preview-best-team" class="text-3xl sm:text-4xl font-display font-black text-white mb-3">Team Name</h3>
+                    <p id="ai-preview-analysis" class="text-sm text-zinc-300 mx-auto max-w-xl"></p>
+                </div>
+
+                <div>
+                    <h3 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-blue-500"></span> Tournament Best XI</h3>
+                    <div id="ai-preview-xi" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <!-- AI Best XI Injected Here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== SCREEN 1: LOBBY ==================== -->
+    <div id="lobby-screen" class="flex flex-1 flex-col items-center justify-center p-4 sm:p-5 h-full overflow-y-auto mesh-bg w-full relative z-10 touch-scroll">
+        <div class="glass-panel p-6 sm:p-12 rounded-[2rem] sm:rounded-[2.5rem] w-full max-w-[460px] text-center shadow-[0_30px_60px_rgba(0,0,0,0.6)] animate-fade-in-up relative overflow-hidden my-auto">
+            <div class="absolute -top-32 -right-32 w-48 h-48 sm:w-64 sm:h-64 bg-cric-green/10 rounded-full blur-[60px] sm:blur-[80px] pointer-events-none"></div>
+            <div class="absolute -bottom-32 -left-32 w-48 h-48 sm:w-64 sm:h-64 bg-cric-accent/10 rounded-full blur-[60px] sm:blur-[80px] pointer-events-none"></div>
+            
+            <div class="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-cric-green to-emerald-800 rounded-[1.5rem] sm:rounded-[2rem] mx-auto mb-6 flex items-center justify-center shadow-[0_0_40px_rgba(16?85?29,0.3)] animate-float">
+                <svg class="w-10 h-10 sm:w-12 sm:h-12 text-white drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+            
+            <h1 class="text-3xl sm:text-5xl font-display font-black text-white mb-2 tracking-tight">CricBid<span class="text-cric-green">.</span></h1>
+            <p class="text-zinc-400 text-xs sm:text-sm mb-8 font-medium tracking-wide">ELITE MULTIPLAYER AUCTION</p>
+
+            <div class="relative z-10 w-full">
+                
+                <!-- State 1: Login Options -->
+                <div id="login-section" class="flex flex-col gap-4">
+                    <button id="btn-google-login" class="w-full bg-white hover:bg-zinc-200 active:scale-95 text-zinc-950 font-bold py-3.5 rounded-2xl flex items-center justify-center gap-3 transition-all shadow-lg">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                        Continue with Google
+                    </button>
+                    
+                    <div class="relative flex items-center py-1 opacity-60">
+                        <div class="flex-grow border-t border-zinc-800"></div>
+                        <span class="flex-shrink-0 mx-4 text-zinc-500 text-[10px] font-bold uppercase tracking-widest">or</span>
+                        <div class="flex-grow border-t border-zinc-800"></div>
+                    </div>
+                    
+                    <button id="btn-guest-login" class="w-full bg-zinc-800 hover:bg-zinc-700 active:scale-95 text-white font-bold py-3.5 rounded-2xl transition-all border border-zinc-700">
+                        Play as Guest
+                    </button>
+                </div>
+
+                <!-- State 2: Guest Name Entry -->
+                <div id="guest-name-section" class="hidden flex-col gap-4 text-left">
+                    <label class="block text-[10px] font-bold text-zinc-400 ml-2 uppercase tracking-wider">Choose your Alias</label>
+                    <input type="text" id="guest-name-input" placeholder="Enter your name" class="w-full bg-zinc-950/50 border border-zinc-800 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-cric-green focus:bg-zinc-900/80 transition-all shadow-inner">
+                    
+                    <div class="flex gap-3 mt-2">
+                        <button id="btn-back-login" class="w-1/3 bg-zinc-800 hover:bg-zinc-700 text-white font-bold rounded-2xl transition-all">Back</button>
+                        <button id="btn-confirm-guest" class="w-2/3 bg-cric-green hover:bg-emerald-400 text-zinc-950 font-bold py-3.5 rounded-2xl shadow-lg transition-all active:scale-95">Enter Lobby</button>
+                    </div>
+                </div>
+
+                <!-- State 3: Authenticated Dashboard -->
+                <div id="auth-lobby-menu" class="hidden flex-col">
+                    
+                    <!-- Profile Display -->
+                    <div class="flex items-center gap-3 bg-zinc-900/80 border border-zinc-800 p-3 rounded-2xl mb-6 shadow-inner text-left">
+                        <img id="user-avatar" src="" class="w-10 h-10 rounded-full border border-zinc-700" alt="Avatar">
+                        <div class="flex-1 overflow-hidden">
+                            <p class="text-[9px] text-zinc-500 font-bold uppercase tracking-wider">Logged in as</p>
+                            <p id="user-display-name" class="text-sm font-bold text-white truncate"></p>
+                        </div>
+                        <button id="btn-logout" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-colors active:scale-95">Switch</button>
+                    </div>
+
+                    <div class="text-left group mt-2 mb-4">
+                        <label class="block text-[10px] sm:text-xs font-bold text-zinc-400 mb-2 ml-2 uppercase tracking-wider group-focus-within:text-cric-green transition-colors">Auction Format</label>
+                        <div class="relative">
+                            <select id="format-input" class="w-full bg-zinc-950/50 border border-zinc-800 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3.5 sm:py-4 text-white focus:outline-none focus:border-cric-green focus:bg-zinc-900/80 transition-all text-sm sm:text-base shadow-inner appearance-none cursor-pointer font-bold">
+                                <option value="T20">T20 Format</option>
+                                <option value="ODI">ODI Format</option>
+                                <option value="TEST">Test Format</option>
+                                <option value="TEST_LEGENDS">Test (Legends/Greats)</option>
+                                <option value="ODI_LEGENDS">ODI (Legends/Greats)</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-zinc-400">
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col gap-3">
+                        <button id="btn-create-room" class="w-full bg-white text-zinc-950 hover:bg-zinc-200 active:scale-[0.98] font-bold py-3.5 rounded-xl transition-all shadow-[0_10px_20px_rgba(255,255,255,0.1)] text-base">
+                            Host New Auction
+                        </button>
+                        
+                        <div class="relative flex items-center py-1 opacity-60">
+                            <div class="flex-grow border-t border-zinc-800"></div>
+                            <span class="flex-shrink-0 mx-3 text-zinc-500 text-[10px] font-bold uppercase tracking-widest">or join existing</span>
+                            <div class="flex-grow border-t border-zinc-800"></div>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <input type="text" id="room-code-input" placeholder="ROOM CODE" class="w-3/5 bg-zinc-950/50 border border-zinc-800 rounded-xl px-3 py-3.5 text-white focus:outline-none focus:border-zinc-500 uppercase text-center font-display tracking-widest font-bold placeholder:text-zinc-600 placeholder:font-normal text-sm shadow-inner">
+                            <button id="btn-join-room" class="w-2/5 bg-zinc-800 hover:bg-zinc-700 active:scale-[0.98] text-white font-bold py-3.5 rounded-xl transition-colors border border-zinc-700 text-sm shadow-lg">
+                                Enter
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== SCREEN 2: AUCTION ROOM ==================== -->
+    <div id="auction-screen" class="hidden flex-1 w-full h-full flex-col bg-zinc-950 relative overflow-hidden">
+        
+        <!-- Header -->
+        <header class="bg-zinc-950/90 backdrop-blur-xl border-b border-zinc-800/80 pt-safe flex flex-wrap justify-between items-center px-4 py-3 sm:px-6 z-[60] shrink-0 relative gap-y-2">
+            <div class="flex items-center gap-2 sm:gap-5">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-2">
+                    <span class="text-[9px] sm:text-xs text-zinc-500 font-bold uppercase tracking-widest">Room</span>
+                    <span id="ui-room-code" class="text-white bg-zinc-800/50 px-2 py-0.5 sm:py-1 rounded-md border border-zinc-700/50 font-display font-bold tracking-widest text-[10px] sm:text-sm">---</span>
+                    <button onclick="openInviteModal()" class="bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 border border-blue-500/30 px-2 py-0.5 sm:py-1 rounded-md text-[9px] sm:text-[10px] font-bold uppercase tracking-widest transition-colors active:scale-95 flex items-center gap-1 ml-1 sm:ml-2">
+                        <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+                        Invite
+                    </button>
+                </div>
+                <div id="ui-format-badge" class="hidden text-[8px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded bg-blue-600/20 text-blue-400 border border-blue-500/30 uppercase tracking-widest">---</div>
+                <div class="h-4 sm:h-6 w-px bg-zinc-800"></div>
+                <div class="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-sm text-zinc-400 font-medium">
+                    <div class="relative flex items-center justify-center w-2 h-2 sm:w-3 sm:h-3">
+                        <div class="absolute inline-flex w-full h-full rounded-full opacity-75 animate-ping bg-cric-green"></div>
+                        <div class="relative inline-flex w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-cric-green"></div>
+                    </div>
+                    <span id="ui-online-count" class="text-white font-bold">1</span> <span class="hidden sm:inline">Online</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2 sm:gap-5">
+                <div class="text-right flex flex-col justify-center mr-1 sm:mr-0">
+                    <p class="text-[8px] sm:text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-0.5">Purse</p>
+                    <p id="ui-my-budget" class="font-display font-bold sm:font-black text-sm sm:text-xl text-cric-gold leading-none">₹ 0.00 Cr</p>
+                </div>
+                
+                <div class="flex gap-1 sm:gap-1.5 bg-zinc-900/50 p-1 rounded-lg sm:rounded-xl border border-zinc-800">
+                    <button id="btn-mic" class="bg-red-500/10 text-red-400 hover:bg-zinc-800 p-1.5 sm:p-2.5 rounded-md sm:rounded-lg transition-colors" title="Microphone">
+                        <svg id="icon-mic-off" class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11v1a7 7 0 01-14 0v-1m14 0c0 1.93-.784 3.682-2.05 4.95l-1.414-1.414A5.002 5.002 0 0017 12v-1m-4 8v4m-4-4v4m4-4H8m4-11a3 3 0 00-3 3v2.586L4.293 4.293A1 1 0 002.88 5.707l16.414 16.414a1 1 0 001.414-1.414l-9.121-9.121A3 3 0 0012 8z"></path></svg>
+                        <svg id="icon-mic-on" class="w-4 h-4 sm:w-5 sm:h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+                    </button>
+                    <button id="btn-video" class="bg-red-500/10 text-red-400 hover:bg-zinc-800 p-1.5 sm:p-2.5 rounded-md sm:rounded-lg transition-colors" title="Camera">
+                        <svg id="icon-video-off" class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path><line x1="3" y1="3" x2="21" y2="21" stroke-width="2" stroke-linecap="round"></line></svg>
+                        <svg id="icon-video-on" class="w-4 h-4 sm:w-5 sm:h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                    </button>
+                </div>
+
+                <button id="btn-leave" class="bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white p-1.5 sm:p-2.5 rounded-lg sm:rounded-xl transition-colors shrink-0 active:scale-95 border border-red-500/20 hover:border-red-500" title="Leave Room">
+                    <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="flex-1 flex flex-col lg:flex-row w-full overflow-x-hidden overflow-y-auto lg:overflow-hidden relative bg-zinc-950 touch-scroll hide-scrollbar pb-24 lg:pb-0">
+            
+            <!-- PANEL: Main Auction Area -->
+            <section id="auction-panel" class="flex flex-col w-full lg:flex-1 lg:h-full relative z-20 shrink-0 bg-zinc-950 order-1 lg:order-2 pb-6 lg:pb-0">
+                <div class="flex-1 lg:overflow-y-auto hide-scrollbar flex flex-col relative w-full lg:h-full">
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] sm:w-[600px] sm:h-[600px] bg-cric-green/5 rounded-full blur-[80px] sm:blur-[100px] pointer-events-none"></div>
+
+                    <!-- Video Gallery -->
+                    <div class="w-full bg-zinc-900/40 border-b border-zinc-800/50 p-2 sm:p-3 shrink-0 backdrop-blur-sm z-10 relative">
+                        <div id="video-gallery" class="flex flex-nowrap overflow-x-auto gap-2 sm:gap-4 hide-scrollbar items-center snap-x px-2">
+                            <div class="relative group flex flex-col items-center shrink-0 snap-start">
+                               <div class="p-0.5 rounded-[0.875rem] sm:rounded-[1.25rem] bg-gradient-to-b from-cric-green to-transparent">
+                                   <video id="local-video" class="w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-[0.75rem] sm:rounded-[1rem] object-cover bg-zinc-800 block" autoplay muted playsinline></video>
+                               </div>
+                               <span class="absolute -bottom-2 bg-zinc-900 border border-zinc-700 text-white text-[7px] sm:text-[9px] font-bold px-1.5 sm:px-2 py-0.5 rounded-md whitespace-nowrap z-10 shadow-sm uppercase tracking-wider">You</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Auction Board Padding Wrapper -->
+                    <div class="flex-1 flex flex-col items-center justify-center p-3 sm:p-5 lg:p-8 min-h-min relative z-10 w-full mx-auto">
+                        
+                        <div class="mb-4 sm:mb-6 lg:mb-8 shrink-0 transition-all z-20">
+                            <div id="timer-container" class="bg-zinc-900/90 backdrop-blur border border-zinc-800 rounded-full px-3 sm:px-5 py-1.5 sm:py-2 flex items-center gap-1.5 sm:gap-3 shadow-2xl transform hover:scale-105 transition-transform">
+                                <div id="status-indicator" class="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-yellow-500 shadow-[0_0_8px_currentColor]"></div>
+                                <span id="ui-room-status" class="font-bold text-zinc-300 text-[9px] sm:text-xs lg:text-sm tracking-widest uppercase">Waiting...</span>
+                                <div class="w-px h-3 sm:h-4 bg-zinc-700 mx-0.5 sm:mx-1"></div>
+                                <span id="ui-timer" class="font-display font-black text-base sm:text-xl lg:text-2xl text-white w-5 sm:w-8 text-center hidden drop-shadow-md">00</span>
+                            </div>
+                        </div>
+
+                        <!-- Player Card -->
+                        <div id="player-card" class="w-full max-w-[92%] sm:max-w-md lg:max-w-lg xl:max-w-2xl premium-card-bg rounded-[1.5rem] sm:rounded-[2rem] border border-zinc-700/50 shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden relative transition-all duration-500 shrink-0 transform aspect-[4/5] sm:aspect-auto flex flex-col">
+                            
+                            <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wMykiLz48L3N2Zz4=')] opacity-50 pointer-events-none"></div>
+
+                            <div id="sold-overlay" class="absolute inset-0 bg-zinc-950/90 backdrop-blur-lg z-30 hidden flex-col items-center justify-center p-4 sm:p-6 text-center w-full h-full"></div>
+
+                            <!-- STATS OVERLAY -->
+                            <div id="stats-overlay" class="absolute inset-0 bg-zinc-950/95 backdrop-blur-2xl z-[25] hidden flex-col p-5 sm:p-8 animate-fade-in border border-zinc-700/50 rounded-[1.5rem] sm:rounded-[2rem]">
+                                <div class="flex justify-between items-center mb-4 sm:mb-6 border-b border-zinc-800/80 pb-3 shrink-0">
+                                    <h3 class="text-white font-display font-bold text-base sm:text-xl flex items-center gap-2">
+                                        <svg class="w-4 h-4 sm:w-5 sm:h-5 text-cric-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012-2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                                        AI Analytics & Stats
+                                    </h3>
+                                    <button onclick="document.getElementById('stats-overlay').classList.add('hidden'); document.getElementById('stats-overlay').classList.remove('flex');" class="text-zinc-400 hover:text-white bg-zinc-900 hover:bg-zinc-800 p-1.5 sm:p-2 rounded-lg transition-colors active:scale-95">
+                                        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    </button>
+                                </div>
+                                
+                                <div class="flex-1 overflow-y-auto hide-scrollbar space-y-4 sm:space-y-5">
+                                    <div class="grid grid-cols-2 gap-3 sm:gap-4">
+                                        <div class="bg-zinc-900/50 border border-zinc-800/80 rounded-xl p-3 sm:p-4 flex flex-col justify-center items-center text-center">
+                                            <p class="text-[8px] sm:text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-1">AI Rating</p>
+                                            <div class="flex items-baseline gap-1">
+                                                <span id="ui-stat-rating" class="font-display font-black text-2xl sm:text-4xl text-cric-green">0.0</span>
+                                                <span class="text-[10px] sm:text-sm text-zinc-500 font-bold">/10</span>
+                                            </div>
+                                        </div>
+                                        <div class="bg-zinc-900/50 border border-zinc-800/80 rounded-xl p-3 sm:p-4 flex flex-col justify-center items-center text-center">
+                                            <p class="text-[8px] sm:text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-1">Predicted Value</p>
+                                            <span id="ui-stat-predicted" class="font-display font-black text-sm sm:text-xl text-cric-accent">₹ 0.0 Cr</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-zinc-900/50 border border-zinc-800/80 rounded-xl p-3 sm:p-4">
+                                        <div class="flex justify-between items-end mb-2">
+                                            <p class="text-[8px] sm:text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Live Bid vs Predicted</p>
+                                            <p id="ui-stat-verdict" class="text-[9px] sm:text-[11px] font-bold text-emerald-400 uppercase tracking-wider">Evaluating</p>
+                                        </div>
+                                        <div class="w-full bg-zinc-950 rounded-full h-2 sm:h-2.5 border border-zinc-800 overflow-hidden relative">
+                                            <div id="ui-stat-bar-predicted" class="absolute top-0 left-0 h-full bg-zinc-700/60 border-r border-zinc-400 z-0"></div>
+                                            <div id="ui-stat-bar-current" class="absolute top-0 left-0 h-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211?53,0.8)] transition-all duration-500 z-10 w-0"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-zinc-900/50 border border-zinc-800/80 rounded-xl p-3 sm:p-4">
+                                        <p class="text-[8px] sm:text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-3">Career Stats</p>
+                                        <div class="grid grid-cols-3 gap-2 divide-x divide-zinc-800/80">
+                                            <div class="text-center">
+                                                <p class="text-[8px] sm:text-[10px] text-zinc-400 mb-0.5">Matches</p>
+                                                <p id="ui-stat-matches" class="font-bold text-white text-sm sm:text-base font-display">0</p>
+                                            </div>
+                                            <div class="text-center">
+                                                <p id="ui-stat-l1" class="text-[8px] sm:text-[10px] text-zinc-400 mb-0.5">Runs</p>
+                                                <p id="ui-stat-v1" class="font-bold text-white text-sm sm:text-base font-display">0</p>
+                                            </div>
+                                            <div class="text-center">
+                                                <p id="ui-stat-l2" class="text-[8px] sm:text-[10px] text-zinc-400 mb-0.5">Strike Rate</p>
+                                                <p id="ui-stat-v2" class="font-bold text-white text-sm sm:text-base font-display">0.0</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-zinc-900/50 border border-zinc-800/80 rounded-xl p-3 sm:p-4 mb-2">
+                                        <p class="text-[8px] sm:text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-2.5">Recent Form (Last 5)</p>
+                                        <div id="ui-stat-form" class="flex justify-between items-center gap-1.5 sm:gap-2">
+                                            <!-- Injection -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="p-5 sm:p-8 flex justify-between items-start relative z-10 flex-1 sm:flex-none">
+                                <div class="flex-1">
+                                    <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
+                                        <span id="ui-player-set" class="bg-blue-600/20 text-blue-400 border border-blue-500/30 text-[9px] sm:text-[10px] font-black px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-md uppercase tracking-widest inline-block hidden">SET</span>
+                                        <span id="ui-player-role" class="bg-zinc-800 text-zinc-300 border border-zinc-700 text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-md uppercase tracking-widest inline-block truncate max-w-[100px] sm:max-w-none">Role</span>
+                                        <span id="ui-player-country" class="bg-zinc-800 text-zinc-300 border border-zinc-700 text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-md uppercase tracking-widest inline-flex items-center gap-1 shrink-0">---</span>
+                                    </div>
+                                    <h2 id="ui-player-name" class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-display font-black text-white leading-tight sm:leading-none tracking-tight mb-1 sm:mb-2 drop-shadow-md break-words">Wait...</h2>
+                                </div>
+                                <div class="text-right shrink-0 ml-2">
+                                    <p class="text-[8px] sm:text-[9px] text-zinc-500 uppercase font-bold tracking-widest mb-0.5 sm:mb-1">Base Price</p>
+                                    <p id="ui-player-base" class="font-display font-bold text-base sm:text-lg lg:text-xl text-zinc-300 bg-zinc-900 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-zinc-800 shadow-inner whitespace-nowrap">₹ -- Cr</p>
+                                    <button onclick="document.getElementById('stats-overlay').classList.remove('hidden'); document.getElementById('stats-overlay').classList.add('flex');" class="mt-2 w-full flex items-center justify-center gap-1 text-[8px] sm:text-[10px] font-bold bg-cric-accent/10 hover:bg-cric-accent/20 text-cric-accent border border-cric-accent/30 py-1.5 rounded-lg transition-colors uppercase tracking-widest">
+                                        <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012-2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                                        Analytics
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="w-full h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent opacity-50 relative z-10 hidden sm:block"></div>
+
+                            <div class="px-4 pb-5 pt-3 sm:px-6 sm:pb-8 sm:pt-6 text-center relative z-10 flex flex-col justify-end sm:justify-start">
+                                <p class="text-cric-green text-[8px] sm:text-xs font-bold uppercase tracking-widest mb-1 sm:mb-2 flex items-center justify-center gap-1.5 sm:gap-2">
+                                    <span class="w-1 h-1 rounded-full bg-cric-green"></span>
+                                    Current Bid
+                                    <span class="w-1 h-1 rounded-full bg-cric-green"></span>
+                                </p>
+                                <h3 id="ui-current-bid" class="text-4xl sm:text-6xl lg:text-7xl font-display font-black text-white mb-3 sm:mb-6 tracking-tighter drop-shadow-xl sm:drop-shadow-2xl">₹ 0.00 <span class="text-lg sm:text-2xl lg:text-3xl text-zinc-500 font-bold tracking-normal">Cr</span></h3>
+                                
+                                <div class="inline-flex items-center justify-center gap-1.5 sm:gap-3 bg-zinc-950/80 border border-zinc-800/80 rounded-xl sm:rounded-2xl px-3 sm:px-5 py-1.5 sm:py-3 max-w-full backdrop-blur-md shadow-lg mx-auto">
+                                    <p class="text-[8px] sm:text-[10px] text-zinc-400 font-medium uppercase tracking-wider shrink-0">Leader</p>
+                                    <div class="w-px h-3 sm:h-4 bg-zinc-800 mx-0.5 sm:mx-1"></div>
+                                    <p id="ui-highest-bidder" class="font-bold text-white text-[10px] sm:text-sm lg:text-base truncate max-w-[100px] sm:max-w-[150px] lg:max-w-[200px]">None</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="w-full max-w-[95%] sm:max-w-md lg:max-w-2xl xl:max-w-3xl mx-auto mt-4 sm:mt-6 lg:mt-8 z-30 flex flex-col gap-2.5 sm:gap-4 shrink-0">
+                            <!-- Host Controls -->
+                            <div id="host-controls" class="hidden flex-wrap gap-1.5 sm:gap-2 justify-center p-2.5 sm:p-4 bg-zinc-900/50 border border-zinc-800/80 rounded-xl sm:rounded-[1.5rem] shadow-lg w-full">
+                                <span class="w-full text-center text-[7px] sm:text-[9px] text-zinc-500 uppercase tracking-widest font-bold flex items-center justify-center gap-1.5 mb-0.5 sm:mb-1"><span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> Host Desk</span>
+                                <button id="btn-host-start" class="bg-white hover:bg-zinc-200 text-zinc-950 font-bold px-2.5 sm:px-5 py-2 sm:py-3 rounded-lg sm:rounded-xl shadow-md flex-1 min-w-[70px] sm:min-w-[100px] transition-colors active:scale-95 text-[9px] sm:text-xs uppercase tracking-wider">Start / Next</button>
+                                <button id="btn-host-pause" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold px-2.5 sm:px-5 py-2 sm:py-3 rounded-lg sm:rounded-xl shadow-md flex-1 min-w-[70px] sm:min-w-[100px] transition-colors active:scale-95 text-[9px] sm:text-xs uppercase tracking-wider border border-zinc-700">Pause</button>
+                                <button id="btn-host-unsold" class="bg-red-500/10 hover:bg-red-500/20 text-red-500 font-bold px-2.5 sm:px-5 py-2 sm:py-3 rounded-lg sm:rounded-xl shadow-md flex-1 min-w-[70px] sm:min-w-[100px] transition-colors disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 text-[9px] sm:text-xs uppercase tracking-wider border border-red-500/20">Mark Unsold</button>
+                                <button id="btn-host-skip" class="bg-orange-500/10 hover:bg-orange-500/20 text-orange-500 font-bold px-2.5 sm:px-5 py-2 sm:py-3 rounded-lg sm:rounded-xl shadow-md flex-1 min-w-[70px] sm:min-w-[100px] transition-colors disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 text-[9px] sm:text-xs uppercase tracking-wider border border-orange-500/20">Skip</button>
+                            </div>
+
+                            <!-- Bidding Controls -->
+                            <div id="bidding-controls" class="opacity-50 pointer-events-none transition-opacity duration-300 w-full pb-safe">
+                                <div class="grid grid-cols-3 gap-1.5 sm:gap-3 lg:gap-5">
+                                    <button onclick="placeBid(0.20)" class="bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-700 text-white font-bold py-2.5 sm:py-5 lg:py-6 rounded-xl sm:rounded-[1.5rem] transition-all shadow-md sm:shadow-lg flex flex-col items-center justify-center border border-zinc-800 active:scale-[0.97] group">
+                                        <span class="text-[8px] sm:text-[10px] lg:text-xs text-zinc-500 font-bold mb-0.5 sm:mb-1 uppercase tracking-widest group-hover:text-zinc-400 transition-colors">Raise</span>
+                                        <span class="text-sm sm:text-xl lg:text-2xl font-display font-black">20 L</span>
+                                    </button>
+                                    <button onclick="placeBid(0.50)" class="bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-700 text-white font-bold py-2.5 sm:py-5 lg:py-6 rounded-xl sm:rounded-[1.5rem] transition-all shadow-md sm:shadow-lg flex flex-col items-center justify-center border border-zinc-800 active:scale-[0.97] group">
+                                        <span class="text-[8px] sm:text-[10px] lg:text-xs text-zinc-500 font-bold mb-0.5 sm:mb-1 uppercase tracking-widest group-hover:text-zinc-400 transition-colors">Raise</span>
+                                        <span class="text-sm sm:text-xl lg:text-2xl font-display font-black">50 L</span>
+                                    </button>
+                                    <button onclick="placeBid(1.00)" class="bg-cric-green hover:bg-emerald-400 active:bg-emerald-500 text-zinc-950 font-bold py-2.5 sm:py-5 lg:py-6 rounded-xl sm:rounded-[1.5rem] transition-all shadow-[0_5px_15px_rgba(16?85?29,0.2)] sm:shadow-[0_10px_30px_rgba(16?85?29,0.3)] flex flex-col items-center justify-center active:scale-[0.97]">
+                                        <span class="text-[8px] sm:text-[10px] lg:text-xs text-emerald-900/70 font-black mb-0.5 sm:mb-1 uppercase tracking-widest">Power Raise</span>
+                                        <span class="text-base sm:text-2xl lg:text-3xl font-display font-black">1 Cr</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Floating Reactions Container -->
+            <div id="reaction-container" class="absolute bottom-24 right-4 sm:right-10 w-24 h-64 pointer-events-none z-[100] overflow-hidden"></div>
+
+            <!-- PANEL: Standings (Left on Desktop, Middle on Mobile) -->
+            <aside id="standings-panel" class="flex flex-col w-full lg:w-[320px] xl:w-[360px] lg:h-full shrink-0 bg-zinc-950/80 border-t lg:border-t-0 lg:border-r border-zinc-800/80 p-4 z-10 order-2 lg:order-1 lg:overflow-y-auto hide-scrollbar">
+                <div class="sticky top-0 bg-zinc-950/95 backdrop-blur-xl pb-3 sm:pb-4 pt-1 sm:pt-2 z-10 mb-2">
+                    <h2 class="text-sm sm:text-base font-display font-bold text-white flex items-center gap-2 tracking-wide uppercase">
+                        <span class="w-1.5 sm:w-2 h-5 sm:h-6 rounded-full bg-cric-gold shrink-0"></span>
+                        Franchises
+                    </h2>
+                </div>
+                <div id="standings-list" class="space-y-2.5 sm:space-y-3">
+                    <!-- Injection -->
+                </div>
+            </aside>
+
+            <!-- PANEL: Pool (Right on Desktop, Bottom on Mobile) -->
+            <aside id="pool-panel" class="flex flex-col w-full lg:w-[300px] xl:w-[340px] lg:h-full shrink-0 bg-zinc-950/80 border-t lg:border-t-0 lg:border-l border-zinc-800/80 p-4 z-10 order-3 lg:overflow-y-auto hide-scrollbar">
+                <div class="sticky top-0 bg-zinc-950/95 backdrop-blur-xl pb-3 sm:pb-4 pt-1 sm:pt-2 z-10 mb-2">
+                    <h2 class="text-sm sm:text-base font-display font-bold text-white flex items-center gap-2 tracking-wide uppercase">
+                        <span class="w-1.5 sm:w-2 h-5 sm:h-6 rounded-full bg-cric-accent shrink-0"></span>
+                        Auction Pool
+                    </h2>
+                </div>
+                <div id="upcoming-list" class="space-y-2 sm:space-y-2.5">
+                    <!-- Injection -->
+                </div>
+            </aside>
+
+            <!-- PANEL: Chat -->
+            <aside id="chat-panel" class="flex-col w-full h-[75vh] sm:w-[380px] sm:h-[600px] bg-zinc-950 fixed bottom-0 left-0 right-0 sm:bottom-[100px] sm:left-auto sm:right-8 rounded-t-[1.5rem] sm:rounded-[2rem] border-t sm:border border-zinc-800 shadow-[0_-10px_50px_rgba(0,0,0,0.8)] sm:shadow-[0_30px_60px_rgba(0,0,0,0.6)] z-[110] overflow-hidden pb-safe sm:pb-0 hidden">
+                <div class="p-3.5 sm:p-5 border-b border-zinc-800 bg-zinc-900/50 flex justify-between items-center shrink-0 pt-safe lg:pt-5">
+                    <h3 class="font-display font-bold text-white flex items-center gap-2 sm:gap-2.5 text-sm sm:text-base uppercase tracking-wider">
+                        <div class="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-pink-500 shrink-0"></div>
+                        Live Chat
+                    </h3>
+                    <button class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white flex items-center justify-center transition-colors" onclick="toggleDesktopChat()">
+                        <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <div id="chat-messages" class="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 bg-zinc-950 relative hide-scrollbar"></div>
+                <div class="p-3 sm:p-4 border-t border-zinc-800 bg-zinc-900/80 shrink-0 pb-safe sm:pb-4">
+                    <select id="chat-recipient" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg sm:rounded-xl p-2.5 sm:p-3 mb-2 sm:mb-3 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-zinc-400 focus:outline-none focus:border-zinc-600 appearance-none shadow-inner">
+                        <option value="all">Public (Everyone)</option>
+                    </select>
+                    <div class="flex gap-1.5 sm:gap-2 relative">
+                        <button id="btn-emoji-toggle" class="bg-zinc-950 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white px-2.5 sm:px-3 rounded-lg sm:rounded-xl transition-colors flex items-center justify-center shrink-0 active:scale-95" title="Emojis">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </button>
+                        <input type="text" id="chat-input" placeholder="Type a message..." class="flex-1 bg-zinc-950 border border-zinc-800 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-white focus:outline-none focus:border-zinc-600 placeholder:text-zinc-600 shadow-inner">
+                        <button id="btn-send-chat" class="bg-white hover:bg-zinc-200 text-zinc-950 px-4 sm:px-5 rounded-lg sm:rounded-xl font-bold transition-all shadow-md active:scale-95 shrink-0 flex items-center justify-center">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                        </button>
+                        <div id="emoji-picker" class="hidden absolute bottom-full left-0 mb-2 bg-zinc-900 border border-zinc-700 rounded-xl p-2.5 sm:p-3 shadow-2xl w-60 sm:w-64 z-50">
+                            <div class="grid grid-cols-6 gap-1.5 text-lg sm:text-xl max-h-32 sm:max-h-40 overflow-y-auto hide-scrollbar" id="emoji-grid"></div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </main>
+
+        <!-- Fixed Chat Button -->
+        <button onclick="toggleDesktopChat()" id="btn-desktop-chat" class="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 w-14 h-14 sm:w-16 sm:h-16 bg-white hover:bg-zinc-200 text-zinc-950 rounded-full sm:rounded-[1.5rem] shadow-[0_10px_20px_rgba(255,255,255,0.15)] sm:shadow-[0_15px_30px_rgba(255,255,255,0.15)] flex items-center justify-center z-[105] transition-all hover:scale-105 active:scale-95 shrink-0 border border-zinc-200">
+            <svg class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+            <span id="chat-badge" class="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-red-500 text-white text-[9px] sm:text-[10px] font-black w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center hidden shadow-md ring-2 sm:ring-4 ring-zinc-950">0</span>
+        </button>
+        
+        <!-- Fixed AI Coach Button -->
+        <button id="btn-ai-coach" onclick="openAICoach()" class="fixed bottom-4 left-4 sm:bottom-8 sm:left-8 w-14 h-14 sm:w-16 sm:h-16 bg-purple-600 hover:bg-purple-500 text-white rounded-full sm:rounded-[1.5rem] shadow-[0_10px_20px_rgba(147,51,234,0.3)] flex items-center justify-center z-[105] transition-all hover:scale-105 active:scale-95 shrink-0 border border-purple-400" title="AI Coach">
+            <span class="text-2xl sm:text-3xl">🤖</span>
+        </button>
+
+        <!-- Live Reaction Buttons -->
+        <div id="reaction-buttons" class="fixed bottom-4 right-20 sm:bottom-8 sm:right-28 flex gap-1.5 sm:gap-2 z-[105] hidden">
+            <button onclick="sendReaction('🔥')" class="w-10 h-10 sm:w-12 sm:h-12 bg-zinc-900 border border-zinc-700 rounded-full shadow-lg text-lg hover:bg-zinc-800 hover:scale-110 active:scale-95 transition-all flex items-center justify-center">🔥</button>
+            <button onclick="sendReaction('😂')" class="w-10 h-10 sm:w-12 sm:h-12 bg-zinc-900 border border-zinc-700 rounded-full shadow-lg text-lg hover:bg-zinc-800 hover:scale-110 active:scale-95 transition-all flex items-center justify-center">😂</button>
+            <button onclick="sendReaction('👏')" class="w-10 h-10 sm:w-12 sm:h-12 bg-zinc-900 border border-zinc-700 rounded-full shadow-lg text-lg hover:bg-zinc-800 hover:scale-110 active:scale-95 transition-all flex items-center justify-center">👏</button>
+            <button onclick="sendReaction('😲')" class="w-10 h-10 sm:w-12 sm:h-12 bg-zinc-900 border border-zinc-700 rounded-full shadow-lg text-lg hover:bg-zinc-800 hover:scale-110 active:scale-95 transition-all flex items-center justify-center">😲</button>
+        </div>
+
+    </div>
+
+    <!-- ==================== SCREEN 3: SEASON MODE ==================== -->
+    <div id="season-screen" class="hidden flex-1 w-full h-full flex-col bg-zinc-950 relative overflow-hidden">
+        <header class="bg-zinc-950/90 backdrop-blur-xl border-b border-zinc-800/80 pt-safe flex justify-between items-center px-4 py-3 sm:px-6 z-[60] shrink-0">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-cric-accent to-blue-800 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(59?30,246,0.3)]">
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                </div>
+                <div>
+                    <h1 class="font-display font-black text-white text-base sm:text-xl tracking-wide">SEASON SIMULATOR</h1>
+                    <p id="ui-season-phase" class="text-[9px] sm:text-[10px] text-cric-accent font-bold uppercase tracking-widest">League Phase</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="openAIPreview()" class="bg-purple-600 hover:bg-purple-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-colors border border-purple-400 flex items-center gap-1 shadow-[0_0_10px_rgba(147,51,234,0.4)]">
+                    🤖 AI Preview
+                </button>
+                <button onclick="document.getElementById('season-screen').classList.add('hidden'); document.getElementById('season-screen').classList.remove('flex'); document.getElementById('auction-screen').classList.remove('hidden'); document.getElementById('auction-screen').classList.add('flex'); showFloatingButtons();" class="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-bold px-3 py-1.5 rounded-lg text-xs transition-colors border border-zinc-700">Back to Squads</button>
+            </div>
+        </header>
+
+        <main class="flex-1 flex flex-col lg:flex-row w-full overflow-y-auto overflow-x-hidden lg:overflow-hidden relative touch-scroll hide-scrollbar pb-safe">
+            <aside class="w-full lg:w-[350px] shrink-0 bg-zinc-950/80 border-b lg:border-b-0 lg:border-r border-zinc-800/80 flex flex-col lg:h-full">
+                <div class="p-4 border-b border-zinc-800/80 bg-zinc-900/30 shrink-0">
+                    <h2 class="font-display font-bold text-white flex items-center gap-2 tracking-wide uppercase text-sm">
+                        <span class="w-1.5 h-5 rounded-full bg-cric-green shrink-0"></span> Points Table
+                    </h2>
+                </div>
+                <div class="lg:flex-1 lg:overflow-y-auto hide-scrollbar touch-scroll p-2">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="text-[9px] sm:text-[10px] text-zinc-500 uppercase tracking-widest border-b border-zinc-800/50">
+                                <th class="pb-2 font-bold pl-2">Team</th>
+                                <th class="pb-2 font-bold text-center w-8">P</th>
+                                <th class="pb-2 font-bold text-center w-8 text-emerald-500">W</th>
+                                <th class="pb-2 font-bold text-center w-8 text-red-500">L</th>
+                                <th class="pb-2 font-bold text-center w-8 text-white">Pts</th>
+                                <th class="pb-2 font-bold text-right w-12 pr-2">NRR</th>
+                            </tr>
+                        </thead>
+                        <tbody id="season-points-table" class="text-xs sm:text-sm"></tbody>
+                    </table>
+                </div>
+            </aside>
+
+            <section class="w-full lg:flex-1 shrink-0 bg-zinc-950 flex flex-col border-b lg:border-b-0 lg:border-r border-zinc-800/80 lg:h-full">
+                <div class="p-4 border-b border-zinc-800/80 bg-zinc-900/30 flex justify-between items-center z-10 shrink-0">
+                    <h2 class="font-display font-bold text-white flex items-center gap-2 tracking-wide uppercase text-sm">
+                        <span class="w-1.5 h-5 rounded-full bg-red-500 shrink-0"></span> Match Center
+                    </h2>
+                    <div id="season-host-controls" class="hidden gap-2">
+                        <button id="btn-sim-next" class="bg-white text-zinc-950 hover:bg-zinc-200 px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-md">Simulate Match</button>
+                        <button id="btn-sim-all" class="bg-zinc-800 text-white hover:bg-zinc-700 px-4 py-1.5 rounded-lg text-xs font-bold transition-all border border-zinc-700">Simulate Round</button>
+                    </div>
+                </div>
+                
+                <div class="lg:flex-1 lg:overflow-y-auto hide-scrollbar touch-scroll p-4 relative min-h-[350px]">
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-cric-accent/5 rounded-full blur-[80px] pointer-events-none"></div>
+                    <div id="current-match-display" class="w-full max-w-2xl mx-auto mb-8 empty:hidden"></div>
+                    <h3 class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3 pl-1">Recent Results</h3>
+                    <div id="season-results-list" class="space-y-3 max-w-2xl mx-auto"></div>
+                </div>
+            </section>
+
+            <aside class="w-full lg:w-[320px] shrink-0 bg-zinc-950/80 flex flex-col border-zinc-800/80 lg:h-full">
+                <div class="p-4 border-b border-zinc-800/80 bg-zinc-900/30 shrink-0">
+                    <h2 class="font-display font-bold text-white flex items-center gap-2 tracking-wide uppercase text-sm">
+                        <span class="w-1.5 h-5 rounded-full bg-cric-gold shrink-0"></span> Leaderboards
+                    </h2>
+                </div>
+                <div class="lg:flex-1 lg:overflow-y-auto hide-scrollbar touch-scroll p-4 space-y-6 pb-12">
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-6 h-6 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-500/30">
+                                <span class="text-[10px] text-orange-400">🧢</span>
+                            </div>
+                            <h3 class="text-xs font-bold text-orange-400 uppercase tracking-widest">Orange Cap (Runs)</h3>
+                        </div>
+                        <div id="orange-cap-list" class="space-y-2"></div>
+                    </div>
+
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center border border-purple-500/30">
+                                <span class="text-[10px] text-purple-400">🧢</span>
+                            </div>
+                            <h3 class="text-xs font-bold text-purple-400 uppercase tracking-widest">Purple Cap (Wickets)</h3>
+                        </div>
+                        <div id="purple-cap-list" class="space-y-2"></div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3 border-t border-zinc-800/50 pt-4">Injury Updates</h3>
+                        <div id="injury-list" class="space-y-2">
+                            <p class="text-xs text-zinc-500 italic">No injuries reported yet.</p>
+                        </div>
+                    </div>
+
+                    <div id="my-squad-stats-wrapper" class="hidden pb-4">
+                        <h3 class="text-[10px] font-bold text-cric-green uppercase tracking-widest mb-3 border-t border-zinc-800/50 pt-4">My Squad Stats</h3>
+                        <div id="my-squad-stats-list" class="space-y-2"></div>
+                    </div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <!-- Mid-Season Transfer Modal -->
+    <div id="transfer-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[120] hidden flex-col items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="glass-panel bg-zinc-900 border border-zinc-700 p-6 sm:p-8 rounded-[2rem] max-w-3xl w-full shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]">
+            <div class="text-center mb-6 shrink-0">
+                <div class="w-16 h-16 bg-blue-500/10 rounded-2xl mx-auto mb-4 flex items-center justify-center text-blue-400 shadow-inner border border-blue-500/20">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-display font-black text-white">Mid-Season Transfer Window</h2>
+                <p class="text-zinc-400 text-sm mt-2">Replace your injured or underperforming players with unsold players.</p>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto hide-scrollbar touch-scroll flex flex-col lg:flex-row gap-6 min-h-[300px]">
+                <div class="w-full lg:flex-1 flex flex-col">
+                    <h3 class="text-xs font-bold text-red-400 uppercase tracking-widest mb-3 shrink-0">Release a Player</h3>
+                    <div id="transfer-my-players" class="space-y-2 w-full lg:flex-1 lg:overflow-y-auto hide-scrollbar touch-scroll border border-zinc-800 rounded-xl p-2 bg-zinc-950/50"></div>
+                </div>
+                <div class="flex flex-col items-center justify-center shrink-0 py-2 lg:py-0">
+                    <svg class="w-8 h-8 text-zinc-600 hidden lg:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                    <svg class="w-8 h-8 text-zinc-600 block lg:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4-4l-4-4"></path></svg>
+                </div>
+                <div class="w-full lg:flex-1 flex flex-col">
+                    <h3 class="text-xs font-bold text-cric-green uppercase tracking-widest mb-3 shrink-0">Sign Unsold Player</h3>
+                    <div id="transfer-unsold-players" class="space-y-2 w-full lg:flex-1 lg:overflow-y-auto hide-scrollbar touch-scroll border border-zinc-800 rounded-xl p-2 bg-zinc-950/50"></div>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-zinc-800 flex justify-end gap-3 shrink-0">
+                <button onclick="closeTransferWindow()" class="px-5 py-2.5 rounded-xl text-white font-bold bg-zinc-800 hover:bg-zinc-700 transition-colors">Skip</button>
+                <button id="btn-confirm-transfer" class="px-5 py-2.5 rounded-xl text-zinc-950 font-bold bg-cric-green hover:bg-emerald-400 transition-colors shadow-lg disabled:opacity-50">Confirm Trade</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="main.js"></script>
+</body>
+</html>
+
+
