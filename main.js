@@ -1,4 +1,4 @@
-﻿        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
         import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, onSnapshot, writeBatch, serverTimestamp, deleteDoc, runTransaction } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
@@ -65,6 +65,8 @@
         let inviteCooldowns = {};
 
         let serverTimeOffset = 0;
+        let isServerTimeOffsetInitialized = false;
+        let heartbeatRequestTime = 0;
         const getServerTime = () => Date.now() + serverTimeOffset;
 
         // === UI Helpers to hide/show overlapping floating buttons for iOS ===
@@ -1626,7 +1628,14 @@ Return JSON exactly matching this schema:
 
         function startHeartbeat() {
             if (heartbeatInterval) clearInterval(heartbeatInterval);
-            heartbeatInterval = setInterval(() => { if (myUserDocId && auth.currentUser) { updateDoc(doc(getUsersRef(), myUserDocId), { lastActive: Date.now(), serverTime: serverTimestamp() }).catch(()=>{}); } }, 15000); 
+            const sendHeartbeat = () => {
+                if (myUserDocId && auth.currentUser) {
+                    heartbeatRequestTime = Date.now();
+                    updateDoc(doc(getUsersRef(), myUserDocId), { lastActive: Date.now(), serverTime: serverTimestamp() }).catch(()=>{});
+                }
+            };
+            sendHeartbeat();
+            heartbeatInterval = setInterval(sendHeartbeat, 15000); 
         }
 
         function setupListeners() {
@@ -1648,7 +1657,12 @@ Return JSON exactly matching this schema:
                         tempUsers.push(data);
                         
                         if (data.userId === myUserDocId && data.serverTime && !docSnap.metadata.hasPendingWrites) {
-                            serverTimeOffset = data.serverTime.toMillis() - Date.now();
+                            if (!isServerTimeOffsetInitialized) {
+                                const receiveTime = Date.now();
+                                const latency = Math.max(0, (receiveTime - heartbeatRequestTime) / 2);
+                                serverTimeOffset = data.serverTime.toMillis() - (heartbeatRequestTime + latency);
+                                isServerTimeOffsetInitialized = true;
+                            }
                         }
                     }
                 });
