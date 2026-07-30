@@ -1,2 +1,2 @@
 # CricBid
-Cricket auction App
+Cricket auction web application.
